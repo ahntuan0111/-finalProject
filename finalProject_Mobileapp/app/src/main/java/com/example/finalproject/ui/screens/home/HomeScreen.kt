@@ -1,5 +1,6 @@
 package com.example.finalproject.ui.screens.home
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -20,12 +21,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.finalproject.ui.navigation.AppRoutes
 import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.theme.TextGray
 
@@ -65,8 +67,19 @@ fun HomeScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         // 4. Môn học
-        HomeSubjects(subjects = viewModel.subjects) { subjectId ->
-            // TODO: Navigate to Lesson List
+        HomeSubjects(subjects = viewModel.subjects) { subjectIdString -> // subjectIdString đang là "math" hoặc "science" từ HomeViewModel
+
+            // 1. Map ID từ UI sang Code trong DB ("toan", "khtn")
+            val dbSubjectCode = when(subjectIdString) {
+                "math" -> "toan"      // Khớp với DB của bạn
+                "science" -> "khtn"   // Khớp với DB của bạn
+                else -> "toan"
+            }
+
+            val subjectName = viewModel.subjects.find { it.id == subjectIdString }?.name ?: "Môn học"
+
+            // 2. Truyền mã môn học (String) sang màn hình SubjectDetail
+            navController.navigate(AppRoutes.createSubjectDetailRoute(dbSubjectCode, subjectName))
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -158,7 +171,7 @@ fun HomeDashboard(stats: List<DashboardStat>) {
 fun StatCard(stat: DashboardStat) {
     Card(
         modifier = Modifier.size(width = 100.dp, height = 110.dp),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(24.dp), // Bo góc mềm hơn (24.dp)
         colors = CardDefaults.cardColors(containerColor = stat.color),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
@@ -167,7 +180,12 @@ fun StatCard(stat: DashboardStat) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(imageVector = stat.icon, contentDescription = null, tint = Color.DarkGray)
+            // Thay Icon bằng Image để hiển thị màu gốc
+            Image(
+                painter = painterResource(id = stat.imageRes),
+                contentDescription = null,
+                modifier = Modifier.size(32.dp)
+            )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = stat.value,
@@ -208,7 +226,7 @@ fun SubjectCard(subject: SubjectItem, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -219,17 +237,15 @@ fun SubjectCard(subject: SubjectItem, onClick: () -> Unit) {
             // Icon môn học (Box màu nền)
             Box(
                 modifier = Modifier
-                    .size(50.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(16.dp))
                     .background(subject.color),
                 contentAlignment = Alignment.Center
             ) {
-                // Tạm thời dùng chữ cái đầu, sau này thay bằng Icon/Image
-                Text(
-                    text = subject.name.first().toString(),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = PrimaryBlue
+                Image(
+                    painter = painterResource(id = subject.imageRes),
+                    contentDescription = null,
+                    modifier = Modifier.size(36.dp)
                 )
             }
 
@@ -254,13 +270,31 @@ fun SubjectCard(subject: SubjectItem, onClick: () -> Unit) {
                     color = PrimaryBlue,
                     trackColor = Color(0xFFEEEEEE),
                 )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = subject.name,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
 
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "${subject.finishedLessons}/${subject.totalLessons} bài học",
-                    fontSize = 12.sp,
-                    color = TextGray
-                )
+                    LinearProgressIndicator(
+                        progress = { subject.progress },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp) // Dày hơn chút
+                            .clip(RoundedCornerShape(4.dp)),
+                        color = PrimaryBlue,
+                        trackColor = Color(0xFFF5F5F5),
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "${subject.finishedLessons}/${subject.totalLessons} bài học",
+                        fontSize = 12.sp,
+                        color = TextGray
+                    )
+                }
             }
         }
     }

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import vn.anhtuan.finalProject.entity.Subject;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SubjectRepository extends JpaRepository<Subject, Integer> {
@@ -13,4 +14,7 @@ public interface SubjectRepository extends JpaRepository<Subject, Integer> {
 
     // Tìm theo mã môn (ví dụ: 'toan')
     Subject findByCode(String code);
+
+    // Tìm Subject dựa vào mã (vd: "toan") và khối (vd: 7)
+    Optional<Subject> findByCodeAndGradeId(String code, Integer gradeId);
 }

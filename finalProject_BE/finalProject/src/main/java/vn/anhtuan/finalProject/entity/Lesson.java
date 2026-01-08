@@ -1,5 +1,6 @@
 package vn.anhtuan.finalProject.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.util.List;
@@ -23,10 +24,12 @@ public class Lesson {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chapter_id", nullable = false)
+    @JsonIgnore // <--- GIỮ NGUYÊN DÒNG NÀY để cắt vòng lặp
     private Chapter chapter;
 
     // Quan hệ với nội dung bài học (chứa text/latex/ảnh)
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("contentOrder ASC") // Đảm bảo nội dung luôn sắp xếp đúng thứ tự 1, 2, 3...
     private List<LessonContent> contents;
 
     public String getVideoUrl() {

@@ -22,7 +22,6 @@ const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrde
           videoUrl: initialValues.videoUrl,
           orderNo: initialValues.orderNo,
           contents: initialValues.contents.map(c => ({
-            // Mặc định gom hết về TEXT (trừ khi là IMAGE)
             type: c.contentType === 'IMAGE' ? 'IMAGE' : 'TEXT',
             value: c.contentValue,
             order: c.contentOrder
@@ -44,6 +43,7 @@ const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrde
       const res = await uploadApi.uploadImage(file);
       if (res.success) {
         onSuccess("ok");
+        // Update form value
         const contents = form.getFieldValue('contents');
         contents[name].value = res.data;
         form.setFieldsValue({ contents });
@@ -57,7 +57,12 @@ const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrde
 
   const handleOk = () => {
     form.validateFields().then((values) => {
-      onSubmit(values);
+      // Đảm bảo thứ tự order
+      const processedContents = values.contents.map((c, idx) => ({
+          ...c,
+          order: idx + 1
+      }));
+      onSubmit({ ...values, contents: processedContents });
     });
   };
 
@@ -131,16 +136,6 @@ const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrde
                         <Select.Option value="IMAGE">🖼️ Hình ảnh</Select.Option>
                       </Select>
                     </Form.Item>
-
-                    <Form.Item
-                      {...restField}
-                      name={[name, 'order']}
-                      label="STT"
-                      initialValue={index + 1}
-                      style={{ width: 70 }}
-                    >
-                      <InputNumber min={1} disabled style={{ color: '#333' }} />
-                    </Form.Item>
                   </Space>
 
                   <Form.Item
@@ -184,7 +179,7 @@ const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrde
                             );
                         }
 
-                        // 2. TRƯỜNG HỢP VĂN BẢN (Text + Math)
+                        // 2. TRƯỜNG HỢP VĂN BẢN (Sử dụng MathEditor mới)
                         return (
                             <Form.Item
                                 {...restField}
@@ -192,7 +187,7 @@ const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrde
                                 rules={[{ required: true, message: 'Nhập nội dung' }]}
                             >
                                 <MathEditor 
-                                    placeholder="Gõ nội dung bài học. Bấm nút phía trên để chèn công thức Toán..." 
+                                    placeholder="Gõ nội dung bài học. Bấm 'Chèn công thức Toán' để thêm LaTeX..." 
                                 />
                             </Form.Item>
                         );

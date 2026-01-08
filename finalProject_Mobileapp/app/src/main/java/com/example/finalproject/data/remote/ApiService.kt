@@ -5,6 +5,8 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiService {
 
@@ -33,4 +35,21 @@ interface ApiService {
     // Get Current Grade trả về số Int (có thể null) -> ApiResponse<Int?>
     @GET("users/current-grade")
     suspend fun getCurrentGrade(): Response<ApiResponse<Int?>>
+
+    @GET("student/subjects/{subjectId}/chapters")
+    suspend fun getChaptersBySubject(
+        @Path("subjectId") subjectId: Int
+    ): Response<ApiResponse<List<ChapterDto>>>
+
+    @GET("student/chapters")
+    suspend fun getChaptersBySubject(
+        @Query("code") code: String, // "toan", "khtn"
+        @Query("grade") grade: Int   // 7
+    ): Response<ApiResponse<List<ChapterDto>>>
+
+    // Lấy chi tiết nội dung bài học
+    @GET("student/lessons/{id}")
+    suspend fun getLessonDetail(
+        @Path("id") lessonId: Long
+    ): Response<ApiResponse<LessonDetailResponse>>
 }

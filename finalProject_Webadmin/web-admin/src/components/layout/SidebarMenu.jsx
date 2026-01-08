@@ -4,45 +4,32 @@ import {
   DashboardOutlined, 
   UserOutlined, 
   BookOutlined, 
+  FormOutlined, // Icon cho bài tập
   LogoutOutlined 
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 
 const SidebarMenu = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuth(); // Lấy hàm logout từ Context
 
-  const menuItems = [
-    {
-      key: '/dashboard',
-      icon: <DashboardOutlined />,
-      label: 'Dashboard',
-    },
-    {
-      key: '/users',
-      icon: <UserOutlined />,
-      label: 'Quản lý Người dùng',
-    },
-    {
-      key: '/courses', // Sẽ dẫn đến trang danh sách môn học/chapter
-      icon: <BookOutlined />,
-      label: 'Quản lý Bài học',
-    },
-    {
-      key: 'logout',
-      icon: <LogoutOutlined />,
-      label: 'Đăng xuất',
-      danger: true,
-    },
+  const items = [
+    { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
+    { key: '/users', icon: <UserOutlined />, label: 'Quản lý Người dùng' },
+    { key: '/courses', icon: <BookOutlined />, label: 'Quản lý Bài học' },
+    // --- MỤC BÀI TẬP ---
+    { key: '/exercises', icon: <FormOutlined />, label: 'Quản lý Bài tập' },
+    // -------------------
+    { type: 'divider' },
+    { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', danger: true },
   ];
 
-  const handleMenuClick = (e) => {
-    if (e.key === 'logout') {
-      logout();
+  const handleMenuClick = ({ key }) => {
+    if (key === 'logout') {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
     } else {
-      navigate(e.key);
+      navigate(key);
     }
   };
 
@@ -51,7 +38,7 @@ const SidebarMenu = () => {
       theme="dark"
       mode="inline"
       selectedKeys={[location.pathname]}
-      items={menuItems}
+      items={items}
       onClick={handleMenuClick}
     />
   );

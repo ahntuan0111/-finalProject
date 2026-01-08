@@ -1,27 +1,26 @@
 package com.example.finalproject.ui.navigation
 
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.finalproject.ui.screens.auth.AuthSelectionScreen
-import com.example.finalproject.ui.screens.auth.LoginScreen
-import com.example.finalproject.ui.screens.auth.WelcomeScreen
-// import com.example.finalproject.ui.screens.auth.RegisterScreen // (Sẽ mở comment khi tạo xong file này)
-// import com.example.finalproject.ui.screens.home.HomeScreen // (Sẽ mở comment khi tạo xong file này)
-import androidx.compose.material3.Text // Dùng tạm cho màn hình chưa có
-import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.example.finalproject.ui.screens.auth.AuthSelectionScreen
 import com.example.finalproject.ui.screens.auth.ForgotPasswordScreen
+import com.example.finalproject.ui.screens.auth.LoginScreen
 import com.example.finalproject.ui.screens.auth.RegisterScreen
 import com.example.finalproject.ui.screens.auth.ResetPasswordScreen
+import com.example.finalproject.ui.screens.auth.WelcomeScreen
 import com.example.finalproject.ui.screens.class_selection.ClassSelectionScreen
 import com.example.finalproject.ui.screens.home.HomeScreen
+import com.example.finalproject.ui.screens.subject_detail.SubjectDetailScreen
+import com.example.finalproject.ui.screens.theory.TheoryScreen
 
 /**
  * Định nghĩa các đường dẫn (Route) trong App
- * Nên tách ra file Constants riêng nếu App lớn, tạm thời để đây cho gọn.
  */
 object AppRoutes {
     const val WELCOME = "welcome"
@@ -29,18 +28,23 @@ object AppRoutes {
     const val LOGIN = "login"
     const val REGISTER = "register"
     const val HOME = "home"
-
     const val DASHBOARD = "dashboard"
-
     const val AI_CHAT = "ai_chat"
-
     const val USER = "user"
-
     const val FORGOT_PASSWORD = "forgot_password"
-
     const val RESET_PASSWORD = "reset_password/{email}"
-
     const val CLASS_SELECTION = "class_selection"
+
+    // --- SỬA: Dùng subjectCode (String) thay vì Id (Int) ---
+    const val SUBJECT_DETAIL = "subject_detail/{subjectCode}/{subjectName}"
+    fun createSubjectDetailRoute(code: String, name: String) = "subject_detail/$code/$name"
+
+    // --- SỬA: Dùng subjectCode (String) thay vì Id (Int) ---
+    const val THEORY = "theory/{subjectCode}/{subjectName}"
+    fun createTheoryRoute(code: String, name: String) = "theory/$code/$name"
+
+    const val LESSON_DETAIL = "lesson_detail/{lessonId}"
+    fun createLessonDetailRoute(id: Long) = "lesson_detail/$id"
 }
 
 @Composable
@@ -54,7 +58,7 @@ fun AppNavHost(
         startDestination = startDestination,
         modifier = modifier
     ) {
-        // 1. Màn hình Chào mừng (Slide giới thiệu)
+        // 1. Màn hình Chào mừng
         composable(AppRoutes.WELCOME) {
             WelcomeScreen(navController = navController)
         }
@@ -66,16 +70,15 @@ fun AppNavHost(
 
         // 3. Màn hình Đăng nhập
         composable(AppRoutes.LOGIN) {
-            // LoginScreen tự gọi ViewModel bằng hiltViewModel() bên trong nó
             LoginScreen(navController = navController)
         }
 
-        // 4. Màn hình Đăng ký (Placeholder - Chờ bạn tạo file RegisterScreen)
+        // 4. Màn hình Đăng ký
         composable(AppRoutes.REGISTER) {
             RegisterScreen(navController = navController)
         }
 
-        // 5. Màn hình Trang chủ (Sau khi login thành công)
+        // 5. Màn hình Trang chủ
         composable(AppRoutes.HOME) {
             HomeScreen(navController = navController)
         }
@@ -84,7 +87,7 @@ fun AppNavHost(
             ForgotPasswordScreen(navController = navController)
         }
 
-        // 2. Màn hình Reset (nhận email)
+        // Màn hình Reset mật khẩu
         composable(
             route = AppRoutes.RESET_PASSWORD,
             arguments = listOf(navArgument("email") { type = NavType.StringType })
@@ -93,14 +96,11 @@ fun AppNavHost(
             ResetPasswordScreen(navController = navController, email = email)
         }
 
-        // --- THÊM ĐOẠN NÀY ĐỂ SỬA LỖI ---
         composable(AppRoutes.CLASS_SELECTION) {
             ClassSelectionScreen(navController = navController)
         }
 
-        composable(AppRoutes.HOME) {
-            HomeScreen(navController = navController)
-        }
+        // Các màn hình Placeholder cho BottomNavigation
         composable(AppRoutes.DASHBOARD) {
             Text("Màn hình Thống kê (Dashboard)")
         }
@@ -109,6 +109,44 @@ fun AppNavHost(
         }
         composable(AppRoutes.USER) {
             Text("Màn hình Cá nhân (User)")
+        }
+
+        // --- MÀN HÌNH CHI TIẾT MÔN HỌC ---
+        composable(AppRoutes.SUBJECT_DETAIL) { backStackEntry ->
+            // SỬA: Lấy String (Code) thay vì Int (Id)
+            val subjectCode = backStackEntry.arguments?.getString("subjectCode") ?: "toan"
+            val subjectName = backStackEntry.arguments?.getString("subjectName") ?: "Môn học"
+
+            SubjectDetailScreen(
+                navController = navController,
+                subjectCode = subjectCode,   // Truyền Code ("toan", "khtn")
+                subjectName = subjectName
+                // KHÔNG TRUYỀN GRADE NỮA (Screen tự lấy từ UserViewModel)
+            )
+        }
+
+        // --- MÀN HÌNH LÝ THUYẾT ---
+        composable(AppRoutes.THEORY) { backStackEntry ->
+            // SỬA: Lấy String (Code) thay vì Int (Id)
+            val subjectCode = backStackEntry.arguments?.getString("subjectCode") ?: "toan"
+            val subjectName = backStackEntry.arguments?.getString("subjectName") ?: "Môn học"
+
+            TheoryScreen(
+                navController = navController,
+                subjectCode = subjectCode,   // Truyền Code ("toan", "khtn")
+                subjectName = subjectName
+                // KHÔNG TRUYỀN GRADE NỮA (Screen tự lấy từ UserViewModel)
+            )
+        }
+
+        composable(AppRoutes.LESSON_DETAIL) { backStackEntry ->
+            val lessonId = backStackEntry.arguments?.getString("lessonId")?.toLongOrNull() ?: 0L
+
+            // Gọi màn hình TheoryDetailScreen
+            com.example.finalproject.ui.screens.theory.TheoryDetailScreen(
+                navController = navController,
+                lessonId = lessonId
+            )
         }
     }
 }

@@ -1,8 +1,14 @@
 package com.example.finalproject.ui.components
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -20,48 +26,63 @@ fun BottomNavigationBar(navController: NavController) {
         BottomNavItem.User
     )
 
-    // Lấy route hiện tại để biết item nào đang được chọn
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    NavigationBar(
-        containerColor = Color.White, // Nền trắng sạch sẽ
-        tonalElevation = 8.dp
+    // Sử dụng Surface để tạo nền nổi và bo góc
+    // Chúng ta sẽ padding bên ngoài để nó không dính sát viền màn hình
+    Surface(
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 16.dp) // Cách lề để tạo hiệu ứng "nổi"
+            .height(64.dp) // Chiều cao cố định
+            .shadow(elevation = 8.dp, shape = RoundedCornerShape(32.dp)) // Đổ bóng mềm
+            .clip(RoundedCornerShape(32.dp)), // Bo tròn mạnh (hình viên thuốc)
+        color = Color.White
     ) {
-        items.forEach { item ->
-            val isSelected = currentRoute == item.route
+        NavigationBar(
+            containerColor = Color.White, // Nền trắng
+            tonalElevation = 0.dp, // Tắt bóng mặc định của NavigationBar để dùng bóng của Surface
+            modifier = Modifier.padding(0.dp)
+        ) {
+            items.forEach { item ->
+                val isSelected = currentRoute == item.route
 
-            NavigationBarItem(
-                icon = {
-                    Icon(
-                        imageVector = item.icon,
-                        contentDescription = item.title
-                    )
-                },
-                label = { Text(text = item.title) },
-                selected = isSelected,
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = PrimaryBlue, // Icon khi chọn
-                    selectedTextColor = PrimaryBlue, // Chữ khi chọn
-                    indicatorColor = Color(0xFFE3F2FD), // Nền tròn bao quanh icon khi chọn (Xanh rất nhạt)
-                    unselectedIconColor = TextGray,
-                    unselectedTextColor = TextGray
-                ),
-                onClick = {
-                    navController.navigate(item.route) {
-                        // 1. Pop up đến đích bắt đầu để tránh chồng chất stack khi bấm Back
-                        navController.graph.startDestinationRoute?.let { route ->
-                            popUpTo(route) {
-                                saveState = true
+                NavigationBarItem(
+                    icon = {
+                        Icon(
+                            imageVector = item.icon,
+                            contentDescription = item.title,
+                            modifier = Modifier.padding(bottom = 2.dp) // Căn chỉnh chút cho đẹp
+                        )
+                    },
+                    // Có thể ẩn label nếu muốn style tối giản, hoặc giữ lại
+                    label = {
+                        if (isSelected) { // Chỉ hiện chữ khi được chọn (Option style hiện đại)
+                            Text(text = item.title, style = MaterialTheme.typography.labelSmall)
+                        }
+                    },
+                    selected = isSelected,
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = PrimaryBlue,
+                        selectedTextColor = PrimaryBlue,
+                        indicatorColor = Color(0xFFE3F2FD), // Nền xanh nhạt khi chọn
+                        unselectedIconColor = TextGray.copy(alpha = 0.6f),
+                        unselectedTextColor = TextGray
+                    ),
+                    onClick = {
+                        if (currentRoute != item.route) {
+                            navController.navigate(item.route) {
+                                navController.graph.startDestinationRoute?.let { route ->
+                                    popUpTo(route) { saveState = true }
+                                }
+                                launchSingleTop = true
+                                restoreState = true
                             }
                         }
-                        // 2. Tránh mở lại cùng 1 màn hình khi bấm nhiều lần
-                        launchSingleTop = true
-                        // 3. Khôi phục trạng thái (scroll position...) khi quay lại
-                        restoreState = true
-                    }
-                }
-            )
+                    },
+                    alwaysShowLabel = false // Tắt luôn hiện nhãn để UI thoáng hơn
+                )
+            }
         }
     }
 }

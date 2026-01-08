@@ -3,13 +3,13 @@ package vn.anhtuan.finalProject.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
 
 import java.util.List;
 
 @Entity
-@Table(name = "chapters")
+@Table(name = "chapters", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"subject_id", "order_no"})
+})
 @Data
 public class Chapter {
     @Id
@@ -24,16 +24,23 @@ public class Chapter {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id", nullable = false)
+    @JsonIgnore // Tránh lặp vô hạn khi serialize JSON
     private Subject subject;
 
-    // --- SỬA Ở ĐÂY ---
-    // Thêm @JsonIgnore để khi lấy Chapter thì không tự động lôi hết Lesson ra
-    // Điều này giúp cắt đứt vòng lặp Lesson -> Chapter -> List<Lesson>
+    // Quan hệ 1-N với Lesson (để xóa Chapter thì Lesson đi theo)
     @OneToMany(mappedBy = "chapter", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
     private List<Lesson> lessons;
+
+    public Chapter() {
+    }
+
+    public Chapter(Long id, String title, Integer orderNo, Subject subject, List<Lesson> lessons) {
+        this.id = id;
+        this.title = title;
+        this.orderNo = orderNo;
+        this.subject = subject;
+        this.lessons = lessons;
+    }
 
     public Long getId() {
         return id;
@@ -41,14 +48,6 @@ public class Chapter {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public Integer getOrderNo() {
@@ -73,5 +72,13 @@ public class Chapter {
 
     public void setLessons(List<Lesson> lessons) {
         this.lessons = lessons;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

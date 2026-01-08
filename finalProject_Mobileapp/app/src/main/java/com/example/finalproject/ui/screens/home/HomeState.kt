@@ -1,11 +1,11 @@
 package com.example.finalproject.ui.screens.home
 
+import androidx.annotation.DrawableRes
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 
 // Model cho thẻ Thống kê (Dashboard)
 data class DashboardStat(
-    val icon: ImageVector,
+    @DrawableRes val imageRes: Int, // Đổi từ ImageVector sang Int (Drawable Resource)
     val value: String,
     val label: String,
     val color: Color
@@ -15,7 +15,8 @@ data class DashboardStat(
 data class SubjectItem(
     val id: String,
     val name: String,
-    val progress: Float, // 0.0 -> 1.0
+    @DrawableRes val imageRes: Int, // Thêm trường ảnh cho môn học
+    val progress: Float,
     val totalLessons: Int,
     val finishedLessons: Int,
     val color: Color
