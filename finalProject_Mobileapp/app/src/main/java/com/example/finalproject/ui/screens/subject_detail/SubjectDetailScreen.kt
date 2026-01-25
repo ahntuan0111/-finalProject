@@ -27,24 +27,23 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finalproject.R
+import com.example.finalproject.di.TheoryMode
 import com.example.finalproject.ui.navigation.AppRoutes
 import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.theme.TextGray
-import com.example.finalproject.ui.viewmodel.UserViewModel // Import UserViewModel
+import com.example.finalproject.ui.viewmodel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubjectDetailScreen(
     navController: NavController,
-    subjectCode: String, // "toan", "khtn"
-    subjectName: String, // "Toán Học"
-    userViewModel: UserViewModel = hiltViewModel() // Inject ViewModel để lấy Grade
+    subjectCode: String,
+    subjectName: String,
+    userViewModel: UserViewModel = hiltViewModel()
 ) {
-    // Tự động lấy Grade từ DataStore
     val grade by userViewModel.userGrade.collectAsState()
-    val displayGrade = grade ?: 6 // Mặc định nếu chưa load xong
+    val displayGrade = grade ?: 6
 
-    // Danh sách 4 mục chức năng
     val options = listOf(
         StudyOption("Lý thuyết", R.drawable.theory, Color(0xFFE3F2FD), 0.25f),
         StudyOption("Giải bài tập", R.drawable.homework, Color(0xFFE8F5E9)),
@@ -111,13 +110,23 @@ fun SubjectDetailScreen(
                     StudyOptionCard(option = option) {
                         when (option.title) {
                             "Lý thuyết" -> {
-                                // Truyền code và name sang TheoryScreen
-                                // Không cần truyền grade nữa
                                 navController.navigate(
-                                    AppRoutes.createTheoryRoute(subjectCode, subjectName)
+                                    AppRoutes.createTheoryRoute(
+                                        code = subjectCode,
+                                        name = subjectName,
+                                        mode = TheoryMode.THEORY // Chế độ Lý thuyết
+                                    )
                                 )
                             }
-                            "Giải bài tập" -> { /* TODO */ }
+                            "Giải bài tập" -> {
+                                navController.navigate(
+                                    AppRoutes.createTheoryRoute(
+                                        code = subjectCode,
+                                        name = subjectName,
+                                        mode = TheoryMode.EXERCISE // Chế độ Giải bài tập
+                                    )
+                                )
+                            }
                             "Quiz" -> { /* TODO */ }
                             "Bộ đề thi" -> { /* TODO */ }
                         }
@@ -128,7 +137,6 @@ fun SubjectDetailScreen(
     }
 }
 
-// Giữ nguyên StudyOptionCard và Data Class StudyOption của bạn
 data class StudyOption(
     val title: String,
     val imageRes: Int,

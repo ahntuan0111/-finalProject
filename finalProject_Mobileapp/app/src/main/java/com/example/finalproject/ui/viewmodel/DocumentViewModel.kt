@@ -1,9 +1,10 @@
-package com.example.finalproject.ui.screens.theory
+package com.example.finalproject.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finalproject.data.remote.ApiService
-import com.example.finalproject.data.remote.model.LessonDetailResponse
+import com.example.finalproject.data.remote.model.DocumentDto
+import com.example.finalproject.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,23 +12,23 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class TheoryDetailViewModel @Inject constructor(
+class DocumentViewModel @Inject constructor(
     private val apiService: ApiService
 ) : ViewModel() {
 
-    private val _lessonDetail = MutableStateFlow<LessonDetailResponse?>(null)
-    val lessonDetail = _lessonDetail.asStateFlow()
+    private val _documents = MutableStateFlow<List<DocumentDto>>(emptyList())
+    val documents = _documents.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
 
-    fun fetchLessonDetail(lessonId: Long) {
+    fun fetchDocuments(subjectCode: String, grade: Int) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val response = apiService.getLessonDetail(lessonId)
+                val response = apiService.getDocuments(subjectCode, grade)
                 if (response.isSuccessful && response.body()?.success == true) {
-                    _lessonDetail.value = response.body()?.data
+                    _documents.value = response.body()?.data ?: emptyList()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

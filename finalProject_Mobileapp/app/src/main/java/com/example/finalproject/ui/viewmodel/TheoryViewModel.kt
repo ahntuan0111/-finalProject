@@ -1,11 +1,10 @@
-package com.example.finalproject.ui.screens.theory
+package com.example.finalproject.ui.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finalproject.data.remote.ApiService
 import com.example.finalproject.data.remote.model.ChapterDto
-import com.example.finalproject.data.remote.model.LessonDto
 import com.example.finalproject.utils.DataStoreManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

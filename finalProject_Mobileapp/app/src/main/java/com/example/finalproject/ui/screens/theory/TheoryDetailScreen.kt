@@ -24,6 +24,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finalproject.ui.theme.PrimaryBlue
+import com.example.finalproject.ui.viewmodel.TheoryDetailViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

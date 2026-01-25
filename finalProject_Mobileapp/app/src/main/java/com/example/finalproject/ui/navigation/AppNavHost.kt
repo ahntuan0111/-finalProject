@@ -8,6 +8,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.finalproject.di.TheoryMode
 import com.example.finalproject.ui.screens.auth.AuthSelectionScreen
 import com.example.finalproject.ui.screens.auth.ForgotPasswordScreen
 import com.example.finalproject.ui.screens.auth.LoginScreen
@@ -15,8 +16,10 @@ import com.example.finalproject.ui.screens.auth.RegisterScreen
 import com.example.finalproject.ui.screens.auth.ResetPasswordScreen
 import com.example.finalproject.ui.screens.auth.WelcomeScreen
 import com.example.finalproject.ui.screens.class_selection.ClassSelectionScreen
+import com.example.finalproject.ui.screens.exercise.ExerciseDetailScreen // <-- IMPORT MỚI
 import com.example.finalproject.ui.screens.home.HomeScreen
 import com.example.finalproject.ui.screens.subject_detail.SubjectDetailScreen
+import com.example.finalproject.ui.screens.theory.TheoryDetailScreen
 import com.example.finalproject.ui.screens.theory.TheoryScreen
 
 /**
@@ -35,23 +38,39 @@ object AppRoutes {
     const val RESET_PASSWORD = "reset_password/{email}"
     const val CLASS_SELECTION = "class_selection"
 
-    // --- SỬA: Dùng subjectCode (String) thay vì Id (Int) ---
-    const val SUBJECT_DETAIL = "subject_detail/{subjectCode}/{subjectName}"
+    // Định nghĩa tên tham số
+    const val SUBJECT_CODE = "subjectCode"
+    const val SUBJECT_NAME = "subjectName"
+    const val MODE = "mode"
+    const val LESSON_ID = "lessonId"
+
+    // --- Route Chi tiết môn học ---
+    const val SUBJECT_DETAIL = "subject_detail/{$SUBJECT_CODE}/{$SUBJECT_NAME}"
     fun createSubjectDetailRoute(code: String, name: String) = "subject_detail/$code/$name"
 
-    // --- SỬA: Dùng subjectCode (String) thay vì Id (Int) ---
-    const val THEORY = "theory/{subjectCode}/{subjectName}"
-    fun createTheoryRoute(code: String, name: String) = "theory/$code/$name"
+    // --- Route Danh sách bài học (TheoryScreen) ---
+    const val THEORY_SCREEN = "theory/{$SUBJECT_CODE}/{$SUBJECT_NAME}/{$MODE}"
+    fun createTheoryRoute(code: String, name: String, mode: String): String {
+        return "theory/$code/$name/$mode"
+    }
 
-    const val LESSON_DETAIL = "lesson_detail/{lessonId}"
+    // --- Route Chi tiết bài học (Lý thuyết - Video/Text) ---
+    const val LESSON_DETAIL = "lesson_detail/{$LESSON_ID}"
     fun createLessonDetailRoute(id: Long) = "lesson_detail/$id"
+
+    // --- Route Chi tiết bài tập (Làm bài tập) ---  <-- BỔ SUNG MỚI
+    const val EXERCISE_DETAIL = "exercise_detail/{$LESSON_ID}"
+    fun createExerciseDetailRoute(id: Long) = "exercise_detail/$id"
+
+    const val PDF_VIEWER = "pdf_viewer/{url}/{title}"
+    const val DOCUMENT_LIST = "document_list/{subjectCode}/{grade}"
 }
 
 @Composable
 fun AppNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    startDestination: String = AppRoutes.WELCOME // Mặc định vào màn hình Welcome
+    startDestination: String = AppRoutes.WELCOME
 ) {
     NavHost(
         navController = navController,
@@ -100,53 +119,82 @@ fun AppNavHost(
             ClassSelectionScreen(navController = navController)
         }
 
-        // Các màn hình Placeholder cho BottomNavigation
-        composable(AppRoutes.DASHBOARD) {
-            Text("Màn hình Thống kê (Dashboard)")
-        }
-        composable(AppRoutes.AI_CHAT) {
-            Text("Màn hình AI Chat")
-        }
-        composable(AppRoutes.USER) {
-            Text("Màn hình Cá nhân (User)")
-        }
+        // Các màn hình Placeholder
+        composable(AppRoutes.DASHBOARD) { Text("Màn hình Thống kê") }
+        composable(AppRoutes.AI_CHAT) { Text("Màn hình AI Chat") }
+        composable(AppRoutes.USER) { Text("Màn hình Cá nhân") }
 
         // --- MÀN HÌNH CHI TIẾT MÔN HỌC ---
-        composable(AppRoutes.SUBJECT_DETAIL) { backStackEntry ->
-            // SỬA: Lấy String (Code) thay vì Int (Id)
-            val subjectCode = backStackEntry.arguments?.getString("subjectCode") ?: "toan"
-            val subjectName = backStackEntry.arguments?.getString("subjectName") ?: "Môn học"
+        composable(
+            route = AppRoutes.SUBJECT_DETAIL,
+            arguments = listOf(
+                navArgument(AppRoutes.SUBJECT_CODE) { type = NavType.StringType },
+                navArgument(AppRoutes.SUBJECT_NAME) { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val subjectCode = backStackEntry.arguments?.getString(AppRoutes.SUBJECT_CODE) ?: ""
+            val subjectName = backStackEntry.arguments?.getString(AppRoutes.SUBJECT_NAME) ?: ""
 
             SubjectDetailScreen(
                 navController = navController,
-                subjectCode = subjectCode,   // Truyền Code ("toan", "khtn")
+                subjectCode = subjectCode,
                 subjectName = subjectName
-                // KHÔNG TRUYỀN GRADE NỮA (Screen tự lấy từ UserViewModel)
             )
         }
 
-        // --- MÀN HÌNH LÝ THUYẾT ---
-        composable(AppRoutes.THEORY) { backStackEntry ->
-            // SỬA: Lấy String (Code) thay vì Int (Id)
-            val subjectCode = backStackEntry.arguments?.getString("subjectCode") ?: "toan"
-            val subjectName = backStackEntry.arguments?.getString("subjectName") ?: "Môn học"
+        // --- MÀN HÌNH LÝ THUYẾT / BÀI TẬP (THEORY SCREEN) ---
+        composable(
+            route = AppRoutes.THEORY_SCREEN,
+            arguments = listOf(
+                navArgument(AppRoutes.SUBJECT_CODE) { type = NavType.StringType },
+                navArgument(AppRoutes.SUBJECT_NAME) { type = NavType.StringType },
+                navArgument(AppRoutes.MODE) { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val subjectCode = backStackEntry.arguments?.getString(AppRoutes.SUBJECT_CODE) ?: ""
+            val subjectName = backStackEntry.arguments?.getString(AppRoutes.SUBJECT_NAME) ?: ""
+            val mode = backStackEntry.arguments?.getString(AppRoutes.MODE) ?: TheoryMode.THEORY
 
             TheoryScreen(
                 navController = navController,
-                subjectCode = subjectCode,   // Truyền Code ("toan", "khtn")
-                subjectName = subjectName
-                // KHÔNG TRUYỀN GRADE NỮA (Screen tự lấy từ UserViewModel)
+                subjectCode = subjectCode,
+                subjectName = subjectName,
+                mode = mode
             )
         }
 
-        composable(AppRoutes.LESSON_DETAIL) { backStackEntry ->
-            val lessonId = backStackEntry.arguments?.getString("lessonId")?.toLongOrNull() ?: 0L
+        // --- MÀN HÌNH CHI TIẾT BÀI HỌC (XEM VIDEO/TEXT) ---
+        composable(
+            route = AppRoutes.LESSON_DETAIL,
+            arguments = listOf(
+                navArgument(AppRoutes.LESSON_ID) { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val lessonIdString = backStackEntry.arguments?.getString(AppRoutes.LESSON_ID)
+            val lessonId = lessonIdString?.toLongOrNull() ?: 0L
 
-            // Gọi màn hình TheoryDetailScreen
-            com.example.finalproject.ui.screens.theory.TheoryDetailScreen(
+            TheoryDetailScreen(
                 navController = navController,
                 lessonId = lessonId
             )
         }
+
+        // --- MÀN HÌNH GIẢI BÀI TẬP (BỔ SUNG) ---
+        composable(
+            route = AppRoutes.EXERCISE_DETAIL,
+            arguments = listOf(
+                navArgument(AppRoutes.LESSON_ID) { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val lessonIdString = backStackEntry.arguments?.getString(AppRoutes.LESSON_ID)
+            val lessonId = lessonIdString?.toLongOrNull() ?: 0L
+
+            // Gọi màn hình ExerciseDetailScreen
+            ExerciseDetailScreen(
+                navController = navController,
+                lessonId = lessonId
+            )
+        }
+
     }
 }

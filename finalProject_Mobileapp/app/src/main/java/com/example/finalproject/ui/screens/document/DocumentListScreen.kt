@@ -1,0 +1,165 @@
+package com.example.finalproject.ui.screens.document
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Description // Icon document
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.example.finalproject.data.remote.model.DocumentDto
+import com.example.finalproject.ui.navigation.AppRoutes
+import com.example.finalproject.ui.theme.PrimaryBlue
+import com.example.finalproject.ui.viewmodel.DocumentViewModel
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DocumentListScreen(
+    navController: NavController,
+    subjectCode: String,
+    grade: Int,
+    viewModel: DocumentViewModel = hiltViewModel()
+) {
+    val documents by viewModel.documents.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+
+    LaunchedEffect(subjectCode, grade) {
+        viewModel.fetchDocuments(subjectCode, grade)
+    }
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Tài liệu ôn tập", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
+            )
+        },
+        containerColor = Color(0xFFF5F5F5)
+    ) { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+            if (isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = PrimaryBlue)
+            } else if (documents.isEmpty()) {
+                Text(
+                    text = "Chưa có tài liệu nào.",
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color.Gray
+                )
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(documents) { doc ->
+                        DocumentItemCard(doc) {
+                            // Encode URL để truyền qua Navigation an toàn
+                            val encodedUrl = URLEncoder.encode(doc.filePath, StandardCharsets.UTF_8.toString())
+                            val encodedTitle = URLEncoder.encode(doc.title, StandardCharsets.UTF_8.toString())
+
+                            // Điều hướng sang màn hình xem PDF
+                            navController.navigate("pdf_viewer/$encodedUrl/$encodedTitle")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun DocumentItemCard(document: DocumentDto, onClick: () -> Unit) {
+    Card(
+        onClick = onClick,
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Icon PDF nổi bật
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFFFFEBEE)), // Màu đỏ nhạt đặc trưng PDF
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Description,
+                    contentDescription = null,
+                    tint = Color(0xFFD32F2F), // Màu đỏ đậm
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Thông tin chi tiết
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = document.title,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                if (!document.description.isNullOrEmpty()) {
+                    Text(
+                        text = document.description,
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                // Dòng thông tin phụ: Dung lượng • Ngày
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = document.getFormattedSize(),
+                        fontSize = 12.sp,
+                        color = PrimaryBlue,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = " • ${document.getFormattedDate()}",
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                }
+            }
+
+            // Icon Action (mũi tên hoặc download)
+            Icon(
+                imageVector = Icons.Default.Download,
+                contentDescription = null,
+                tint = Color.Gray
+            )
+        }
+    }
+}

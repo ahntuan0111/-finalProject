@@ -30,6 +30,7 @@ import androidx.navigation.NavController
 import com.example.finalproject.ui.navigation.AppRoutes
 import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.theme.TextGray
+import com.example.finalproject.ui.viewmodel.HomeViewModel
 
 @Composable
 fun HomeScreen(

@@ -1,8 +1,10 @@
-package com.example.finalproject.ui.screens.home
+package com.example.finalproject.ui.viewmodel
 
-import androidx.lifecycle.ViewModel
 import androidx.compose.ui.graphics.Color
-import com.example.finalproject.R // Import R để lấy ID ảnh
+import androidx.lifecycle.ViewModel
+import com.example.finalproject.R
+import com.example.finalproject.ui.screens.home.DashboardStat
+import com.example.finalproject.ui.screens.home.SubjectItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,6 +28,14 @@ class HomeViewModel @Inject constructor() : ViewModel() {
     // Cập nhật môn học dùng ảnh
     val subjects = listOf(
         SubjectItem("math", "Toán Học", R.drawable.math, 0.45f, 20, 9, Color(0xFFE3F2FD)),
-        SubjectItem("science", "Khoa học Tự nhiên", R.drawable.science, 0.2f, 15, 3, Color(0xFFE8F5E9))
+        SubjectItem(
+            "science",
+            "Khoa học Tự nhiên",
+            R.drawable.science,
+            0.2f,
+            15,
+            3,
+            Color(0xFFE8F5E9)
+        )
     )
 }

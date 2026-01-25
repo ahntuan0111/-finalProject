@@ -52,4 +52,16 @@ interface ApiService {
     suspend fun getLessonDetail(
         @Path("id") lessonId: Long
     ): Response<ApiResponse<LessonDetailResponse>>
+
+    // Thêm API call này vào interface ApiService
+    @GET("exercises/by-lesson/{lessonId}")
+    suspend fun getExercisesByLesson(@Path("lessonId") lessonId: Long): ApiResponse<List<ExerciseDto>>
+
+    @GET("documents")
+    suspend fun getDocuments(
+        @Query("subjectCode") subjectCode: String,
+        @Query("grade") grade: Int
+    ): Response<ApiResponse<List<DocumentDto>>>
+
+
 }

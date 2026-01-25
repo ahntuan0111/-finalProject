@@ -26,14 +26,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finalproject.data.remote.model.ChapterDto
 import com.example.finalproject.data.remote.model.LessonDto
+import com.example.finalproject.di.TheoryMode
 import com.example.finalproject.ui.navigation.AppRoutes
 import com.example.finalproject.ui.theme.PrimaryBlue
+import com.example.finalproject.ui.viewmodel.TheoryViewModel
 import com.example.finalproject.ui.viewmodel.UserViewModel
 
-// --- MÀU SẮC ĐÃ ĐƯỢC CHỈNH SỬA THEO THEME XANH DƯƠNG ---
-// Màu nền nhạt khi mở rộng chương (Xanh dương rất nhạt)
+// --- MÀU SẮC ---
 val ExpandBlueBg = Color(0xFFE3F2FD)
-// Màu xanh lá dùng cho icon hoàn thành (Giữ nguyên để biểu thị thành công)
 val SuccessGreen = Color(0xFF4CAF50)
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,14 +42,16 @@ fun TheoryScreen(
     navController: NavController,
     subjectCode: String,
     subjectName: String,
+    mode: String = TheoryMode.THEORY,
     viewModel: TheoryViewModel = hiltViewModel(),
     userViewModel: UserViewModel = hiltViewModel()
 ) {
     val chapters by viewModel.chapters.collectAsState()
     val expandedIds by viewModel.expandedChapterIds.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-
     val grade by userViewModel.userGrade.collectAsState()
+
+    val screenTitlePrefix = if (mode == TheoryMode.EXERCISE) "Giải bài tập" else "Lý thuyết"
 
     LaunchedEffect(subjectCode) {
         viewModel.fetchChapters(subjectCode)
@@ -60,8 +62,7 @@ fun TheoryScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Lý thuyết - $subjectName ${grade?.let { "($it)" } ?: ""}",
-                        // SỬA: Đổi màu chữ thành Đen cho hợp với nền Trắng
+                        text = "$screenTitlePrefix - $subjectName ${grade?.let { "($it)" } ?: ""}",
                         color = Color.Black,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
@@ -71,17 +72,15 @@ fun TheoryScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        // SỬA: Đổi màu icon Back thành Đen
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.Black)
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    // SỬA: Đổi nền TopBar thành Trắng
                     containerColor = Color.White
                 )
             )
         },
-        containerColor = Color(0xFFFAFAFA) // Nền xám nhạt chung của App
+        containerColor = Color(0xFFFAFAFA)
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -105,8 +104,16 @@ fun TheoryScreen(
                             isExpanded = expandedIds.contains(chapter.id),
                             onToggle = { viewModel.toggleChapter(chapter.id) },
                             onLessonClick = { lesson ->
-                                navController.navigate(AppRoutes.createLessonDetailRoute(lesson.id))
-                            }
+                                // --- SỬA Ở ĐÂY: Thêm logic điều hướng thực tế ---
+                                if (mode == TheoryMode.EXERCISE) {
+                                    // Chuyển sang màn hình Giải bài tập
+                                    navController.navigate(AppRoutes.createExerciseDetailRoute(lesson.id))
+                                } else {
+                                    // Chuyển sang màn hình Lý thuyết
+                                    navController.navigate(AppRoutes.createLessonDetailRoute(lesson.id))
+                                }
+                            },
+                            mode = mode
                         )
                     }
                 }
@@ -115,12 +122,14 @@ fun TheoryScreen(
     }
 }
 
+// ... (Giữ nguyên phần ChapterItem và LessonItem bên dưới không thay đổi)
 @Composable
 fun ChapterItem(
     chapter: ChapterDto,
     isExpanded: Boolean,
     onToggle: () -> Unit,
-    onLessonClick: (LessonDto) -> Unit
+    onLessonClick: (LessonDto) -> Unit,
+    mode: String
 ) {
     val rotationState by animateFloatAsState(
         targetValue = if (isExpanded) 180f else 0f,
@@ -130,7 +139,6 @@ fun ChapterItem(
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            // SỬA: Nếu mở rộng thì dùng màu Xanh nhạt, đóng thì dùng Trắng
             containerColor = if (isExpanded) ExpandBlueBg else Color.White
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -139,7 +147,6 @@ fun ChapterItem(
         Column(
             modifier = Modifier.animateContentSize()
         ) {
-            // --- HEADER CỦA CHƯƠNG ---
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -147,7 +154,6 @@ fun ChapterItem(
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // SỬA: Số thứ tự dùng màu PrimaryBlue
                 Box(
                     modifier = Modifier
                         .size(40.dp)
@@ -180,19 +186,22 @@ fun ChapterItem(
                 )
             }
 
-            // --- DANH SÁCH BÀI HỌC ---
             if (isExpanded) {
                 Column(modifier = Modifier.padding(bottom = 8.dp)) {
                     if (chapter.lessons.isNullOrEmpty()) {
                         Text(
-                            text = "Chưa có bài học nào.",
+                            text = "Chưa có nội dung.",
                             modifier = Modifier.padding(start = 72.dp, bottom = 16.dp),
                             color = Color.Gray,
                             fontSize = 14.sp
                         )
                     } else {
                         chapter.lessons.forEach { lesson ->
-                            LessonItem(lesson = lesson, onClick = { onLessonClick(lesson) })
+                            LessonItem(
+                                lesson = lesson,
+                                onClick = { onLessonClick(lesson) },
+                                mode = mode
+                            )
                         }
                     }
                 }
@@ -202,7 +211,7 @@ fun ChapterItem(
 }
 
 @Composable
-fun LessonItem(lesson: LessonDto, onClick: () -> Unit) {
+fun LessonItem(lesson: LessonDto, onClick: () -> Unit, mode: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -210,9 +219,10 @@ fun LessonItem(lesson: LessonDto, onClick: () -> Unit) {
             .padding(vertical = 12.dp, horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // SỬA: Icon sách dùng màu PrimaryBlue
+        val icon = if (mode == TheoryMode.EXERCISE) Icons.Default.Assignment else Icons.Default.MenuBook
+
         Icon(
-            imageVector = Icons.Default.MenuBook,
+            imageVector = icon,
             contentDescription = null,
             tint = PrimaryBlue,
             modifier = Modifier.size(24.dp)
@@ -231,7 +241,7 @@ fun LessonItem(lesson: LessonDto, onClick: () -> Unit) {
             Icon(
                 imageVector = Icons.Default.CheckCircle,
                 contentDescription = "Completed",
-                tint = SuccessGreen, // Giữ màu xanh lá cho trạng thái hoàn thành
+                tint = SuccessGreen,
                 modifier = Modifier.size(20.dp)
             )
         } else {

@@ -2,14 +2,13 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    // 1. Thêm Plugin Kapt và Hilt
     id("kotlin-kapt")
     alias(libs.plugins.hilt.android)
 }
 
 android {
     namespace = "com.example.finalproject"
-    compileSdk = 34 // Khuyến nghị dùng SDK 34 (Android 14) ổn định thay vì 36 (Preview)
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.finalproject"
@@ -19,6 +18,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    // Sau khi xóa các dependency sai ở dưới, bạn có thể thử BỎ đoạn exclude này đi.
+    // Nếu vẫn lỗi thì hãy giữ lại.
+    configurations.all {
+        exclude(group = "com.google.auto.value", module = "auto-value")
     }
 
     buildTypes {
@@ -31,7 +36,6 @@ android {
         }
     }
     compileOptions {
-        // 2. Bắt buộc dùng Java 17 cho Hilt & Compose mới
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -41,8 +45,6 @@ android {
     buildFeatures {
         compose = true
     }
-
-    // 3. Cho phép Hilt sửa lỗi type
     kapt {
         correctErrorTypes = true
     }
@@ -56,33 +58,36 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
-//    implementation(libs.androidx.compose.material3)
-
-    // --- CÁC THƯ VIỆN ĐÃ THÊM ---
+    // implementation(libs.androidx.compose.material3) // Nếu bạn dùng material3 ở dưới rồi thì bỏ dòng này đi cũng được
 
     // Navigation
     implementation(libs.androidx.navigation.compose)
 
-    // Hilt (Dependency Injection)
+    // Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
+
+    // --- CÁC DÒNG GÂY LỖI ĐÃ BỊ XÓA ---
+    // XÓA: implementation(libs.androidx.room.compiler.processing.testing)
+    // XÓA: implementation(libs.firebase.appdistribution.gradle)
 
     // Retrofit & Networking
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
     implementation(libs.okhttp.logging)
 
-    // DataStore (Lưu Token)
+    // DataStore
     implementation(libs.androidx.datastore.preferences)
 
-    // Coil (Load ảnh)
+    // Coil
     implementation(libs.coil.compose)
 
-    // Icons mở rộng (Book, School icons...)
+    // Icons
     implementation(libs.androidx.material.icons.extended)
 
     implementation("androidx.compose.material3:material3:1.3.0")
+    implementation("com.github.barteksc:android-pdf-viewer:2.8.2")
 
     // Testing
     testImplementation(libs.junit)
