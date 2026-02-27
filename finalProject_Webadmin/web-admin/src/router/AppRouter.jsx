@@ -7,8 +7,11 @@ import UserList from '../pages/User/UserList';
 import CoursePage from '../pages/Course/CoursePage';
 import PrivateRoute from './PrivateRoute';
 
-// --- IMPORT MỚI ---
 import ExercisePage from '../pages/Exercise/ExercisePage'; 
+import DocumentManagement from '../pages/Document/DocumentManagement';
+
+// SỬA 1: Đổi './pages/...' thành '../pages/...' cho đồng nhất với cấu trúc
+import QuizManagement from '../pages/QuizManagement/QuizManagement'; 
 
 const AppRouter = () => {
   return (
@@ -20,11 +23,14 @@ const AppRouter = () => {
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="users" element={<UserList />} />
         <Route path="courses" element={<CoursePage />} />
-        
-        {/* --- ROUTE MỚI --- */}
         <Route path="exercises" element={<ExercisePage />} />
+        <Route path="documents" element={<DocumentManagement />} />
+        
+        {/* SỬA 2: Đổi path "/admin/quizzes" thành "quizzes" để khớp với Sidebar */}
+        <Route path="quizzes" element={<QuizManagement />} />
       </Route>
 
+      {/* Đây chính là dòng in ra chữ 404 Not Found mà bạn vừa thấy */}
       <Route path="*" element={<div>404 Not Found</div>} />
     </Routes>
   );

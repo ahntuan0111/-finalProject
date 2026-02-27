@@ -73,4 +73,27 @@ public class DocumentController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    // API Lấy tất cả tài liệu (Dành cho Web Admin)
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllDocuments() {
+        List<Document> docs = documentService.getAllDocuments();
+        return ResponseEntity.ok(ApiResponse.success(docs, "Lấy danh sách tài liệu thành công"));
+    }
+
+    // API Cập nhật thông tin tài liệu (Dành cho Web Admin)
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateDocument(
+            @PathVariable Long id,
+            @RequestBody Document updatedDocInfo) {
+        Document doc = documentService.updateDocument(id, updatedDocInfo);
+        return ResponseEntity.ok(ApiResponse.success(doc, "Cập nhật thành công"));
+    }
+
+    // API Xóa tài liệu (Dành cho Web Admin)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteDocument(@PathVariable Long id) {
+        documentService.deleteDocument(id);
+        return ResponseEntity.ok(ApiResponse.success(null, "Xóa tài liệu thành công"));
+    }
 }

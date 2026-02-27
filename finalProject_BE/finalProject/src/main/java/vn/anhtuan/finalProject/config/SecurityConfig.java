@@ -50,7 +50,7 @@ public class SecurityConfig {
                         // Các API công khai (Không cần Token)
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
-
+                        .requestMatchers("/api/documents/files/**").permitAll()
                         // Swagger UI (Mở để test API dễ dàng)
                         .requestMatchers(
                                 "/v3/api-docs/**",

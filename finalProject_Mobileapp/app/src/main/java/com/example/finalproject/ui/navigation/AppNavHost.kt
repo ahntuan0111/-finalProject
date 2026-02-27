@@ -2,6 +2,9 @@ package com.example.finalproject.ui.navigation
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -16,11 +19,16 @@ import com.example.finalproject.ui.screens.auth.RegisterScreen
 import com.example.finalproject.ui.screens.auth.ResetPasswordScreen
 import com.example.finalproject.ui.screens.auth.WelcomeScreen
 import com.example.finalproject.ui.screens.class_selection.ClassSelectionScreen
-import com.example.finalproject.ui.screens.exercise.ExerciseDetailScreen // <-- IMPORT MỚI
+import com.example.finalproject.ui.screens.document.DocumentListScreen
+import com.example.finalproject.ui.screens.document.PdfViewerScreen
+import com.example.finalproject.ui.screens.exercise.ExerciseDetailScreen
 import com.example.finalproject.ui.screens.home.HomeScreen
 import com.example.finalproject.ui.screens.subject_detail.SubjectDetailScreen
 import com.example.finalproject.ui.screens.theory.TheoryDetailScreen
 import com.example.finalproject.ui.screens.theory.TheoryScreen
+import com.example.finalproject.utils.DataStoreManager // Import DataStoreManager
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 /**
  * Định nghĩa các đường dẫn (Route) trong App
@@ -38,75 +46,65 @@ object AppRoutes {
     const val RESET_PASSWORD = "reset_password/{email}"
     const val CLASS_SELECTION = "class_selection"
 
-    // Định nghĩa tên tham số
     const val SUBJECT_CODE = "subjectCode"
     const val SUBJECT_NAME = "subjectName"
     const val MODE = "mode"
     const val LESSON_ID = "lessonId"
+    const val GRADE = "grade"
 
-    // --- Route Chi tiết môn học ---
     const val SUBJECT_DETAIL = "subject_detail/{$SUBJECT_CODE}/{$SUBJECT_NAME}"
     fun createSubjectDetailRoute(code: String, name: String) = "subject_detail/$code/$name"
 
-    // --- Route Danh sách bài học (TheoryScreen) ---
     const val THEORY_SCREEN = "theory/{$SUBJECT_CODE}/{$SUBJECT_NAME}/{$MODE}"
     fun createTheoryRoute(code: String, name: String, mode: String): String {
         return "theory/$code/$name/$mode"
     }
 
-    // --- Route Chi tiết bài học (Lý thuyết - Video/Text) ---
     const val LESSON_DETAIL = "lesson_detail/{$LESSON_ID}"
     fun createLessonDetailRoute(id: Long) = "lesson_detail/$id"
 
-    // --- Route Chi tiết bài tập (Làm bài tập) ---  <-- BỔ SUNG MỚI
     const val EXERCISE_DETAIL = "exercise_detail/{$LESSON_ID}"
     fun createExerciseDetailRoute(id: Long) = "exercise_detail/$id"
 
+    const val DOCUMENT_LIST = "document_list/{$SUBJECT_CODE}/{$GRADE}"
+    fun createDocumentListRoute(code: String, grade: Int) = "document_list/$code/$grade"
+
     const val PDF_VIEWER = "pdf_viewer/{url}/{title}"
-    const val DOCUMENT_LIST = "document_list/{subjectCode}/{grade}"
 }
 
 @Composable
 fun AppNavHost(
     navController: NavHostController,
+    dataStoreManager: DataStoreManager, // <-- THÊM THAM SỐ NÀY ĐỂ LẮNG NGHE TOKEN
     modifier: Modifier = Modifier,
-    startDestination: String = AppRoutes.WELCOME
+    startDestination: String
 ) {
+    // 1. Lắng nghe trạng thái của Token từ DataStoreManager
+    // Sử dụng "LOADING" làm giá trị khởi tạo để tránh bị văng ra Login ngay khi App vừa mở chưa kịp đọc DataStore
+    val token by dataStoreManager.getToken().collectAsState(initial = "LOADING")
+
+    // 2. Phản ứng khi Token thay đổi
+    LaunchedEffect(token) {
+        if (token == null) {
+            navController.navigate(AppRoutes.WELCOME) {
+                // Xóa sạch lịch sử, không cho bấm nút Back
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier
     ) {
-        // 1. Màn hình Chào mừng
-        composable(AppRoutes.WELCOME) {
-            WelcomeScreen(navController = navController)
-        }
+        composable(AppRoutes.WELCOME) { WelcomeScreen(navController = navController) }
+        composable(AppRoutes.AUTH_SELECTION) { AuthSelectionScreen(navController = navController) }
+        composable(AppRoutes.LOGIN) { LoginScreen(navController = navController) }
+        composable(AppRoutes.REGISTER) { RegisterScreen(navController = navController) }
+        composable(AppRoutes.HOME) { HomeScreen(navController = navController) }
+        composable(AppRoutes.FORGOT_PASSWORD) { ForgotPasswordScreen(navController = navController) }
 
-        // 2. Màn hình Chọn Đăng nhập / Đăng ký
-        composable(AppRoutes.AUTH_SELECTION) {
-            AuthSelectionScreen(navController = navController)
-        }
-
-        // 3. Màn hình Đăng nhập
-        composable(AppRoutes.LOGIN) {
-            LoginScreen(navController = navController)
-        }
-
-        // 4. Màn hình Đăng ký
-        composable(AppRoutes.REGISTER) {
-            RegisterScreen(navController = navController)
-        }
-
-        // 5. Màn hình Trang chủ
-        composable(AppRoutes.HOME) {
-            HomeScreen(navController = navController)
-        }
-
-        composable(AppRoutes.FORGOT_PASSWORD) {
-            ForgotPasswordScreen(navController = navController)
-        }
-
-        // Màn hình Reset mật khẩu
         composable(
             route = AppRoutes.RESET_PASSWORD,
             arguments = listOf(navArgument("email") { type = NavType.StringType })
@@ -115,16 +113,11 @@ fun AppNavHost(
             ResetPasswordScreen(navController = navController, email = email)
         }
 
-        composable(AppRoutes.CLASS_SELECTION) {
-            ClassSelectionScreen(navController = navController)
-        }
-
-        // Các màn hình Placeholder
+        composable(AppRoutes.CLASS_SELECTION) { ClassSelectionScreen(navController = navController) }
         composable(AppRoutes.DASHBOARD) { Text("Màn hình Thống kê") }
         composable(AppRoutes.AI_CHAT) { Text("Màn hình AI Chat") }
         composable(AppRoutes.USER) { Text("Màn hình Cá nhân") }
 
-        // --- MÀN HÌNH CHI TIẾT MÔN HỌC ---
         composable(
             route = AppRoutes.SUBJECT_DETAIL,
             arguments = listOf(
@@ -142,7 +135,6 @@ fun AppNavHost(
             )
         }
 
-        // --- MÀN HÌNH LÝ THUYẾT / BÀI TẬP (THEORY SCREEN) ---
         composable(
             route = AppRoutes.THEORY_SCREEN,
             arguments = listOf(
@@ -163,7 +155,6 @@ fun AppNavHost(
             )
         }
 
-        // --- MÀN HÌNH CHI TIẾT BÀI HỌC (XEM VIDEO/TEXT) ---
         composable(
             route = AppRoutes.LESSON_DETAIL,
             arguments = listOf(
@@ -179,7 +170,6 @@ fun AppNavHost(
             )
         }
 
-        // --- MÀN HÌNH GIẢI BÀI TẬP (BỔ SUNG) ---
         composable(
             route = AppRoutes.EXERCISE_DETAIL,
             arguments = listOf(
@@ -189,12 +179,47 @@ fun AppNavHost(
             val lessonIdString = backStackEntry.arguments?.getString(AppRoutes.LESSON_ID)
             val lessonId = lessonIdString?.toLongOrNull() ?: 0L
 
-            // Gọi màn hình ExerciseDetailScreen
             ExerciseDetailScreen(
                 navController = navController,
                 lessonId = lessonId
             )
         }
 
+        composable(
+            route = AppRoutes.DOCUMENT_LIST,
+            arguments = listOf(
+                navArgument(AppRoutes.SUBJECT_CODE) { type = NavType.StringType },
+                navArgument(AppRoutes.GRADE) { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val subjectCode = backStackEntry.arguments?.getString(AppRoutes.SUBJECT_CODE) ?: ""
+            val grade = backStackEntry.arguments?.getInt(AppRoutes.GRADE) ?: 10
+
+            DocumentListScreen(
+                navController = navController,
+                subjectCode = subjectCode,
+                grade = grade
+            )
+        }
+
+        composable(
+            route = AppRoutes.PDF_VIEWER,
+            arguments = listOf(
+                navArgument("url") { type = NavType.StringType },
+                navArgument("title") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val encodedUrl = backStackEntry.arguments?.getString("url") ?: ""
+            val encodedTitle = backStackEntry.arguments?.getString("title") ?: ""
+
+            val url = URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8.toString())
+            val title = URLDecoder.decode(encodedTitle, StandardCharsets.UTF_8.toString())
+
+            PdfViewerScreen(
+                navController = navController,
+                fileUrl = url,
+                title = title
+            )
+        }
     }
 }

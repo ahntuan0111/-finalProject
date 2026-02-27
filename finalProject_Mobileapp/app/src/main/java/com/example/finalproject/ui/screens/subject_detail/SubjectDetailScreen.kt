@@ -114,7 +114,7 @@ fun SubjectDetailScreen(
                                     AppRoutes.createTheoryRoute(
                                         code = subjectCode,
                                         name = subjectName,
-                                        mode = TheoryMode.THEORY // Chế độ Lý thuyết
+                                        mode = TheoryMode.THEORY
                                     )
                                 )
                             }
@@ -123,12 +123,20 @@ fun SubjectDetailScreen(
                                     AppRoutes.createTheoryRoute(
                                         code = subjectCode,
                                         name = subjectName,
-                                        mode = TheoryMode.EXERCISE // Chế độ Giải bài tập
+                                        mode = TheoryMode.EXERCISE
                                     )
                                 )
                             }
                             "Quiz" -> { /* TODO */ }
-                            "Bộ đề thi" -> { /* TODO */ }
+                            "Bộ đề thi" -> {
+                                // ĐIỀU HƯỚNG SANG MÀN HÌNH DANH SÁCH TÀI LIỆU
+                                navController.navigate(
+                                    AppRoutes.createDocumentListRoute(
+                                        code = subjectCode,
+                                        grade = displayGrade
+                                    )
+                                )
+                            }
                         }
                     }
                 }

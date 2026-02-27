@@ -8,16 +8,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Configuration
-public class StaticResourceConfig implements WebMvcConfigurer {
+public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Lấy đường dẫn tuyệt đối đến thư mục uploads
-        Path uploadDir = Paths.get("./uploads");
+        // Lấy đường dẫn tuyệt đối đến thư mục 'uploads' ở thư mục gốc của project
+        Path uploadDir = Paths.get("uploads");
         String uploadPath = uploadDir.toFile().getAbsolutePath();
 
-        // Cấu hình: Khi user truy cập /uploads/** -> Trỏ vào thư mục trên ổ cứng
+        // Ánh xạ URL bắt đầu bằng /uploads/ tới thư mục vật lý trên ổ cứng
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:/" + uploadPath + "/");
+                .addResourceLocations("file:" + uploadPath + "/");
     }
 }

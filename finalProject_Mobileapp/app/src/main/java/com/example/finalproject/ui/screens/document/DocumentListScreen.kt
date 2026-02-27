@@ -1,5 +1,6 @@
 package com.example.finalproject.ui.screens.document
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -39,6 +41,7 @@ fun DocumentListScreen(
 ) {
     val documents by viewModel.documents.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(subjectCode, grade) {
         viewModel.fetchDocuments(subjectCode, grade)
@@ -58,7 +61,9 @@ fun DocumentListScreen(
         },
         containerColor = Color(0xFFF5F5F5)
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+        Box(modifier = Modifier
+            .padding(innerPadding)
+            .fillMaxSize()) {
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = PrimaryBlue)
             } else if (documents.isEmpty()) {
@@ -74,12 +79,30 @@ fun DocumentListScreen(
                 ) {
                     items(documents) { doc ->
                         DocumentItemCard(doc) {
-                            // Encode URL để truyền qua Navigation an toàn
-                            val encodedUrl = URLEncoder.encode(doc.filePath, StandardCharsets.UTF_8.toString())
-                            val encodedTitle = URLEncoder.encode(doc.title, StandardCharsets.UTF_8.toString())
+// 1. Gán giá trị mặc định để chống NullPointerException (Safe-call)
+                            val safeUrl = doc.filePath ?: ""
+                            val safeTitle = doc.title ?: "Tai_lieu"
 
-                            // Điều hướng sang màn hình xem PDF
-                            navController.navigate("pdf_viewer/$encodedUrl/$encodedTitle")
+                            // 2. Bắt lỗi: Nếu đường dẫn file bị rỗng/null từ Backend thì không cho chuyển trang
+                            if (safeUrl.isEmpty()) {
+                                Toast.makeText(
+                                    context,
+                                    "Tài liệu này chưa có đường dẫn file!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@DocumentItemCard // Dừng lại, không chạy tiếp
+                            }
+
+                            // 3. Encode an toàn
+                            try {
+                                val encodedUrl = URLEncoder.encode(safeUrl, StandardCharsets.UTF_8.toString())
+                                val encodedTitle = URLEncoder.encode(safeTitle, StandardCharsets.UTF_8.toString())
+
+                                // 4. Điều hướng
+                                navController.navigate("pdf_viewer/$encodedUrl/$encodedTitle")
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "Lỗi đọc đường dẫn!", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }
                 }

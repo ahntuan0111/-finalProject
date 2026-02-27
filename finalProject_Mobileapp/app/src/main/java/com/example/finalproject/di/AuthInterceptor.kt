@@ -12,16 +12,26 @@ class AuthInterceptor @Inject constructor(
     override fun intercept(chain: Interceptor.Chain): Response {
         val requestBuilder = chain.request().newBuilder()
 
-        // Lấy token từ DataStore (Dùng runBlocking vì Interceptor chạy đồng bộ)
+        // 1. Lấy token và gắn vào request
         val token = runBlocking {
             dataStoreManager.getTokenSync()
         }
 
-        // Nếu có token thì gắn vào Header Authorization
         if (!token.isNullOrEmpty()) {
             requestBuilder.addHeader("Authorization", "Bearer $token")
         }
 
-        return chain.proceed(requestBuilder.build())
+        // 2. Thực thi Request
+        val response = chain.proceed(requestBuilder.build())
+
+        // 3. XỬ LÝ AUTO LOGOUT (Khi Token hết hạn hoặc sai)
+        if (response.code == 401) {
+            runBlocking {
+                // Xóa token khỏi máy
+                dataStoreManager.clearToken()
+            }
+        }
+
+        return response
     }
 }

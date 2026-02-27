@@ -11,39 +11,34 @@ import androidx.navigation.compose.rememberNavController
 import com.example.finalproject.ui.components.BottomNavigationBar
 import com.example.finalproject.ui.navigation.AppNavHost
 import com.example.finalproject.ui.navigation.AppRoutes
+import com.example.finalproject.utils.DataStoreManager // <-- THÊM IMPORT NÀY
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    dataStoreManager: DataStoreManager,
+    startDestination: String // <-- THÊM THAM SỐ NÀY
+) {
     val navController = rememberNavController()
 
-    // Lấy route hiện tại để kiểm tra xem có nên hiện BottomBar không
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    // Danh sách các màn hình CÓ BottomBar
     val showBottomBar = currentRoute in listOf(
-        AppRoutes.HOME,
-        AppRoutes.DASHBOARD,
-        AppRoutes.AI_CHAT,
-        AppRoutes.USER
+        AppRoutes.HOME, AppRoutes.DASHBOARD, AppRoutes.AI_CHAT, AppRoutes.USER
     )
 
     Scaffold(
-        // Đặt màu nền container trùng với màu nền của các màn hình con (ví dụ Home xám nhạt)
-        // Để phần padding của BottomBar không bị lệch màu
         containerColor = Color(0xFFFAFAFA),
         bottomBar = {
             if (showBottomBar) {
-                // BottomBar của chúng ta giờ đã có padding tự thân bên trong component
                 BottomNavigationBar(navController = navController)
             }
         }
     ) { innerPadding ->
         AppNavHost(
             navController = navController,
-            // Chỉ cần padding bottom một chút nếu cần,
-            // nhưng vì BottomBar nổi nên nội dung có thể cuộn xuống dưới nó.
-            // Tuy nhiên, để an toàn không bị che nội dung cuối:
+            dataStoreManager = dataStoreManager,
+            startDestination = startDestination, // <-- TRUYỀN XUỐNG ĐÂY
             modifier = Modifier.padding(innerPadding)
         )
     }

@@ -68,4 +68,43 @@ public class DocumentService {
     public List<Document> getDocuments(String subjectCode, Integer grade) {
         return documentRepository.findBySubjectCodeAndGrade(subjectCode, grade);
     }
+
+    public List<Document> getAllDocuments() {
+        return documentRepository.findAll();
+    }
+
+    public Document updateDocument(Long id, Document updatedDocInfo) {
+        Document existingDoc = documentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài liệu với ID: " + id));
+
+        // Chỉ cập nhật các trường metadata, không cập nhật file vật lý qua API này
+        existingDoc.setTitle(updatedDocInfo.getTitle());
+        existingDoc.setDescription(updatedDocInfo.getDescription());
+        existingDoc.setSubjectCode(updatedDocInfo.getSubjectCode());
+        existingDoc.setGrade(updatedDocInfo.getGrade());
+        existingDoc.setExamType(updatedDocInfo.getExamType());
+
+        return documentRepository.save(existingDoc);
+    }
+
+    public void deleteDocument(Long id) {
+        Document doc = documentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài liệu với ID: " + id));
+
+        // 1. Xóa file vật lý trên server
+        try {
+            // Lấy tên file từ filePath (VD: "/api/documents/files/tenfile.pdf" -> "tenfile.pdf")
+            String[] pathParts = doc.getFilePath().split("/");
+            String fileName = pathParts[pathParts.length - 1];
+
+            Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
+            Files.deleteIfExists(filePath);
+        } catch (IOException ex) {
+            System.err.println("Lỗi khi xóa file vật lý: " + ex.getMessage());
+            // Có thể chọn throw exception hoặc chỉ log lỗi và vẫn xóa trong DB
+        }
+
+        // 2. Xóa bản ghi trong Database
+        documentRepository.delete(doc);
+    }
 }

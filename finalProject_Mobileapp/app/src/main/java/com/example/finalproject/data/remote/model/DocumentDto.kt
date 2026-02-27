@@ -9,7 +9,7 @@ data class DocumentDto(
     val id: Long,
     val title: String,
     val description: String?,
-    @SerializedName("file_path") val filePath: String, // "/api/documents/files/..."
+    @SerializedName("filePath") val filePath: String?, // "/api/documents/files/..."
     @SerializedName("file_size") val fileSize: Long?,
     @SerializedName("created_at") val createdAt: String? // Chuỗi ISO date
 ) {

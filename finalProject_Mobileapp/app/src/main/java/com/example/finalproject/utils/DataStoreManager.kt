@@ -54,6 +54,10 @@ class DataStoreManager @Inject constructor(
         context.dataStore.edit { it.clear() }
     }
 
+    suspend fun clearToken() {
+        context.dataStore.edit { it.remove(TOKEN_KEY) }
+    }
+
     // --- THÊM HÀM NÀY: Lấy Grade ngay lập tức (cho logic gọi API) ---
     suspend fun getGradeSync(): Int {
         val preferences = context.dataStore.data.first()
