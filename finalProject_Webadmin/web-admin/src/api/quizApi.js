@@ -51,5 +51,16 @@ export const quizApi = {
             headers: getAuthHeader()
         });
         return response.data;
-    }
+    },
+
+    // U: Cập nhật Quiz
+    update: async (id, quizData) => {
+        const response = await axios.put(`${BASE_URL}/${id}`, quizData, {
+            headers: {
+                'Content-Type': 'application/json',
+                ...getAuthHeader()
+            }
+        });
+        return response.data;
+    },
 };

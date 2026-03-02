@@ -3,24 +3,25 @@ import { Modal, Form, Input, Button, Space, Card, Select, Switch, message, Divid
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import { quizApi } from '../../api/quizApi';
 
+// IMPORT MathEditor
+import MathEditor from '../../components/editor/MathEditor'; 
+
 const { Option } = Select;
-const { TextArea } = Input;
+const { TextArea } = Input; // Đã thêm lại TextArea vì đang bị thiếu ở bản của bạn
 
 const QuizCreateModal = ({ visible, onCancel, onSuccess }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     
-    // State lưu dữ liệu cho 2 Dropdown
     const [quizTypes, setQuizTypes] = useState([]);
     const [chapters, setChapters] = useState([]);
 
-    // Tự động load danh sách Chương và Loại Quiz khi mở Modal
     useEffect(() => {
         if (visible) {
             fetchQuizTypes();
             fetchChapters();
         } else {
-            form.resetFields(); // Làm sạch form khi đóng Modal
+            form.resetFields();
         }
     }, [visible, form]);
 
@@ -44,33 +45,30 @@ const QuizCreateModal = ({ visible, onCancel, onSuccess }) => {
 
     const handleOk = async () => {
         try {
-            // Validate tất cả các field yêu cầu nhập
             const values = await form.validateFields();
             setLoading(true);
 
-            // XỬ LÝ DỮ LIỆU: Tự động gán orderNo và contentOrder trước khi gửi lên BE
             const formattedValues = {
                 ...values,
                 questions: values.questions?.map((q, qIndex) => ({
                     ...q,
-                    orderNo: qIndex + 1, // Tự sinh thứ tự câu hỏi: 1, 2, 3...
+                    orderNo: qIndex + 1,
                     contents: q.contents?.map((c, cIndex) => ({
                         ...c,
-                        contentOrder: cIndex + 1 // Tự sinh thứ tự nội dung: 1, 2, 3...
+                        contentOrder: cIndex + 1
                     })),
                     choices: q.choices?.map(ch => ({
                         ...ch,
-                        contentType: ch.contentType || 'TEXT', // Mặc định là TEXT nếu chưa chọn
+                        contentType: ch.contentType || 'TEXT',
                     }))
                 }))
             };
 
-            // Gọi API tạo mới Quiz
             const res = await quizApi.create(formattedValues);
             if (res.success) {
                 message.success('Tạo bài trắc nghiệm thành công!');
                 form.resetFields();
-                onSuccess(); // Đóng modal và refresh lại bảng
+                onSuccess();
             }
         } catch (error) {
             if (error.response) {
@@ -92,11 +90,11 @@ const QuizCreateModal = ({ visible, onCancel, onSuccess }) => {
             onOk={handleOk}
             onCancel={onCancel}
             confirmLoading={loading}
-            width={1000} // Cố định chiều rộng để form dễ nhìn
+            width={1100} 
             okText="Lưu bài Quiz"
             cancelText="Hủy bỏ"
-            maskClosable={false} // Tránh click ra ngoài làm mất dữ liệu
-            style={{ top: 20 }} // Đẩy modal lên cao một chút
+            maskClosable={false}
+            style={{ top: 20 }}
         >
             <Form form={form} layout="vertical" name="quiz_create_form">
                 
@@ -110,15 +108,9 @@ const QuizCreateModal = ({ visible, onCancel, onSuccess }) => {
                         <Input placeholder="VD: TOAN_10_01" />
                     </Form.Item>
                     
-                    {/* DROP-DOWN CHỌN CHƯƠNG HỌC */}
                     <Form.Item name="chapterId" label="Thuộc Chương học" rules={[{ required: true, message: 'Chọn Chương học!' }]}>
-                        <Select 
-                            placeholder="Chọn chương học..."
-                            showSearch
-                            optionFilterProp="children"
-                        >
+                        <Select placeholder="Chọn chương học..." showSearch optionFilterProp="children">
                             {chapters.map(chapter => (
-                                // Ghi chú: Nếu Entity Chapter lấy tên là 'name' thì sửa chapter.title thành chapter.name
                                 <Option key={chapter.id} value={chapter.id}>
                                     {chapter.title || chapter.name} 
                                 </Option>
@@ -126,7 +118,6 @@ const QuizCreateModal = ({ visible, onCancel, onSuccess }) => {
                         </Select>
                     </Form.Item>
 
-                    {/* DROP-DOWN CHỌN LOẠI QUIZ */}
                     <Form.Item name="quizTypeId" label="Loại Bài Kiểm Tra" rules={[{ required: true, message: 'Chọn loại Quiz!' }]}>
                         <Select placeholder="Chọn loại bài...">
                             {quizTypes.map(type => (
@@ -140,12 +131,11 @@ const QuizCreateModal = ({ visible, onCancel, onSuccess }) => {
 
                 <Divider style={{ borderColor: '#1890ff' }}>XÂY DỰNG DANH SÁCH CÂU HỎI</Divider>
 
-                {/* 2. DANH SÁCH CÂU HỎI (DYNAMIC FORM LỒNG NHAU) */}
+                {/* 2. DANH SÁCH CÂU HỎI */}
                 <Form.List name="questions">
                     {(questionFields, { add: addQuestion, remove: removeQuestion }) => (
                         <div style={{ display: 'flex', flexDirection: 'column', rowGap: 24 }}>
                             
-                            {/* MAP TỪNG CÂU HỎI */}
                             {questionFields.map((qField, index) => (
                                 <Card
                                     size="small"
@@ -154,18 +144,18 @@ const QuizCreateModal = ({ visible, onCancel, onSuccess }) => {
                                     extra={<Button danger type="dashed" onClick={() => removeQuestion(qField.name)} icon={<MinusCircleOutlined />}>Xóa câu hỏi</Button>}
                                     style={{ backgroundColor: '#f9f9f9', border: '1px solid #d9d9d9' }}
                                 >
-                                    {/* LỜI GIẢI THÍCH CHO CÂU HỎI NÀY */}
+                                    {/* SỬ DỤNG MATH EDITOR CHO LỜI GIẢI THÍCH */}
                                     <Form.Item name={[qField.name, 'explanation']} label="Lời giải chi tiết (Hiển thị sau khi nộp bài)">
-                                        <TextArea rows={2} placeholder="Nhập lời giải thích (Tùy chọn)..." />
+                                        <MathEditor placeholder="Nhập lời giải thích chứa công thức toán học..." />
                                     </Form.Item>
 
-                                    {/* --- 2.1 NỘI DUNG ĐỀ BÀI (Văn bản hoặc Hình ảnh) --- */}
+                                    {/* --- 2.1 NỘI DUNG ĐỀ BÀI --- */}
                                     <Card size="small" title="Đề bài" style={{ marginBottom: 16, border: '1px dashed #d9d9d9' }}>
                                         <Form.List name={[qField.name, 'contents']}>
                                             {(contentFields, { add: addContent, remove: removeContent }) => (
                                                 <>
                                                     {contentFields.map(cField => (
-                                                        <Space key={cField.key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                                                        <Space key={cField.key} style={{ display: 'flex', marginBottom: 8, alignItems: 'flex-start' }} align="baseline">
                                                             <Form.Item name={[cField.name, 'contentType']} rules={[{ required: true }]} initialValue="TEXT">
                                                                 <Select style={{ width: 110 }}>
                                                                     <Option value="TEXT">Văn bản</Option>
@@ -173,11 +163,33 @@ const QuizCreateModal = ({ visible, onCancel, onSuccess }) => {
                                                                 </Select>
                                                             </Form.Item>
                                                             
-                                                            <Form.Item name={[cField.name, 'contentValue']} rules={[{ required: true, message: 'Không được để trống!' }]}>
-                                                                <Input style={{ width: 600 }} placeholder="Nhập đề bài hoặc dán URL hình ảnh..." />
+                                                            {/* RENDER ĐỘNG: Đã FIX lỗi bọc div bên ngoài Form.Item */}
+                                                            <Form.Item
+                                                                noStyle
+                                                                shouldUpdate={(prevValues, currentValues) =>
+                                                                    prevValues.questions?.[qField.name]?.contents?.[cField.name]?.contentType !==
+                                                                    currentValues.questions?.[qField.name]?.contents?.[cField.name]?.contentType
+                                                                }
+                                                            >
+                                                                {({ getFieldValue }) => {
+                                                                    const type = getFieldValue(['questions', qField.name, 'contents', cField.name, 'contentType']) || 'TEXT';
+                                                                    return type === 'TEXT' ? (
+                                                                        <div style={{ width: '600px' }}>
+                                                                            <Form.Item name={[cField.name, 'contentValue']} rules={[{ required: true, message: 'Nhập nội dung đề bài!' }]}>
+                                                                                <MathEditor placeholder="Nhập công thức/đề bài..." />
+                                                                            </Form.Item>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div style={{ width: '600px' }}>
+                                                                            <Form.Item name={[cField.name, 'contentValue']} rules={[{ required: true, message: 'Nhập URL ảnh!' }]}>
+                                                                                <Input placeholder="Dán URL hình ảnh..." />
+                                                                            </Form.Item>
+                                                                        </div>
+                                                                    );
+                                                                }}
                                                             </Form.Item>
                                                             
-                                                            <MinusCircleOutlined onClick={() => removeContent(cField.name)} style={{ color: 'red', cursor: 'pointer', fontSize: '16px' }} />
+                                                            <MinusCircleOutlined onClick={() => removeContent(cField.name)} style={{ color: 'red', cursor: 'pointer', fontSize: '16px', marginTop: '10px' }} />
                                                         </Space>
                                                     ))}
                                                     <Button type="dashed" onClick={() => addContent()} icon={<PlusOutlined />}>
@@ -194,7 +206,7 @@ const QuizCreateModal = ({ visible, onCancel, onSuccess }) => {
                                             {(choiceFields, { add: addChoice, remove: removeChoice }) => (
                                                 <>
                                                     {choiceFields.map(chField => (
-                                                        <Space key={chField.key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
+                                                        <Space key={chField.key} style={{ display: 'flex', marginBottom: 8, alignItems: 'flex-start' }} align="baseline">
                                                             <Form.Item name={[chField.name, 'contentType']} rules={[{ required: true }]} initialValue="TEXT">
                                                                 <Select style={{ width: 110 }}>
                                                                     <Option value="TEXT">Văn bản</Option>
@@ -202,15 +214,37 @@ const QuizCreateModal = ({ visible, onCancel, onSuccess }) => {
                                                                 </Select>
                                                             </Form.Item>
                                                             
-                                                            <Form.Item name={[chField.name, 'contentValue']} rules={[{ required: true, message: 'Nhập đáp án!' }]}>
-                                                                <Input style={{ width: 500 }} placeholder="Nhập nội dung đáp án (VD: 15 cm) hoặc dán URL ảnh..." />
+                                                            {/* RENDER ĐỘNG CHO ĐÁP ÁN: Đã FIX lỗi bọc div bên ngoài Form.Item */}
+                                                            <Form.Item
+                                                                noStyle
+                                                                shouldUpdate={(prevValues, currentValues) =>
+                                                                    prevValues.questions?.[qField.name]?.choices?.[chField.name]?.contentType !==
+                                                                    currentValues.questions?.[qField.name]?.choices?.[chField.name]?.contentType
+                                                                }
+                                                            >
+                                                                {({ getFieldValue }) => {
+                                                                    const type = getFieldValue(['questions', qField.name, 'choices', chField.name, 'contentType']) || 'TEXT';
+                                                                    return type === 'TEXT' ? (
+                                                                        <div style={{ width: '500px' }}>
+                                                                            <Form.Item name={[chField.name, 'contentValue']} rules={[{ required: true, message: 'Nhập đáp án!' }]}>
+                                                                                <MathEditor placeholder="Nhập đáp án (Hỗ trợ công thức)..." />
+                                                                            </Form.Item>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div style={{ width: '500px' }}>
+                                                                            <Form.Item name={[chField.name, 'contentValue']} rules={[{ required: true, message: 'Nhập URL ảnh!' }]}>
+                                                                                <Input placeholder="Dán URL ảnh đáp án..." />
+                                                                            </Form.Item>
+                                                                        </div>
+                                                                    );
+                                                                }}
                                                             </Form.Item>
                                                             
                                                             <Form.Item name={[chField.name, 'correct']} valuePropName="checked" initialValue={false}>
                                                                 <Switch checkedChildren="Đúng" unCheckedChildren="Sai" />
                                                             </Form.Item>
                                                             
-                                                            <MinusCircleOutlined onClick={() => removeChoice(chField.name)} style={{ color: 'red', cursor: 'pointer', fontSize: '16px' }} />
+                                                            <MinusCircleOutlined onClick={() => removeChoice(chField.name)} style={{ color: 'red', cursor: 'pointer', fontSize: '16px', marginTop: '10px' }} />
                                                         </Space>
                                                     ))}
                                                     <Button type="dashed" onClick={() => addChoice()} icon={<PlusOutlined />}>
@@ -224,7 +258,6 @@ const QuizCreateModal = ({ visible, onCancel, onSuccess }) => {
                                 </Card>
                             ))}
 
-                            {/* NÚT THÊM CÂU HỎI LỚN */}
                             <Button 
                                 type="dashed" 
                                 onClick={() => addQuestion()} 

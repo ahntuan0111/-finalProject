@@ -127,7 +127,15 @@ fun SubjectDetailScreen(
                                     )
                                 )
                             }
-                            "Quiz" -> { /* TODO */ }
+                            "Quiz" -> {
+                                // Chuyển thẳng vào luồng Flow (chứa List)
+                                navController.navigate(
+                                    AppRoutes.createQuizFlowRoute(
+                                        code = subjectCode,
+                                        grade = displayGrade // Ở đây displayGrade là Int (6, 7, 8, 9)
+                                    )
+                                )
+                            }
                             "Bộ đề thi" -> {
                                 // ĐIỀU HƯỚNG SANG MÀN HÌNH DANH SÁCH TÀI LIỆU
                                 navController.navigate(

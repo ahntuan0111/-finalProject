@@ -5,6 +5,8 @@ import com.example.finalproject.data.repository.AuthRepositoryImpl
 import com.example.finalproject.domain.repository.AuthRepository
 import com.example.finalproject.domain.repository.UserRepository
 import com.example.finalproject.data.repository.UserRepositoryImpl
+import com.example.finalproject.domain.repository.QuizRepository
+import com.example.finalproject.data.repository.QuizRepositoryImpl
 import com.example.finalproject.utils.DataStoreManager // Import DataStoreManager
 import dagger.Module
 import dagger.Provides
@@ -63,4 +65,8 @@ object AppModule {
     @Provides
     @Singleton
     fun provideUserRepository(impl: UserRepositoryImpl): UserRepository = impl
+
+    @Provides
+    @Singleton
+    fun provideQuizRepository(impl: QuizRepositoryImpl): QuizRepository = impl
 }

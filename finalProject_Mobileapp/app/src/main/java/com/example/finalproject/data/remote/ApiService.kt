@@ -63,5 +63,18 @@ interface ApiService {
         @Query("grade") grade: Int
     ): Response<ApiResponse<List<DocumentDto>>>
 
+    @GET("quizzes") // Đổi lại đúng endpoint lấy danh sách quiz cho user
+    suspend fun getAllQuizzes(): ApiResponse<List<QuizResponse>>
 
+    @GET("quizzes/filter")
+    suspend fun getQuizzesBySubjectAndGrade(
+        @Query("subjectCode") subjectCode: String,
+        @Query("grade") grade: Int
+    ): ApiResponse<List<QuizResponse>>
+
+    @POST("quizzes/{quizId}/submit")
+    suspend fun submitQuiz(
+        @Path("quizId") quizId: Int,
+        @Body request: QuizSubmitRequest
+    ): ApiResponse<Any>
 }

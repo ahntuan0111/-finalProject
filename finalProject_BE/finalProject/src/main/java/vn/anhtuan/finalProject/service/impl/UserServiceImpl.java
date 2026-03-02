@@ -3,6 +3,7 @@ package vn.anhtuan.finalProject.service.impl;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -109,5 +110,44 @@ public class UserServiceImpl implements IUserService {
 
         logger.info("--- Service: Lấy lớp hiện tại của [{}] -> Kết quả: {}", username, grade);
         return grade;
+    }
+
+    @Override
+    public User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new BadRequestException("Người dùng chưa đăng nhập hoặc Token đã hết hạn!");
+        }
+
+        // 1. Lấy đối tượng Principal đang lưu trong SecurityContext
+        Object principal = authentication.getPrincipal();
+        String identifier = "";
+
+        // 2. Ép kiểu an toàn để lấy ĐÚNG chuỗi username, tránh bị lấy toàn bộ object
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+            identifier = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
+        } else if (principal instanceof User) {
+            identifier = ((User) principal).getUsername();
+        } else {
+            identifier = principal.toString(); // Fallback dự phòng
+        }
+
+        logger.info("--- Đang tìm User từ Token với chuỗi định danh chuẩn: [{}]", identifier);
+
+        // 3. Truy vấn Database với identifier chuẩn (ví dụ: "anhtuan0111")
+        String finalIdentifier = identifier;
+        return userRepository.findByUsername(finalIdentifier)
+                .orElseGet(() -> userRepository.findByEmail(finalIdentifier)
+                        .orElseThrow(() -> {
+                            logger.error("--- LỖI: Không tìm thấy user nào có Username hoặc Email là: [{}]", finalIdentifier);
+                            return new ResourceNotFoundException("Không tìm thấy người dùng trong hệ thống!");
+                        })
+                );
+    }
+
+    @Override
+    public Long getCurrentUserId() {
+        return getCurrentUser().getId();
     }
 }

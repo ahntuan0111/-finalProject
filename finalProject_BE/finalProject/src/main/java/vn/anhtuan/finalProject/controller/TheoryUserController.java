@@ -15,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/student") // Endpoint cho học sinh/mobile
-public class StudentController {
+public class TheoryUserController {
 
     @Autowired private ChapterRepository chapterRepository;
     @Autowired private LessonRepository lessonRepository;

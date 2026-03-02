@@ -4,9 +4,18 @@ import lombok.Data;
 
 @Data
 public class QuestionContentRequest {
+    private Long id;
     private String contentType;
     private String contentValue;
     private Integer contentOrder; // THÊM
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getContentType() {
         return contentType;

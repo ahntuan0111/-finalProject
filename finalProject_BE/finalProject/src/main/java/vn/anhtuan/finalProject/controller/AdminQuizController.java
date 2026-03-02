@@ -1,10 +1,10 @@
 package vn.anhtuan.finalProject.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.anhtuan.finalProject.dto.request.QuizRequest;
 import vn.anhtuan.finalProject.dto.response.ApiResponse;
+import vn.anhtuan.finalProject.dto.response.QuizResponse;
 import vn.anhtuan.finalProject.entity.Chapter;
 import vn.anhtuan.finalProject.entity.Quiz;
 import vn.anhtuan.finalProject.entity.QuizType;
@@ -14,11 +14,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/quizzes")
-public class QuizAdminController {
+public class AdminQuizController {
 
     private final QuizAdminService quizAdminService;
 
-    public QuizAdminController(QuizAdminService quizAdminService) {
+    public AdminQuizController(QuizAdminService quizAdminService) {
         this.quizAdminService = quizAdminService;
     }
 
@@ -28,10 +28,15 @@ public class QuizAdminController {
     @PostMapping
     public ResponseEntity<?> createQuiz(@RequestBody QuizRequest request) {
         try {
+            // 1. Lưu xuống DB và nhận lại Entity
             Quiz createdQuiz = quizAdminService.createQuiz(request);
-            return ResponseEntity.ok(ApiResponse.success(createdQuiz, "Tạo bài Quiz thành công!"));
+
+            // 2. CHUYỂN ĐỔI ENTITY SANG DTO TRƯỚC KHI TRẢ VỀ CHO FRONTEND (Cắt đứt vòng lặp JSON)
+            QuizResponse response = QuizResponse.fromEntity(createdQuiz);
+
+            // 3. Trả về DTO
+            return ResponseEntity.ok(ApiResponse.success(response, "Tạo bài Quiz thành công!"));
         } catch (Exception e) {
-            // SỬA Ở ĐÂY: Truyền số 400 (Bad Request) thay vì null
             return ResponseEntity.badRequest().body(ApiResponse.error(400, e.getMessage()));
         }
     }
@@ -39,7 +44,8 @@ public class QuizAdminController {
     // R: Read All
     @GetMapping
     public ResponseEntity<?> getAllQuizzes() {
-        List<Quiz> quizzes = quizAdminService.getAllQuizzes();
+        // Lúc này quizAdminService.getAllQuizzes() trả về List<QuizResponse>
+        List<QuizResponse> quizzes = quizAdminService.getAllQuizzes();
         return ResponseEntity.ok(ApiResponse.success(quizzes, "Lấy danh sách Quiz thành công!"));
     }
 
@@ -67,5 +73,21 @@ public class QuizAdminController {
     public ResponseEntity<?> getChapters() {
         List<Chapter> chapters = quizAdminService.getAllChapters();
         return ResponseEntity.ok(ApiResponse.success(chapters, "Lấy danh sách Chương học thành công!"));
+    }
+
+    // U: Update Quiz
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateQuiz(@PathVariable Integer id, @RequestBody QuizRequest request) {
+        try {
+            // Gọi Service để cập nhật
+            Quiz updatedQuiz = quizAdminService.updateQuiz(id, request);
+
+            // Ép sang DTO để tránh vòng lặp JSON
+            QuizResponse response = QuizResponse.fromEntity(updatedQuiz);
+
+            return ResponseEntity.ok(ApiResponse.success(response, "Cập nhật bài Quiz thành công!"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(400, e.getMessage()));
+        }
     }
 }

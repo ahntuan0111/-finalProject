@@ -5,11 +5,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel // CẬP NHẬT IMPORT NÀY
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation // IMPORT CHO NESTED NAVIGATION
 import androidx.navigation.navArgument
 import com.example.finalproject.di.TheoryMode
 import com.example.finalproject.ui.screens.auth.AuthSelectionScreen
@@ -26,9 +29,13 @@ import com.example.finalproject.ui.screens.home.HomeScreen
 import com.example.finalproject.ui.screens.subject_detail.SubjectDetailScreen
 import com.example.finalproject.ui.screens.theory.TheoryDetailScreen
 import com.example.finalproject.ui.screens.theory.TheoryScreen
-import com.example.finalproject.utils.DataStoreManager // Import DataStoreManager
+import com.example.finalproject.utils.DataStoreManager
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
+import com.example.finalproject.ui.screens.quizes.QuizResultScreen
+import com.example.finalproject.ui.screens.quizes.QuizTakingScreen
+import com.example.finalproject.ui.screens.quizes.QuizListScreen
+import com.example.finalproject.ui.viewmodel.QuizViewModel
 
 /**
  * Định nghĩa các đường dẫn (Route) trong App
@@ -70,24 +77,32 @@ object AppRoutes {
     fun createDocumentListRoute(code: String, grade: Int) = "document_list/$code/$grade"
 
     const val PDF_VIEWER = "pdf_viewer/{url}/{title}"
+
+    // --- THÊM ROUTES CHO LUỒNG QUIZ ---
+    const val QUIZ_FLOW = "quiz_flow/{$SUBJECT_CODE}/{$GRADE}"
+    fun createQuizFlowRoute(code: String, grade: Int) = "quiz_flow/$code/$grade"
+
+    const val QUIZ_LIST = "quiz_list/{$SUBJECT_CODE}/{$GRADE}"
+    fun createQuizListRoute(code: String, grade: Int) = "quiz_list/$code/$grade"
+
+    const val QUIZ_TAKING = "quiz_taking"
+    const val QUIZ_RESULT = "quiz_result"
 }
 
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    dataStoreManager: DataStoreManager, // <-- THÊM THAM SỐ NÀY ĐỂ LẮNG NGHE TOKEN
+    dataStoreManager: DataStoreManager,
     modifier: Modifier = Modifier,
     startDestination: String
 ) {
     // 1. Lắng nghe trạng thái của Token từ DataStoreManager
-    // Sử dụng "LOADING" làm giá trị khởi tạo để tránh bị văng ra Login ngay khi App vừa mở chưa kịp đọc DataStore
     val token by dataStoreManager.getToken().collectAsState(initial = "LOADING")
 
     // 2. Phản ứng khi Token thay đổi
     LaunchedEffect(token) {
         if (token == null) {
             navController.navigate(AppRoutes.WELCOME) {
-                // Xóa sạch lịch sử, không cho bấm nút Back
                 popUpTo(0) { inclusive = true }
             }
         }
@@ -193,7 +208,7 @@ fun AppNavHost(
             )
         ) { backStackEntry ->
             val subjectCode = backStackEntry.arguments?.getString(AppRoutes.SUBJECT_CODE) ?: ""
-            val grade = backStackEntry.arguments?.getInt(AppRoutes.GRADE) ?: 10
+            val grade = backStackEntry.arguments?.getInt(AppRoutes.GRADE) ?: 6
 
             DocumentListScreen(
                 navController = navController,
@@ -220,6 +235,68 @@ fun AppNavHost(
                 fileUrl = url,
                 title = title
             )
+        }
+
+        // =========================================================
+        // LUỒNG LÀM QUIZ MỚI (NESTED NAVIGATION)
+        // =========================================================
+        navigation(
+            route = AppRoutes.QUIZ_FLOW,
+            startDestination = AppRoutes.QUIZ_LIST
+        ) {
+            composable(
+                route = AppRoutes.QUIZ_LIST,
+                arguments = listOf(
+                    navArgument(AppRoutes.SUBJECT_CODE) { type = NavType.StringType },
+                    // SỬA Ở ĐÂY: Đổi IntType thành StringType để tránh lỗi parse của Navigation
+                    navArgument(AppRoutes.GRADE) { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val subjectCode = backStackEntry.arguments?.getString(AppRoutes.SUBJECT_CODE) ?: ""
+
+                // SỬA Ở ĐÂY: Lấy String rồi tự .toIntOrNull(), nếu null thì cho mặc định là 6
+                val gradeString = backStackEntry.arguments?.getString(AppRoutes.GRADE)
+                val grade = gradeString?.toIntOrNull() ?: 6
+
+                val parentEntry = remember(backStackEntry) {
+                    // Dùng cứng chuỗi createQuizFlowRoute để đảm bảo match chính xác
+                    navController.getBackStackEntry(AppRoutes.createQuizFlowRoute(subjectCode, grade))
+                }
+                val sharedQuizViewModel: QuizViewModel = hiltViewModel(parentEntry)
+
+                QuizListScreen(
+                    navController = navController,
+                    viewModel = sharedQuizViewModel,
+                    subjectCode = subjectCode,
+                    grade = grade
+                )
+            }
+
+            composable(route = AppRoutes.QUIZ_TAKING) { backStackEntry ->
+                val parentId = navController.previousBackStackEntry?.destination?.parent?.id
+                val parentEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(parentId!!)
+                }
+                val sharedQuizViewModel: QuizViewModel = hiltViewModel(parentEntry)
+
+                QuizTakingScreen(
+                    navController = navController,
+                    viewModel = sharedQuizViewModel
+                )
+            }
+
+            composable(route = AppRoutes.QUIZ_RESULT) { backStackEntry ->
+                val parentId = navController.previousBackStackEntry?.destination?.parent?.id
+                val parentEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(parentId!!)
+                }
+                val sharedQuizViewModel: QuizViewModel = hiltViewModel(parentEntry)
+
+                QuizResultScreen(
+                    navController = navController,
+                    viewModel = sharedQuizViewModel
+                )
+            }
         }
     }
 }

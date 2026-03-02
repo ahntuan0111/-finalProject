@@ -2,6 +2,7 @@ package vn.anhtuan.finalProject.service;
 
 import vn.anhtuan.finalProject.dto.request.PasswordChangeRequest;
 import vn.anhtuan.finalProject.dto.response.UserResponse;
+import vn.anhtuan.finalProject.entity.User;
 
 import java.util.List;
 
@@ -15,5 +16,8 @@ public interface IUserService {
     void deleteUser(Long id);
 
     void updateGrade(String username, Integer grade);
-    Integer getCurrentGrade(String username); // Để lấy lớp hiện tại khi load trang chủ
+    Integer getCurrentGrade(String username);
+
+    User getCurrentUser();
+    Long getCurrentUserId();
 }
