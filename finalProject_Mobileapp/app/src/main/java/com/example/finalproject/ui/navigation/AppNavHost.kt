@@ -36,6 +36,7 @@ import com.example.finalproject.ui.screens.quizes.QuizResultScreen
 import com.example.finalproject.ui.screens.quizes.QuizTakingScreen
 import com.example.finalproject.ui.screens.quizes.QuizListScreen
 import com.example.finalproject.ui.viewmodel.QuizViewModel
+import com.example.finalproject.ui.screens.profile.UserScreen
 
 /**
  * Định nghĩa các đường dẫn (Route) trong App
@@ -131,7 +132,9 @@ fun AppNavHost(
         composable(AppRoutes.CLASS_SELECTION) { ClassSelectionScreen(navController = navController) }
         composable(AppRoutes.DASHBOARD) { Text("Màn hình Thống kê") }
         composable(AppRoutes.AI_CHAT) { Text("Màn hình AI Chat") }
-        composable(AppRoutes.USER) { Text("Màn hình Cá nhân") }
+        composable(AppRoutes.USER) {
+            UserScreen(navController = navController)
+        }
 
         composable(
             route = AppRoutes.SUBJECT_DETAIL,

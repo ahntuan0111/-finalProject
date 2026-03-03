@@ -5,6 +5,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -77,4 +78,21 @@ interface ApiService {
         @Path("quizId") quizId: Int,
         @Body request: QuizSubmitRequest
     ): ApiResponse<Any>
+
+    @GET("users/profile")
+    suspend fun getProfile(): ApiResponse<UserProfileResponse>
+
+    @PUT("users/profile")
+    suspend fun updateProfile(@Body request: UserProfileUpdateRequest): ApiResponse<UserProfileResponse>
+
+    @POST("progress/mark-complete")
+    suspend fun markLessonAsCompleted(
+        @Body request: LessonCompletionRequest
+    ): ApiResponse<Any> // Trả về Any hoặc kiểu object tương ứng của bạn
+
+    @GET("progress/my-progress")
+    suspend fun getMyProgress(
+        @Query("grade") grade: Int
+    ): ApiResponse<List<ProgressResponse>>
+
 }

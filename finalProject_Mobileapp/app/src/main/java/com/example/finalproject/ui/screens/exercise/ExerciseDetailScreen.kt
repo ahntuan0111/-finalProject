@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material3.*
@@ -54,6 +55,10 @@ fun ExerciseDetailScreen(
 ) {
     val state by viewModel.exercises.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+
+    // Lắng nghe trạng thái nút bấm từ ViewModel
+    val isCompletedState by viewModel.isCompleted.collectAsState()
+    val isSubmitting by viewModel.isSubmitting.collectAsState()
 
     LaunchedEffect(lessonId) {
         viewModel.fetchExercises(lessonId)
@@ -98,6 +103,43 @@ fun ExerciseDetailScreen(
                     ) {
                         items(exercises) { exercise ->
                             ExerciseItem(exercise = exercise)
+                        }
+
+                        // --- THÊM NÚT ĐÁNH DẤU HOÀN THÀNH Ở CUỐI DANH SÁCH BÀI TẬP ---
+                        item {
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            val finalIsCompleted = isCompletedState
+
+                            Button(
+                                onClick = { viewModel.markAsCompleted(lessonId) },
+                                enabled = !finalIsCompleted && !isSubmitting,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (finalIsCompleted) Color(0xFF52C41A) else PrimaryBlue,
+                                    disabledContainerColor = if (finalIsCompleted) Color(0xFF52C41A).copy(alpha = 0.8f) else Color.Gray
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                if (isSubmitting) {
+                                    CircularProgressIndicator(
+                                        color = Color.White,
+                                        strokeWidth = 2.dp,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                } else if (finalIsCompleted) {
+                                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.White)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Đã hoàn thành bài tập", fontSize = 16.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                } else {
+                                    Text("Đánh dấu hoàn thành", fontSize = 16.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                }
+                            }
+
+                            // Khoảng trống dưới cùng để cuộn không bị sát mép
+                            Spacer(modifier = Modifier.height(32.dp))
                         }
                     }
                 }
@@ -227,7 +269,7 @@ fun ContentRenderer(type: String?, value: String?) {
         )
     } else {
         // Sử dụng LatexMathView để hiển thị công thức
-        LatexMathView(latex = safeValue)
+        LatexMathView(latex = safeValue, modifier = Modifier)
     }
 }
 

@@ -1,6 +1,8 @@
 package vn.anhtuan.finalProject.service;
 
 import vn.anhtuan.finalProject.dto.request.PasswordChangeRequest;
+import vn.anhtuan.finalProject.dto.request.UserProfileUpdateRequest;
+import vn.anhtuan.finalProject.dto.response.UserProfileResponse;
 import vn.anhtuan.finalProject.dto.response.UserResponse;
 import vn.anhtuan.finalProject.entity.User;
 
@@ -20,4 +22,8 @@ public interface IUserService {
 
     User getCurrentUser();
     Long getCurrentUserId();
+
+    // Trong IUserService.java thêm:
+    UserProfileResponse getMyProfile();
+    UserProfileResponse updateMyProfile(UserProfileUpdateRequest request);
 }

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.anhtuan.finalProject.dto.request.PasswordChangeRequest;
 import vn.anhtuan.finalProject.dto.request.UpdateGradeRequest;
+import vn.anhtuan.finalProject.dto.request.UserProfileUpdateRequest;
 import vn.anhtuan.finalProject.dto.response.ApiResponse;
 import vn.anhtuan.finalProject.entity.User;
 import vn.anhtuan.finalProject.service.IUserService;
@@ -74,5 +75,23 @@ public class UserController {
 
         logger.info("<<< CURRENT GRADE RESPONSE: {}", grade);
         return ResponseEntity.ok(ApiResponse.success(grade, "Thành công"));
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getMyProfile() {
+        try {
+            return ResponseEntity.ok(ApiResponse.success(userService.getMyProfile(), "Thành công"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(400, e.getMessage()));
+        }
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateMyProfile(@RequestBody UserProfileUpdateRequest request) {
+        try {
+            return ResponseEntity.ok(ApiResponse.success(userService.updateMyProfile(request), "Cập nhật hồ sơ thành công"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(400, e.getMessage()));
+        }
     }
 }

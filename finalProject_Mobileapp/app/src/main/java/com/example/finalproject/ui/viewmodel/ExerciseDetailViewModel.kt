@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.finalproject.data.remote.model.ExerciseDto
 import com.example.finalproject.domain.repository.ExerciseRepository
+import com.example.finalproject.data.remote.model.LessonCompletionRequest
+import com.example.finalproject.domain.repository.TheoryRepository
 import com.example.finalproject.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ExerciseDetailViewModel @Inject constructor(
-    private val exerciseRepository: ExerciseRepository
+    private val exerciseRepository: ExerciseRepository,
+    private val repository: TheoryRepository
 ) : ViewModel() {
 
     // State chứa danh sách bài tập
@@ -28,6 +31,12 @@ class ExerciseDetailViewModel @Inject constructor(
     // State chứa thông báo lỗi (nếu cần hiển thị Toast/Snackbar)
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+    private val _isSubmitting = MutableStateFlow(false)
+    val isSubmitting: StateFlow<Boolean> = _isSubmitting.asStateFlow()
+
+    private val _isCompleted = MutableStateFlow(false)
+    val isCompleted: StateFlow<Boolean> = _isCompleted.asStateFlow()
 
     fun fetchExercises(lessonId: Long) {
         viewModelScope.launch {
@@ -46,6 +55,29 @@ class ExerciseDetailViewModel @Inject constructor(
                         _errorMessage.value = result.message ?: "Đã xảy ra lỗi không xác định"
                     }
                 }
+            }
+        }
+    }
+
+    fun markAsCompleted(lessonId: Long) {
+        viewModelScope.launch {
+            _isSubmitting.value = true
+            try {
+                val request = LessonCompletionRequest(
+                    lessonId = lessonId,
+                    type = "EXERCISE" // Bắt buộc là EXERCISE
+                )
+                // Lưu ý: repository này phải là file chứa hàm markLessonAsCompleted
+                // giống như bên Theory.
+                val response = repository.markLessonAsCompleted(request)
+
+                if (response.success) {
+                    _isCompleted.value = true
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                _isSubmitting.value = false
             }
         }
     }

@@ -1,7 +1,10 @@
 package com.example.finalproject.data.repository
 
 import com.example.finalproject.data.remote.ApiService
+import com.example.finalproject.data.remote.model.ApiResponse
 import com.example.finalproject.data.remote.model.UpdateGradeRequest
+import com.example.finalproject.data.remote.model.UserProfileResponse
+import com.example.finalproject.data.remote.model.UserProfileUpdateRequest
 import com.example.finalproject.domain.repository.UserRepository
 import com.example.finalproject.utils.DataStoreManager
 import kotlinx.coroutines.flow.flow
@@ -43,4 +46,13 @@ class UserRepositoryImpl @Inject constructor(
             emit(Result.failure(e))
         }
     }
+
+    override suspend fun getProfile(): ApiResponse<UserProfileResponse> {
+        return apiService.getProfile()
+    }
+
+    override suspend fun updateProfile(request: UserProfileUpdateRequest): ApiResponse<UserProfileResponse> {
+        return apiService.updateProfile(request)
+    }
+
 }

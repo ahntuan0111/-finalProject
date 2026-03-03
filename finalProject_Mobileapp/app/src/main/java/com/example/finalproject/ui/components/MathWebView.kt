@@ -55,15 +55,24 @@ fun MathWebView(htmlContent: String, modifier: Modifier = Modifier) {
         factory = { context ->
             WebView(context).apply {
                 settings.javaScriptEnabled = true
-                settings.cacheMode = WebSettings.LOAD_DEFAULT
+
+                // 1. BẬT DOM STORAGE ĐỂ MATHJAX CÓ THỂ LƯU CACHE FONT CHỮ
+                settings.domStorageEnabled = true
+
+                // 2. ƯU TIÊN SỬ DỤNG CACHE ĐỂ TRÁNH TẢI LẠI MATHJAX TỪ MẠNG LIÊN TỤC
+                settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
+
                 setBackgroundColor(0x00000000) // Nền trong suốt
                 isVerticalScrollBarEnabled = false
                 isHorizontalScrollBarEnabled = false
-                loadDataWithBaseURL(null, htmlTemplate, "text/html", "UTF-8", null)
+
+                // 3. SỬ DỤNG MỘT DUMMY URL LÀM BASE URL THAY VÌ "null" ĐỂ BYPASS LỖI BẢO MẬT
+                loadDataWithBaseURL("https://localhost", htmlTemplate, "text/html", "UTF-8", null)
             }
         },
         update = { webView ->
-            webView.loadDataWithBaseURL(null, htmlTemplate, "text/html", "UTF-8", null)
+            // NHỚ ĐỔI CẢ Ở PHẦN UPDATE NÀY NỮA
+            webView.loadDataWithBaseURL("https://localhost", htmlTemplate, "text/html", "UTF-8", null)
         }
     )
 }

@@ -10,8 +10,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,6 +37,9 @@ fun TheoryDetailScreen(
 ) {
     val lesson by viewModel.lessonDetail.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+
+    val isCompletedState by viewModel.isCompleted.collectAsState()
+    val isSubmitting by viewModel.isSubmitting.collectAsState()
 
     LaunchedEffect(lessonId) {
         viewModel.fetchLessonDetail(lessonId)
@@ -130,31 +135,43 @@ fun TheoryDetailScreen(
                             Spacer(modifier = Modifier.height(12.dp))
                         }
 
-//                        item {
-//                            Spacer(modifier = Modifier.height(24.dp))
-//
-//                            Button(
-//                                onClick = { viewModel.markAsCompleted(data.id) },
-//                                enabled = !data.isCompleted, // Nếu xong rồi thì disable nút
-//                                colors = ButtonDefaults.buttonColors(
-//                                    containerColor = if (data.isCompleted) Color.Gray else PrimaryBlue
-//                                ),
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                                    .height(50.dp),
-//                                shape = RoundedCornerShape(12.dp)
-//                            ) {
-//                                if (data.isCompleted) {
-//                                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.White)
-//                                    Spacer(modifier = Modifier.width(8.dp))
-//                                    Text("Đã hoàn thành", fontSize = 16.sp)
-//                                } else {
-//                                    Text("Đánh dấu hoàn thành", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-//                                }
-//                            }
-//
-//                            // Khoảng trống dưới cùng để không bị sát mép
-//                            Spacer(modifier = Modifier.height(32.dp))
+                        item {
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            // Gộp logic: Nếu local state là true HOẶC api trả về là true (nếu data.isCompleted có tồn tại)
+                            // Ở đây ta dùng isCompletedState của viewmodel.
+                            val finalIsCompleted = isCompletedState
+
+                            Button(
+                                onClick = { viewModel.markAsCompleted(data.id) },
+                                enabled = !finalIsCompleted && !isSubmitting, // Disable nếu đã hoàn thành hoặc đang submit
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (finalIsCompleted) Color(0xFF52C41A) else PrimaryBlue, // Đổi màu xanh lá nếu xong
+                                    disabledContainerColor = if (finalIsCompleted) Color(0xFF52C41A).copy(alpha = 0.8f) else Color.Gray
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                if (isSubmitting) {
+                                    CircularProgressIndicator(
+                                        color = Color.White,
+                                        strokeWidth = 2.dp,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                } else if (finalIsCompleted) {
+                                    Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.White)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Đã hoàn thành", fontSize = 16.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                } else {
+                                    Text("Đánh dấu hoàn thành", fontSize = 16.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                }
+                            }
+
+                            // Khoảng trống dưới cùng để không bị sát mép
+                            Spacer(modifier = Modifier.height(32.dp))
+                        }
                     }
                 }
             }

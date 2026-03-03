@@ -1,4 +1,4 @@
-package com.example.finalproject.ui.screens.home
+package com.example.finalproject.data.remote.model
 
 import androidx.annotation.DrawableRes
 import androidx.compose.ui.graphics.Color

@@ -12,9 +12,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.SmartToy // Robot Icon
+import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -27,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.finalproject.data.remote.model.DashboardStat
+import com.example.finalproject.data.remote.model.SubjectItem
 import com.example.finalproject.ui.navigation.AppRoutes
 import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.theme.TextGray
@@ -38,7 +41,13 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val userName by viewModel.userName.collectAsState()
+    val subjects by viewModel.subjects.collectAsState() // Thêm dòng này để quan sát danh sách môn học
     val scrollState = rememberScrollState()
+
+    // Gọi API để cập nhật tiến trình mỗi khi HomeScreen hiển thị
+    LaunchedEffect(Unit) {
+        viewModel.fetchProgress()
+    }
 
     // Cấu trúc chính: Scroll dọc
     Column(
@@ -68,18 +77,15 @@ fun HomeScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         // 4. Môn học
-        HomeSubjects(subjects = viewModel.subjects) { subjectIdString -> // subjectIdString đang là "math" hoặc "science" từ HomeViewModel
-
-            // 1. Map ID từ UI sang Code trong DB ("toan", "khtn")
+        HomeSubjects(subjects = subjects) { subjectIdString -> // Sử dụng biến 'subjects' đã collectAsState
             val dbSubjectCode = when(subjectIdString) {
-                "math" -> "toan"      // Khớp với DB của bạn
-                "science" -> "khtn"   // Khớp với DB của bạn
-                else -> "toan"
+                "math" -> "toan"
+                "science" -> "khtn"
+                else -> subjectIdString // Fallback: Sử dụng trực tiếp nếu ID khớp (ví dụ "toan")
             }
 
-            val subjectName = viewModel.subjects.find { it.id == subjectIdString }?.name ?: "Môn học"
+            val subjectName = subjects.find { it.id == subjectIdString }?.name ?: "Môn học"
 
-            // 2. Truyền mã môn học (String) sang màn hình SubjectDetail
             navController.navigate(AppRoutes.createSubjectDetailRoute(dbSubjectCode, subjectName))
         }
 
@@ -252,50 +258,34 @@ fun SubjectCard(subject: SubjectItem, onClick: () -> Unit) {
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Thông tin text
+            // Thông tin text (Đã xóa bỏ cấu trúc lồng lặp)
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = subject.name,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
-                // Progress Bar
                 LinearProgressIndicator(
                     progress = { subject.progress },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(6.dp)
-                        .clip(RoundedCornerShape(3.dp)),
+                        .height(8.dp) // Dày hơn chút
+                        .clip(RoundedCornerShape(4.dp)),
                     color = PrimaryBlue,
-                    trackColor = Color(0xFFEEEEEE),
+                    trackColor = Color(0xFFF5F5F5),
                 )
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = subject.name,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
 
-                    LinearProgressIndicator(
-                        progress = { subject.progress },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(8.dp) // Dày hơn chút
-                            .clip(RoundedCornerShape(4.dp)),
-                        color = PrimaryBlue,
-                        trackColor = Color(0xFFF5F5F5),
-                    )
+                Spacer(modifier = Modifier.height(6.dp))
 
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = "${subject.finishedLessons}/${subject.totalLessons} bài học",
-                        fontSize = 12.sp,
-                        color = TextGray
-                    )
-                }
+                // Hiển thị số bài học, xử lý trường hợp tổng bài học bằng 0
+                Text(
+                    text = if (subject.totalLessons == 0) "Chưa có dữ liệu"
+                    else "${subject.finishedLessons}/${subject.totalLessons} bài học",
+                    fontSize = 12.sp,
+                    color = TextGray
+                )
             }
         }
     }

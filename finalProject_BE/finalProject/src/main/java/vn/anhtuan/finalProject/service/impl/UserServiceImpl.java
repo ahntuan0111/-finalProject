@@ -8,6 +8,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import vn.anhtuan.finalProject.dto.request.PasswordChangeRequest;
+import vn.anhtuan.finalProject.dto.request.UserProfileUpdateRequest;
+import vn.anhtuan.finalProject.dto.response.UserProfileResponse;
 import vn.anhtuan.finalProject.dto.response.UserResponse;
 import vn.anhtuan.finalProject.entity.StudentProfile;
 import vn.anhtuan.finalProject.entity.User;
@@ -149,5 +151,40 @@ public class UserServiceImpl implements IUserService {
     @Override
     public Long getCurrentUserId() {
         return getCurrentUser().getId();
+    }
+
+    @Override
+    public UserProfileResponse getMyProfile() {
+        User user = getCurrentUser(); // Sử dụng hàm bạn đã viết
+        return new UserProfileResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getAvatarUrl(),
+                user.getDateOfBirth()
+        );
+    }
+
+    @Override
+    @Transactional
+    public UserProfileResponse updateMyProfile(UserProfileUpdateRequest request) {
+        User user = getCurrentUser();
+
+        if (request.getAvatarUrl() != null) {
+            user.setAvatarUrl(request.getAvatarUrl());
+        }
+        if (request.getDateOfBirth() != null) {
+            user.setDateOfBirth(request.getDateOfBirth());
+        }
+
+        userRepository.save(user);
+
+        return new UserProfileResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getAvatarUrl(),
+                user.getDateOfBirth()
+        );
     }
 }
