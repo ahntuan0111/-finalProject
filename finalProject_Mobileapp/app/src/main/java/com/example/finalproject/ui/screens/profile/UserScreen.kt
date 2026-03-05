@@ -1,5 +1,6 @@
 package com.example.finalproject.ui.screens.profile
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -43,6 +44,9 @@ fun UserScreen(
 ) {
     val profile by viewModel.profile
     val isLoading by viewModel.isLoading
+    // Lắng nghe thay đổi khối lớp từ ViewModel
+    val currentGrade by viewModel.currentGrade.collectAsState()
+
     var showEditDialog by remember { mutableStateOf(false) }
 
     if (isLoading && profile == null) {
@@ -110,7 +114,7 @@ fun UserScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Lớp 8A2", // Chỗ này có thể mock hoặc nối từ ViewModel sau
+                        text = "Học sinh Lớp $currentGrade", // Hiển thị khối lớp hiện tại động theo State
                         color = PrimaryBlue,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
@@ -119,7 +123,7 @@ fun UserScreen(
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("• THCS Cầu Giấy", color = TextSecondary, fontSize = 14.sp)
+                    Text("• E-Learning App", color = TextSecondary, fontSize = 14.sp)
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -141,6 +145,24 @@ fun UserScreen(
                     StatCard("9.2", "Điểm TB", Modifier.weight(1f), Color(0xFF52C41A)) // Xanh lá
                     Spacer(modifier = Modifier.width(12.dp))
                     StatCard("128h", "Giờ học", Modifier.weight(1f), Color(0xFFFAAD14)) // Vàng cam
+                }
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+
+            // ================== CHỌN KHỐI LỚP (MỚI THÊM) ==================
+            item {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text("Khối lớp học", color = TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text("Thay đổi khối lớp sẽ cập nhật lại toàn bộ nội dung môn học.", color = TextSecondary, fontSize = 13.sp)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    GradeSelector(
+                        currentGrade = currentGrade,
+                        onGradeSelected = { newGrade ->
+                            viewModel.saveGrade(newGrade) // Gọi hàm lưu vào DataStore
+                        }
+                    )
                 }
                 Spacer(modifier = Modifier.height(32.dp))
             }
@@ -177,7 +199,46 @@ fun UserScreen(
     }
 }
 
-// ================== COMPONENT CON DÀNH CHO LIGHT THEME ==================
+// ================== CÁC COMPONENT CON ==================
+
+@Composable
+fun GradeSelector(
+    currentGrade: Int,
+    onGradeSelected: (Int) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        listOf(6, 7, 8, 9).forEach { grade ->
+            val isSelected = currentGrade == grade
+            Card(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 4.dp)
+                    .clickable { onGradeSelected(grade) },
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isSelected) PrimaryBlue else CardBackground
+                ),
+                border = if (!isSelected) BorderStroke(1.dp, Color(0xFFEBEBEB)) else null,
+                elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 4.dp else 0.dp)
+            ) {
+                Box(
+                    modifier = Modifier.padding(vertical = 12.dp).fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Lớp $grade",
+                        color = if (isSelected) Color.White else TextPrimary,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                        fontSize = 15.sp
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun StatCard(value: String, label: String, modifier: Modifier = Modifier, valueColor: Color = PrimaryBlue) {
@@ -210,7 +271,6 @@ fun InfoRow(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon bọc trong một hình tròn màu xanh nhạt
             Box(
                 modifier = Modifier
                     .size(40.dp)

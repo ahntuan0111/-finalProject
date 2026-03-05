@@ -7,7 +7,9 @@ import com.example.finalproject.domain.repository.UserRepository
 import com.example.finalproject.data.repository.UserRepositoryImpl
 import com.example.finalproject.domain.repository.QuizRepository
 import com.example.finalproject.data.repository.QuizRepositoryImpl
+import com.example.finalproject.data.repository.StatisticsRepositoryImpl
 import com.example.finalproject.data.repository.TheoryRepositoryImpl
+import com.example.finalproject.domain.repository.StatisticsRepository
 import com.example.finalproject.domain.repository.TheoryRepository
 import com.example.finalproject.utils.DataStoreManager // Import DataStoreManager
 import dagger.Module

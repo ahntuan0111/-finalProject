@@ -43,6 +43,18 @@ public class User {
     @CreationTimestamp // Tự động lấy giờ hệ thống khi insert
     private LocalDateTime createdAt;
 
+    @Column(name = "current_streak")
+    private Integer currentStreak = 0;
+
+    @Column(name = "longest_streak")
+    private Integer longestStreak = 0;
+
+    @Column(name = "last_active_date")
+    private LocalDate lastActiveDate;
+
+    @Column(name = "total_minutes")
+    private Integer totalMinutes = 0;
+
     public Long getId() {
         return id;
     }
@@ -105,5 +117,37 @@ public class User {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Integer getCurrentStreak() {
+        return currentStreak;
+    }
+
+    public void setCurrentStreak(Integer currentStreak) {
+        this.currentStreak = currentStreak;
+    }
+
+    public Integer getLongestStreak() {
+        return longestStreak;
+    }
+
+    public void setLongestStreak(Integer longestStreak) {
+        this.longestStreak = longestStreak;
+    }
+
+    public LocalDate getLastActiveDate() {
+        return lastActiveDate;
+    }
+
+    public void setLastActiveDate(LocalDate lastActiveDate) {
+        this.lastActiveDate = lastActiveDate;
+    }
+
+    public Integer getTotalMinutes() {
+        return totalMinutes;
+    }
+
+    public void setTotalMinutes(Integer totalMinutes) {
+        this.totalMinutes = totalMinutes;
     }
 }

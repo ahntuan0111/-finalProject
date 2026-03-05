@@ -3,8 +3,10 @@ package com.example.finalproject.di
 
 import com.example.finalproject.data.repository.ExerciseRepositoryImpl
 import com.example.finalproject.data.repository.ProgressRepositoryImpl
+import com.example.finalproject.data.repository.StatisticsRepositoryImpl
 import com.example.finalproject.domain.repository.ExerciseRepository
 import com.example.finalproject.domain.repository.ProgressRepository
+import com.example.finalproject.domain.repository.StatisticsRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -26,4 +28,10 @@ abstract class RepositoryModule {
     abstract fun bindProgressRepository(
         progressRepositoryImpl: ProgressRepositoryImpl
     ): ProgressRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindStatisticsRepository(
+        statisticsRepositoryImpl: StatisticsRepositoryImpl
+    ): StatisticsRepository
 }

@@ -95,4 +95,12 @@ interface ApiService {
         @Query("grade") grade: Int
     ): ApiResponse<List<ProgressResponse>>
 
+    @GET("progress/overview")
+    suspend fun getSubjectOverview(
+        @Query("subjectCode") subjectCode: String,
+        @Query("grade") grade: Int
+    ): ApiResponse<SubjectOverviewResponse>
+
+    @GET("statistics/dashboard")
+    suspend fun getDashboardData(): ApiResponse<DashboardResponse>
 }

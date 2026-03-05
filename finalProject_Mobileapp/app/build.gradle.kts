@@ -9,12 +9,12 @@ plugins {
 
 android {
     namespace = "com.example.finalproject"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.finalproject"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -66,6 +66,7 @@ dependencies {
 
     // Hilt
     implementation(libs.hilt.android)
+    implementation(libs.androidx.core.i18n)
     kapt(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
@@ -99,7 +100,16 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
+    // Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.9.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-messaging")
+
+    // Youtube
+    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
+
+    // Chart
+    implementation("com.patrykandpatrick.vico:compose:1.13.0")
+    implementation("com.patrykandpatrick.vico:compose-m3:1.13.0")
+    implementation("com.patrykandpatrick.vico:core:1.13.0")
 }

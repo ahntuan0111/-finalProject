@@ -39,4 +39,16 @@ public class LessonProgressController {
             return ResponseEntity.badRequest().body(ApiResponse.error(400, "Lỗi lấy tiến trình: " + e.getMessage()));
         }
     }
+
+    @GetMapping("/overview")
+    public ResponseEntity<?> getSubjectOverview(
+            @RequestParam("subjectCode") String subjectCode,
+            @RequestParam("grade") Integer grade) {
+        try {
+            var result = lessonProgressService.getSubjectOverview(subjectCode, grade);
+            return ResponseEntity.ok(ApiResponse.success(result, "Thành công"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(400, "Lỗi: " + e.getMessage()));
+        }
+    }
 }

@@ -22,6 +22,7 @@ import com.example.finalproject.ui.screens.auth.RegisterScreen
 import com.example.finalproject.ui.screens.auth.ResetPasswordScreen
 import com.example.finalproject.ui.screens.auth.WelcomeScreen
 import com.example.finalproject.ui.screens.class_selection.ClassSelectionScreen
+import com.example.finalproject.ui.screens.dashboard.DashboardScreen
 import com.example.finalproject.ui.screens.document.DocumentListScreen
 import com.example.finalproject.ui.screens.document.PdfViewerScreen
 import com.example.finalproject.ui.screens.exercise.ExerciseDetailScreen
@@ -130,7 +131,9 @@ fun AppNavHost(
         }
 
         composable(AppRoutes.CLASS_SELECTION) { ClassSelectionScreen(navController = navController) }
-        composable(AppRoutes.DASHBOARD) { Text("Màn hình Thống kê") }
+        composable(AppRoutes.DASHBOARD) {
+            DashboardScreen(navController = navController)
+        }
         composable(AppRoutes.AI_CHAT) { Text("Màn hình AI Chat") }
         composable(AppRoutes.USER) {
             UserScreen(navController = navController)

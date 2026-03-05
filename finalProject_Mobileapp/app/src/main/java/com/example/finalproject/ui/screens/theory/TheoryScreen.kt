@@ -49,7 +49,9 @@ fun TheoryScreen(
     val chapters by viewModel.chapters.collectAsState()
     val expandedIds by viewModel.expandedChapterIds.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    val grade by userViewModel.userGrade.collectAsState()
+
+    // ĐÃ SỬA: Gọi currentGrade thay vì userGrade
+    val grade by userViewModel.currentGrade.collectAsState()
 
     val screenTitlePrefix = if (mode == TheoryMode.EXERCISE) "Giải bài tập" else "Lý thuyết"
 
@@ -62,7 +64,8 @@ fun TheoryScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "$screenTitlePrefix - $subjectName ${grade?.let { "($it)" } ?: ""}",
+                        // ĐÃ SỬA: Grade giờ là Int, hiển thị thẳng luôn
+                        text = "$screenTitlePrefix - $subjectName (Lớp $grade)",
                         color = Color.Black,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,

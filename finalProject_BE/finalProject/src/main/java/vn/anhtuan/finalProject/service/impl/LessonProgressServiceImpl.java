@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.anhtuan.finalProject.dto.request.LessonCompletionRequest;
 import vn.anhtuan.finalProject.dto.response.ProgressResponse;
+import vn.anhtuan.finalProject.dto.response.SubjectOverviewResponse;
 import vn.anhtuan.finalProject.entity.*;
 
 import vn.anhtuan.finalProject.exception.ResourceNotFoundException;
@@ -123,5 +124,35 @@ public class LessonProgressServiceImpl implements ILessonProgressService {
                 p.getTotalLessons(),
                 p.getProgressPercent()
         )).collect(Collectors.toList());
+    }
+
+    @Override
+    public SubjectOverviewResponse getSubjectOverview(String subjectCode, Integer gradeId) {
+        User user = userService.getCurrentUser();
+
+        // 1. Lấy % tiến độ môn học
+        double progressPercent = 0.0;
+        List<Progress> progressList = progressRepository.findByUserIdAndGradeId(user.getId(), gradeId);
+        for (Progress p : progressList) {
+            if (p.getSubject().getCode().equals(subjectCode)) {
+                progressPercent = p.getProgressPercent();
+                break;
+            }
+        }
+
+        // 2. Tìm bài học tiếp theo
+        Long nextLessonId = -1L; // Mặc định -1 nếu không có bài nào trong DB
+        List<Long> uncompleted = lessonRepository.findUncompletedLessonIds(user.getId(), subjectCode, gradeId);
+
+        if (!uncompleted.isEmpty()) {
+            nextLessonId = uncompleted.get(0); // Lấy bài chưa học đầu tiên
+        } else {
+            // Nếu đã học XONG HẾT, lấy bài học đầu tiên của môn đó để ôn tập lại
+            List<Long> allLessons = lessonRepository.findAllLessonIds(subjectCode, gradeId);
+            if (!allLessons.isEmpty()) {
+                nextLessonId = allLessons.get(0);
+            }
+        }
+        return new SubjectOverviewResponse(progressPercent, nextLessonId);
     }
 }

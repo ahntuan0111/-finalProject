@@ -1,6 +1,6 @@
 [versions]
 # Nâng AGP lên bản mới ổn định để hỗ trợ Kotlin 2.0
-agp = "8.5.1"
+agp = "8.6.0"
 
 # QUAN TRỌNG: Phải dùng Kotlin 2.0.0 trở lên mới có plugin 'kotlin-compose'
 kotlin = "2.0.0"
@@ -26,6 +26,7 @@ coil = "2.6.0"
 materialIconsExtended = "1.6.8"
 roomCompilerProcessingTesting = "2.8.4"
 firebaseAppdistributionGradle = "5.2.0"
+coreI18n = "1.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -64,6 +65,7 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-room-compiler-processing-testing = { group = "androidx.room", name = "room-compiler-processing-testing", version.ref = "roomCompilerProcessingTesting" }
 firebase-appdistribution-gradle = { group = "com.google.firebase", name = "firebase-appdistribution-gradle", version.ref = "firebaseAppdistributionGradle" }
+androidx-core-i18n = { group = "androidx.core", name = "core-i18n", version.ref = "coreI18n" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

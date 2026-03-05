@@ -2,6 +2,7 @@ package com.example.finalproject.domain.repository
 
 import com.example.finalproject.data.remote.model.ApiResponse
 import com.example.finalproject.data.remote.model.ProgressResponse
+import com.example.finalproject.data.remote.model.SubjectOverviewResponse
 
 interface ProgressRepository {
 
@@ -11,4 +12,5 @@ interface ProgressRepository {
      */
     suspend fun getMyProgress(grade: Int): ApiResponse<List<ProgressResponse>>
 
+    suspend fun getSubjectOverview(subjectCode: String, grade: Int): ApiResponse<SubjectOverviewResponse>
 }

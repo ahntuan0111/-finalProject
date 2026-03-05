@@ -1,17 +1,19 @@
 package com.example.finalproject.ui.screens.home
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -22,12 +24,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.finalproject.R
 import com.example.finalproject.data.remote.model.DashboardStat
 import com.example.finalproject.data.remote.model.SubjectItem
 import com.example.finalproject.ui.navigation.AppRoutes
@@ -41,7 +45,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val userName by viewModel.userName.collectAsState()
-    val subjects by viewModel.subjects.collectAsState() // Thêm dòng này để quan sát danh sách môn học
+    val subjects by viewModel.subjects.collectAsState() // Quan sát danh sách môn học
     val scrollState = rememberScrollState()
 
     // Gọi API để cập nhật tiến trình mỗi khi HomeScreen hiển thị
@@ -71,13 +75,13 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 3. Dashboard Thống kê
+        // 3. Dashboard Thống kê (UI MỚI)
         HomeDashboard(stats = viewModel.stats)
 
         Spacer(modifier = Modifier.height(32.dp))
 
         // 4. Môn học
-        HomeSubjects(subjects = subjects) { subjectIdString -> // Sử dụng biến 'subjects' đã collectAsState
+        HomeSubjects(subjects = subjects) { subjectIdString ->
             val dbSubjectCode = when(subjectIdString) {
                 "math" -> "toan"
                 "science" -> "khtn"
@@ -110,26 +114,55 @@ fun HomeHeader(userName: String) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column {
-            Text(
-                text = "👋 Xin chào, $userName!",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
+            // Dòng "Xin chào" với icon vẫy tay
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "👋 Xin chào, $userName!",
+                    fontSize = 26.sp, // To hơn chút để nổi bật
+                    fontWeight = FontWeight.ExtraBold, // Đậm hơn
+                    color = Color(0xFF1C2A3A) // Màu xanh đen đậm giống thiết kế
+                )
+            }
             Text(
                 text = "Hôm nay bạn muốn học gì?",
                 fontSize = 14.sp,
-                color = TextGray,
+                color = Color.Gray,
                 modifier = Modifier.padding(top = 4.dp)
             )
         }
-        // Avatar giả lập (Hình tròn xám)
+
+        // Khu vực Avatar có viền nhẹ và chấm thông báo màu đỏ
         Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .background(Color.LightGray)
-        )
+            modifier = Modifier.padding(top = 4.dp, end = 4.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(54.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFE8F0FE)) // Background nếu không có ảnh
+                    .border(2.dp, Color(0xFFEFEFEF), CircleShape), // Viền nhẹ
+                contentAlignment = Alignment.Center
+            ) {
+                // Tạm thời dùng icon hình người nếu không có ảnh thật
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Avatar",
+                    tint = Color.Gray,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
+            // Chấm đỏ thông báo góc trên cùng bên phải
+            Box(
+                modifier = Modifier
+                    .size(14.dp)
+                    .align(Alignment.TopEnd)
+                    .offset(x = 2.dp, y = (-2).dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFF04438)) // Màu đỏ nổi
+                    .border(2.dp, Color(0xFFFAFAFA), CircleShape) // Viền trắng để tách biệt với avatar
+            )
+        }
     }
 }
 
@@ -138,11 +171,12 @@ fun HomeSearchBar(onSearchClick: () -> Unit) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(50.dp)
-            .clickable { onSearchClick() }, // Bấm vào để chuyển trang
-        shape = RoundedCornerShape(50), // Bo tròn viên thuốc
+            .height(54.dp)
+            .clickable { onSearchClick() },
+        shape = RoundedCornerShape(20.dp), // Bo góc mềm mại
         color = Color.White,
-        shadowElevation = 2.dp
+        shadowElevation = 0.5.dp, // Đổ bóng cực nhẹ
+        border = BorderStroke(1.dp, Color(0xFFF0F0F0)) // Viền mờ
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -151,74 +185,180 @@ fun HomeSearchBar(onSearchClick: () -> Unit) {
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = "Search",
-                tint = TextGray
+                tint = Color.Gray
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = "Tìm bài học, chương, từ khoá...",
-                color = TextGray,
-                fontSize = 14.sp
+                color = Color.LightGray,
+                fontSize = 15.sp
             )
         }
     }
 }
 
+// ================= GIAO DIỆN DASHBOARD MỚI =================
 @Composable
 fun HomeDashboard(stats: List<DashboardStat>) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    // Lấy an toàn các dữ liệu từ danh sách stats
+    val progressStat = stats.getOrNull(0) ?: DashboardStat(0, "0%", "Tiến độ", Color.White)
+    val completedStat = stats.getOrNull(1) ?: DashboardStat(0, "0", "Bài đã xong", Color.White)
+    val streakStat = stats.getOrNull(2) ?: DashboardStat(0, "0", "Ngày", Color.White)
+
+    // Xử lý chuỗi "75%" thành số thập phân 0.75f để vẽ biểu đồ
+    val progressValue = progressStat.value.replace("%", "").toFloatOrNull()?.div(100f) ?: 0f
+
+    // Thẻ (Card) bao bọc toàn bộ Dashboard
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(160.dp), // Chiều cao cố định để 2 nửa cân đối
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        items(stats) { stat ->
-            StatCard(stat)
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // --- NỬA TRÁI: BIỂU ĐỒ VÒNG ---
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                contentAlignment = Alignment.Center
+            ) {
+                // Biểu đồ % vòng tròn
+                CircularProgressIndicator(
+                    progress = { progressValue },
+                    modifier = Modifier.size(110.dp),
+                    color = PrimaryBlue, // Màu xanh vệt chạy
+                    trackColor = Color(0xFFF4F6FB), // Màu nền xám nhạt của vòng
+                    strokeWidth = 12.dp,
+                    strokeCap = StrokeCap.Round // Bo tròn 2 đầu vệt chạy
+                )
+                // Chữ 75% ở giữa
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = progressStat.value,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 24.sp,
+                        color = Color(0xFF1C2A3A) // Xanh đen đậm
+                    )
+                    Text(
+                        text = progressStat.label.uppercase(),
+                        fontSize = 10.sp,
+                        color = Color.Gray,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // --- NỬA PHẢI: 2 THẺ THỐNG KÊ NHỎ ---
+            Column(
+                modifier = Modifier
+                    .weight(1.1f)
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Thẻ 1: Bài đã xong
+                MiniStatCard(
+                    modifier = Modifier.weight(1f), // <--- TRUYỀN WEIGHT Ở ĐÂY
+                    iconRes = completedStat.imageRes,
+                    value = completedStat.value,
+                    label = completedStat.label,
+                    bgColor = Color(0xFFF2FCF5),
+                    iconBg = Color.White
+                )
+
+                // Thẻ 2: Streak
+                MiniStatCard(
+                    modifier = Modifier.weight(1f), // <--- TRUYỀN WEIGHT Ở ĐÂY
+                    iconRes = streakStat.imageRes,
+                    value = "${streakStat.value} Ngày",
+                    label = "Streak",
+                    bgColor = Color(0xFFFFF9F0),
+                    iconBg = Color.White
+                )
+            }
         }
     }
 }
 
 @Composable
-fun StatCard(stat: DashboardStat) {
+fun MiniStatCard(iconRes: Int, value: String, label: String, bgColor: Color, iconBg: Color,modifier: Modifier = Modifier) {
     Card(
-        modifier = Modifier.size(width = 100.dp, height = 110.dp),
-        shape = RoundedCornerShape(24.dp), // Bo góc mềm hơn (24.dp)
-        colors = CardDefaults.cardColors(containerColor = stat.color),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        // 2. Gọi modifier từ tham số vào đây, và XÓA dòng .weight(1f) đi
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = bgColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, bgColor.copy(alpha = 0.8f))
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Thay Icon bằng Image để hiển thị màu gốc
-            Image(
-                painter = painterResource(id = stat.imageRes),
-                contentDescription = null,
-                modifier = Modifier.size(32.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = stat.value,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                color = Color.Black
-            )
-            Text(
-                text = stat.label,
-                fontSize = 12.sp,
-                color = TextGray
-            )
+            // Box bọc Icon
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(iconBg)
+                    .border(1.dp, Color(0xFFEFEFEF), RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = iconRes),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Text
+            Column {
+                Text(
+                    text = value,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 15.sp,
+                    color = Color(0xFF1C2A3A)
+                )
+                Text(
+                    text = label,
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
+            }
         }
     }
 }
+// ================= KẾT THÚC GIAO DIỆN DASHBOARD MỚI =================
 
 @Composable
 fun HomeSubjects(subjects: List<SubjectItem>, onClick: (String) -> Unit) {
     Column {
-        Text(
-            text = "📚 Môn học của bạn",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 16.dp)) {
+            // Giả lập icon cuốn sách nhỏ trước chữ Môn học của bạn
+            Text("📚 ", fontSize = 20.sp)
+            Text(
+                text = "Môn học của bạn",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color(0xFF1C2A3A)
+            )
+        }
 
         subjects.forEach { subject ->
             SubjectCard(subject = subject, onClick = { onClick(subject.id) })
@@ -233,9 +373,9 @@ fun SubjectCard(subject: SubjectItem, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp), // Bo góc giống UI
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp) // Đổ bóng nhẹ
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -244,7 +384,7 @@ fun SubjectCard(subject: SubjectItem, onClick: () -> Unit) {
             // Icon môn học (Box màu nền)
             Box(
                 modifier = Modifier
-                    .size(56.dp)
+                    .size(64.dp) // To ra một chút
                     .clip(RoundedCornerShape(16.dp))
                     .background(subject.color),
                 contentAlignment = Alignment.Center
@@ -258,33 +398,33 @@ fun SubjectCard(subject: SubjectItem, onClick: () -> Unit) {
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Thông tin text (Đã xóa bỏ cấu trúc lồng lặp)
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = subject.name,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
+                    fontSize = 17.sp,
+                    color = Color(0xFF1C2A3A)
                 )
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 LinearProgressIndicator(
                     progress = { subject.progress },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(8.dp) // Dày hơn chút
-                        .clip(RoundedCornerShape(4.dp)),
+                        .height(6.dp) // Mỏng lại cho thanh thoát
+                        .clip(RoundedCornerShape(3.dp)),
                     color = PrimaryBlue,
-                    trackColor = Color(0xFFF5F5F5),
+                    trackColor = Color(0xFFF0F0F0),
                 )
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                // Hiển thị số bài học, xử lý trường hợp tổng bài học bằng 0
+                // Hiển thị số bài học
                 Text(
                     text = if (subject.totalLessons == 0) "Chưa có dữ liệu"
                     else "${subject.finishedLessons}/${subject.totalLessons} bài học",
                     fontSize = 12.sp,
-                    color = TextGray
+                    color = Color.Gray
                 )
             }
         }
@@ -293,53 +433,83 @@ fun SubjectCard(subject: SubjectItem, onClick: () -> Unit) {
 
 @Composable
 fun HomeAiAssistant(onAiClick: () -> Unit) {
-    // Card AI nổi bật hơn một chút với Gradient hoặc màu riêng
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onAiClick() },
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8EAF6)), // Màu xanh tím nhạt
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF4F6FB)), // Màu xanh xám nhạt
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.SmartToy,
-                    contentDescription = "AI",
-                    tint = PrimaryBlue,
-                    modifier = Modifier.size(28.dp)
-                )
+                // Background icon AI
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.White),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SmartToy,
+                        contentDescription = "AI",
+                        tint = PrimaryBlue,
+                        modifier = Modifier.size(26.dp)
+                    )
+                }
+
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
                         text = "Trợ lý học tập AI",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 17.sp,
                         color = PrimaryBlue
                     )
                     Text(
                         text = "Hỏi bài - Giải thích - Gợi ý",
-                        fontSize = 12.sp,
-                        color = TextGray
+                        fontSize = 13.sp,
+                        color = Color.Gray
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Giả lập ô input
+            // Giả lập ô input có viền bo tròn và icon gửi
             Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                shape = RoundedCornerShape(24.dp),
                 color = Color.White
             ) {
-                Text(
-                    text = "Hỏi AI: Giải giúp mình bài này...",
-                    color = TextGray,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(12.dp)
-                )
+                Row(
+                    modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Hỏi AI: Giải giúp mình bài này...",
+                        color = Color.LightGray,
+                        fontSize = 14.sp
+                    )
+
+                    // Nút gửi AI màu xanh
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(PrimaryBlue),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Send,
+                            contentDescription = "Send",
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
             }
         }
     }

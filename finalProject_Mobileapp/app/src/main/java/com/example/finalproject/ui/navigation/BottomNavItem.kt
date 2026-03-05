@@ -10,7 +10,7 @@ sealed class BottomNavItem(
     val icon: ImageVector
 ) {
     object Home : BottomNavItem(AppRoutes.HOME, "Home", Icons.Default.Home)
-    object Dashboard : BottomNavItem("dashboard", "Thống kê", Icons.Default.BarChart)
+    object Dashboard : BottomNavItem(AppRoutes.DASHBOARD, "Thống kê", Icons.Default.BarChart)
     object AiChat : BottomNavItem("ai_chat", "AI Chat", Icons.Default.SmartToy) // Hoặc icon Chat
     object User : BottomNavItem(AppRoutes.USER, "Cá nhân", Icons.Default.Person)
 }

@@ -10,6 +10,7 @@ import com.example.finalproject.utils.DataStoreManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -19,26 +20,25 @@ class UserViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val dataStoreManager: DataStoreManager
 ) : ViewModel() {
+
     var profile = mutableStateOf<UserProfileResponse?>(null)
         private set
 
     var isLoading = mutableStateOf(false)
         private set
 
-    init {
-        fetchProfile()
-    }
-    // Tự động theo dõi Grade từ DataStore
-    // Nếu DataStore đổi, biến này tự cập nhật theo
-    val userGrade: StateFlow<Int?> = dataStoreManager.getGrade()
+    // ĐÃ SỬA LỖI: Dùng map { it ?: 6 } để đảm bảo luôn trả về Int thay vì Int?
+    val currentGrade: StateFlow<Int> = dataStoreManager.getGrade()
+        .map { it ?: 6 }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = null
+            initialValue = 6
         )
 
-    // Tương tự cho UserName nếu cần
-    // val userName = ...
+    init {
+        fetchProfile()
+    }
 
     fun fetchProfile() {
         viewModelScope.launch {
@@ -66,6 +66,12 @@ class UserViewModel @Inject constructor(
             } finally {
                 isLoading.value = false
             }
+        }
+    }
+
+    fun saveGrade(newGrade: Int) {
+        viewModelScope.launch {
+            dataStoreManager.saveGrade(newGrade)
         }
     }
 }

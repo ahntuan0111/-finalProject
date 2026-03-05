@@ -1,11 +1,8 @@
 package com.example.finalproject.ui.screens.theory
 
 import android.annotation.SuppressLint
-import android.net.Uri // Import quan trọng để xử lý Link
-import android.view.ViewGroup
-import android.webkit.WebChromeClient
+import android.net.Uri
 import android.webkit.WebView
-import android.webkit.WebViewClient
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,15 +15,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.viewmodel.TheoryDetailViewModel
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,7 +97,7 @@ fun TheoryDetailScreen(
                             )
                         }
 
-                        // 2. VIDEO
+                        // 2. VIDEO (SỬ DỤNG NATIVE YOUTUBE PLAYER LIBRARY)
                         if (!data.videoUrl.isNullOrEmpty()) {
                             item {
                                 Text(
@@ -105,7 +107,20 @@ fun TheoryDetailScreen(
                                     modifier = Modifier.padding(bottom = 8.dp)
                                 )
 
-                                VideoWebView(videoUrl = data.videoUrl)
+                                val videoId = extractYoutubeVideoId(data.videoUrl)
+                                if (videoId.isNotEmpty()) {
+                                    NativeYouTubePlayer(videoId = videoId)
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(200.dp)
+                                            .background(Color.Black),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text("Link video không hợp lệ", color = Color.White)
+                                    }
+                                }
 
                                 Spacer(modifier = Modifier.height(16.dp))
                                 HorizontalDivider(thickness = 1.dp, color = Color.LightGray)
@@ -114,6 +129,11 @@ fun TheoryDetailScreen(
                         }
 
                         // 3. NỘI DUNG (Text/LaTeX/Image)
+                        // LƯU Ý HIỆU NĂNG: Nếu danh sách data.contents có nhiều item "TEXT",
+                        // việc đặt LatexWebView (bản chất là 1 WebView) bên trong vòng lặp items()
+                        // sẽ tạo ra vô số WebView, gây giật lag cực mạnh khi cuộn (scroll).
+                        // CÁCH TỐI ƯU TỐT NHẤT: Bạn nên gộp tất cả content loại TEXT thành 1 chuỗi HTML duy nhất
+                        // và chỉ render 1 LatexWebView cho toàn bộ bài học.
                         items(data.contents) { content ->
                             when (content.contentType) {
                                 "TEXT" -> {
@@ -138,15 +158,13 @@ fun TheoryDetailScreen(
                         item {
                             Spacer(modifier = Modifier.height(24.dp))
 
-                            // Gộp logic: Nếu local state là true HOẶC api trả về là true (nếu data.isCompleted có tồn tại)
-                            // Ở đây ta dùng isCompletedState của viewmodel.
                             val finalIsCompleted = isCompletedState
 
                             Button(
                                 onClick = { viewModel.markAsCompleted(data.id) },
-                                enabled = !finalIsCompleted && !isSubmitting, // Disable nếu đã hoàn thành hoặc đang submit
+                                enabled = !finalIsCompleted && !isSubmitting,
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = if (finalIsCompleted) Color(0xFF52C41A) else PrimaryBlue, // Đổi màu xanh lá nếu xong
+                                    containerColor = if (finalIsCompleted) Color(0xFF52C41A) else PrimaryBlue,
                                     disabledContainerColor = if (finalIsCompleted) Color(0xFF52C41A).copy(alpha = 0.8f) else Color.Gray
                                 ),
                                 modifier = Modifier
@@ -168,8 +186,6 @@ fun TheoryDetailScreen(
                                     Text("Đánh dấu hoàn thành", fontSize = 16.sp, color = Color.White, fontWeight = FontWeight.Bold)
                                 }
                             }
-
-                            // Khoảng trống dưới cùng để không bị sát mép
                             Spacer(modifier = Modifier.height(32.dp))
                         }
                     }
@@ -179,100 +195,60 @@ fun TheoryDetailScreen(
     }
 }
 
-// --- COMPOSABLE VIDEO (SỬ DỤNG URI PARSE & ORIGIN FIX) ---
-
-@SuppressLint("SetJavaScriptEnabled")
+// --- COMPONENT CHƠI VIDEO NATIVE (CỰC KỲ TỐI ƯU) ---
 @Composable
-fun VideoWebView(videoUrl: String) {
-    // 1. Dùng Uri parse để lấy ID chuẩn xác từ mọi loại link (kể cả link có list, index...)
-    val videoId = extractYoutubeVideoId(videoUrl)
+fun NativeYouTubePlayer(videoId: String) {
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-    // 2. Thêm tham số origin để tránh lỗi "Unavailable"
-    val embedUrl = "https://www.youtube.com/embed/$videoId?playsinline=1&rel=0&origin=https://www.youtube.com"
+    // Lưu trữ tham chiếu (reference) của player để update khi cần
+    var youtubePlayerRef by remember { mutableStateOf<YouTubePlayer?>(null) }
 
-    val html = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <style>
-                body, html { margin: 0; padding: 0; background-color: black; height: 100%; overflow: hidden; }
-                iframe { width: 100%; height: 100%; border: none; }
-            </style>
-        </head>
-        <body>
-            <iframe 
-                src="$embedUrl" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowfullscreen>
-            </iframe>
-        </body>
-        </html>
-    """.trimIndent()
+    AndroidView(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(16f / 9f) // QUAN TRỌNG: Ép tỷ lệ 16:9 chuẩn của YouTube để View không bị co về 0
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color.Black), // Thêm nền đen trong lúc chờ load
+        factory = { context ->
+            YouTubePlayerView(context).apply {
+                // Rất quan trọng để quản lý vòng đời (pause khi ẩn app)
+                lifecycleOwner.lifecycle.addObserver(this)
 
-    if (videoId.isNotEmpty()) {
-        AndroidView(
-            factory = { context ->
-                WebView(context).apply {
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-                    settings.javaScriptEnabled = true
-                    settings.domStorageEnabled = true
-                    settings.loadWithOverviewMode = true
-                    settings.useWideViewPort = true
-
-                    webChromeClient = WebChromeClient()
-                    webViewClient = WebViewClient()
-                }
-            },
-            update = { webView ->
-                // BaseURL có dấu / ở cuối để đảm bảo khớp origin
-                webView.loadDataWithBaseURL("https://www.youtube.com/", html, "text/html", "UTF-8", null)
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(220.dp)
-                .background(Color.Black)
-        )
-    } else {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(220.dp)
-                .background(Color.Black),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("Link video không hợp lệ", color = Color.White)
+                addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
+                    override fun onReady(youTubePlayer: YouTubePlayer) {
+                        youtubePlayerRef = youTubePlayer
+                        youTubePlayer.cueVideo(videoId, 0f) // cueVideo: Nạp video nhưng không tự động phát
+                    }
+                })
+            }
+        },
+        update = { _ ->
+            // Mỗi khi videoId từ ViewModel thay đổi, Compose sẽ gọi khối update này
+            // Giúp nạp đúng video ngay cả khi API phản hồi chậm
+            youtubePlayerRef?.cueVideo(videoId, 0f)
         }
-    }
+    )
 }
 
 /**
- * Hàm tách ID Youtube bằng Android Uri (Chính xác nhất)
- * Xử lý được:
- * - youtube.com/watch?v=ID&list=...
- * - youtu.be/ID
- * - youtube.com/shorts/ID
- * - youtube.com/embed/ID
+ * Hàm tách ID Youtube
  */
 fun extractYoutubeVideoId(url: String): String {
     return try {
         val uri = Uri.parse(url)
         val host = uri.host ?: return ""
 
-        if (host.contains("youtu.be")) {
-            uri.lastPathSegment ?: ""
-        } else if (host.contains("youtube.com")) {
-            val path = uri.path ?: ""
-            when {
-                path.startsWith("/shorts/") -> uri.lastPathSegment ?: ""
-                path.startsWith("/embed/") -> uri.lastPathSegment ?: ""
-                else -> uri.getQueryParameter("v") ?: ""
+        when {
+            host.contains("youtu.be") -> uri.lastPathSegment ?: ""
+            host.contains("youtube.com") -> {
+                val path = uri.path ?: ""
+                when {
+                    path.startsWith("/shorts/") -> uri.lastPathSegment ?: ""
+                    path.startsWith("/embed/") -> uri.lastPathSegment ?: ""
+                    else -> uri.getQueryParameter("v") ?: ""
+                }
             }
-        } else {
-            ""
+            else -> ""
         }
     } catch (e: Exception) {
         ""
@@ -280,7 +256,6 @@ fun extractYoutubeVideoId(url: String): String {
 }
 
 // --- COMPOSABLE LATEX (GIỮ NGUYÊN) ---
-
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun LatexWebView(content: String) {
