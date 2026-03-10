@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Table, Button, Space, message, Select, Popconfirm, Tag, Breadcrumb } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import React, { useState, useEffect, useRef } from 'react';
+// ĐÃ BỔ SUNG Row, Col, Image VÀO DÒNG DƯỚI ĐÂY
+import { Card, Table, Button, Space, message, Select, Popconfirm, Tag, Breadcrumb, Empty, Typography, Tooltip, Row, Col, Image } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, BookOutlined, FolderOpenOutlined, FileTextOutlined } from '@ant-design/icons';
 
 // Import các API
 import exerciseApi from "../../api/exerciseApi"; 
@@ -11,11 +12,40 @@ import subjectApi from "../../api/subjectApi";
 // Import Modal
 import ExerciseModal from "./ExerciseModal";
 
+const { Title, Text } = Typography;
+
 // Helper lấy URL ảnh
 const getFullImageUrl = (path) => {
   if (!path) return '';
   if (path.startsWith('http')) return path;
   return `${import.meta.env.VITE_API_URL.replace('/api', '')}${path}`; 
+};
+
+// Component con để Render LaTeX an toàn trong Table
+const MathRenderer = ({ htmlContent }) => {
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    // Gọi MathJax để render lại toán học mỗi khi content thay đổi
+    if (window.MathJax && containerRef.current) {
+      window.MathJax.typesetPromise([containerRef.current]).catch((err) => console.log(err));
+    }
+  }, [htmlContent]);
+
+  return (
+    <div 
+      ref={containerRef}
+      style={{ 
+        display: '-webkit-box', 
+        WebkitLineClamp: 2, 
+        WebkitBoxOrient: 'vertical', 
+        overflow: 'hidden', 
+        textOverflow: 'ellipsis',
+        lineHeight: '1.6'
+      }}
+      dangerouslySetInnerHTML={{ __html: htmlContent }} 
+    />
+  );
 };
 
 const ExercisePage = () => {
@@ -47,6 +77,15 @@ const ExercisePage = () => {
       }
     };
     fetchSubjects();
+    
+    // Đảm bảo MathJax script được tải vào
+    if (!document.getElementById('mathjax-script')) {
+        const script = document.createElement('script');
+        script.id = 'mathjax-script';
+        script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+        script.async = true;
+        document.head.appendChild(script);
+    }
   }, []);
 
   // 2. Load Chương khi chọn Môn học
@@ -62,7 +101,6 @@ const ExercisePage = () => {
       };
       fetchChapters();
       
-      // Reset cấp con
       setChapters([]);
       setSelectedChapterId(null);
       setLessons([]);
@@ -160,98 +198,113 @@ const ExercisePage = () => {
     }
   };
 
-  // --- Columns Table (ĐÃ CẬP NHẬT RENDER CÂU HỎI) ---
+  const currentLessonName = lessons.find(l => l.id === selectedLessonId)?.title || "";
+
+  // --- Columns Table ---
   const columns = [
     {
       title: 'STT',
       dataIndex: 'orderNo',
-      width: 70,
+      width: 80,
       align: 'center',
-      render: (text) => <Tag color="blue">#{text}</Tag>
+      render: (text) => <Text type="secondary" strong>#{text}</Text>
     },
     {
-      title: 'Câu hỏi',
+      title: 'Nội dung câu hỏi',
       key: 'question',
-      width: '40%',
+      width: '55%',
       render: (_, record) => {
-        // 1. Nếu là ẢNH
         if (record.questionType === 'IMAGE') {
             return (
-                <div style={{ textAlign: 'left' }}>
-                    <img 
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                    <div style={{ padding: '4px 8px', background: '#e6f4ff', borderRadius: 4 }}>
+                        <Text type="secondary" style={{ fontSize: 10, fontWeight: 'bold', color: '#1677ff' }}>ẢNH</Text>
+                    </div>
+                    <Image 
                         src={getFullImageUrl(record.questionValue)} 
                         alt="Question" 
-                        style={{ maxHeight: 80, maxWidth: '100%', objectFit: 'contain', borderRadius: 4, border: '1px solid #eee' }} 
+                        style={{ maxHeight: 60, maxWidth: 200, objectFit: 'contain', borderRadius: 4, border: '1px solid #f0f0f0' }} 
+                        fallback="https://via.placeholder.com/200x60?text=L%E1%BB%97i+%E1%BA%A3nh"
                     />
-                    <div style={{ fontSize: 11, color: '#888', marginTop: 4 }}>
-                        <Tag color="cyan">IMAGE</Tag>
-                    </div>
                 </div>
             );
         }
-        // 2. Nếu là TEXT
+        
         return (
-            <div>
-               <div 
-                  style={{ maxHeight: 80, overflow: 'hidden', textOverflow: 'ellipsis' }}
-                  dangerouslySetInnerHTML={{ __html: record.questionValue }} 
-               />
-               <div style={{ fontSize: 11, marginTop: 4 }}>
-                   <Tag color="blue">TEXT</Tag>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+               <div style={{ padding: '4px 8px', background: '#f6ffed', borderRadius: 4, marginTop: 4 }}>
+                    <Text type="secondary" style={{ fontSize: 10, fontWeight: 'bold', color: '#52c41a' }}>VĂN BẢN</Text>
                </div>
+               <MathRenderer htmlContent={record.questionValue} />
             </div>
         );
       }
     },
     {
-      title: 'Số bước giải',
+      title: 'Các bước giải',
       dataIndex: 'solutions',
       align: 'center',
-      width: 120,
-      render: (solutions) => <Tag color="green">{solutions?.length || 0} bước</Tag>
+      width: 150,
+      render: (solutions) => (
+        <Tag color="processing" style={{ borderRadius: 12, padding: '2px 10px' }}>
+            {solutions?.length || 0} bước
+        </Tag>
+      )
     },
     {
-      title: 'Hành động',
+      title: 'Thao tác',
       key: 'action',
       width: 120,
-      align: 'center',
+      align: 'right',
       render: (_, record) => (
-        <Space>
-          <Button icon={<EditOutlined />} size="small" onClick={() => handleEdit(record)} />
-          <Popconfirm title="Xóa bài tập này?" onConfirm={() => handleDelete(record.id)}>
-            <Button icon={<DeleteOutlined />} size="small" danger />
-          </Popconfirm>
+        <Space size="middle">
+          <Tooltip title="Chỉnh sửa bài tập">
+              <Button type="text" icon={<EditOutlined style={{ color: '#1677ff' }}/>} onClick={() => handleEdit(record)} />
+          </Tooltip>
+          <Tooltip title="Xóa bài tập">
+              <Popconfirm title="Bạn có chắc chắn muốn xóa bài tập này?" onConfirm={() => handleDelete(record.id)}>
+                <Button type="text" danger icon={<DeleteOutlined />} />
+              </Popconfirm>
+          </Tooltip>
         </Space>
       )
     }
   ];
 
   return (
-    <div style={{ padding: 24 }}>
-      <Breadcrumb items={[{ title: 'Trang chủ' }, { title: 'Ngân hàng bài tập' }]} style={{ marginBottom: 16 }} />
+    <div style={{ padding: '24px', backgroundColor: '#f5f7fa', minHeight: '100vh' }}>
       
-      <Card title="Quản lý Ngân hàng Bài tập" bordered={false}>
-        
-        {/* --- BỘ LỌC 3 CẤP --- */}
-        <div style={{ marginBottom: 20, display: 'flex', gap: 16, background: '#f9f9f9', padding: 20, borderRadius: 8, border: '1px solid #eee', flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: 200 }}>
-                <div style={{ marginBottom: 6, fontWeight: 600, color: '#555' }}>1. Chọn Môn học:</div>
+      {/* --- BREADCRUMB & HEADER --- */}
+      <div style={{ marginBottom: '24px' }}>
+        <Breadcrumb items={[{ title: 'Dashboard' }, { title: 'Ngân hàng bài tập' }]} style={{ fontSize: '13px' }}/>
+        <Title level={3} style={{ margin: '8px 0 0 0' }}>Quản lý Ngân hàng Bài tập</Title>
+      </div>
+      
+      {/* --- BỘ LỌC (TOOLBAR DẢI BĂNG) --- */}
+      <Card 
+        variant="borderless" 
+        style={{ marginBottom: 24, borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
+        styles={{ body: { padding: '16px 24px' } }}
+      >
+        <Row gutter={[16, 16]} align="middle">
+            <Col xs={24} md={8}>
                 <Select 
+                    size="large"
                     style={{ width: '100%' }} 
-                    placeholder="-- Chọn môn --"
+                    placeholder={<span><BookOutlined /> Chọn Môn học</span>}
                     onChange={setSelectedSubjectId}
                     value={selectedSubjectId}
                     options={subjects.map(s => ({ label: s.name, value: s.id }))}
                     showSearch
                     filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                 />
-            </div>
+            </Col>
 
-            <div style={{ flex: 1, minWidth: 200 }}>
-                <div style={{ marginBottom: 6, fontWeight: 600, color: '#555' }}>2. Chọn Chương:</div>
+            <Col xs={24} md={8}>
                 <Select 
+                    size="large"
                     style={{ width: '100%' }} 
-                    placeholder="-- Chọn chương --"
+                    placeholder={<span><FolderOpenOutlined /> Chọn Chương</span>}
                     onChange={setSelectedChapterId}
                     value={selectedChapterId}
                     disabled={!selectedSubjectId}
@@ -259,13 +312,13 @@ const ExercisePage = () => {
                     showSearch
                     filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                 />
-            </div>
+            </Col>
 
-            <div style={{ flex: 1, minWidth: 200 }}>
-                <div style={{ marginBottom: 6, fontWeight: 600, color: '#555' }}>3. Chọn Bài học:</div>
+            <Col xs={24} md={8}>
                 <Select 
+                    size="large"
                     style={{ width: '100%' }} 
-                    placeholder="-- Chọn bài học --"
+                    placeholder={<span><FileTextOutlined /> Chọn Bài học</span>}
                     onChange={setSelectedLessonId}
                     value={selectedLessonId}
                     disabled={!selectedChapterId}
@@ -273,32 +326,50 @@ const ExercisePage = () => {
                     showSearch
                     filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                 />
-            </div>
+            </Col>
+        </Row>
+      </Card>
 
-            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-                <Button 
-                    type="primary" 
-                    icon={<PlusOutlined />} 
-                    onClick={handleCreate}
-                    disabled={!selectedLessonId}
-                    size="large"
-                    style={{ minWidth: 140 }}
-                >
-                    Thêm Bài Tập
-                </Button>
+      {/* --- KHU VỰC DỮ LIỆU --- */}
+      <Card 
+        variant="borderless" 
+        style={{ borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', minHeight: '400px' }}
+        styles={{ body: { padding: selectedLessonId ? '0' : '24px' } }}
+      >
+        {!selectedLessonId ? (
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%', paddingTop: '60px', paddingBottom: '60px' }}>
+                <FolderOpenOutlined style={{ fontSize: '64px', color: '#e0e0e0', marginBottom: '16px' }} />
+                <Title level={4} style={{ color: '#8c8c8c' }}>Chưa có dữ liệu hiển thị</Title>
+                <Text type="secondary">Vui lòng chọn lần lượt Môn học, Chương và Bài học ở thanh công cụ phía trên để xem danh sách bài tập.</Text>
             </div>
-        </div>
+        ) : (
+            <>
+                <div style={{ padding: '20px 24px', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                        <Title level={5} style={{ margin: 0, color: '#1f1f1f' }}>Danh sách Bài tập</Title>
+                        <Text type="secondary" style={{ fontSize: 13 }}>Thuộc bài: <span style={{ color: '#1677ff', fontWeight: 500 }}>{currentLessonName}</span></Text>
+                    </div>
+                    <Button 
+                        type="primary" 
+                        icon={<PlusOutlined />} 
+                        onClick={handleCreate}
+                        style={{ borderRadius: '6px' }}
+                    >
+                        Thêm Bài Tập Mới
+                    </Button>
+                </div>
 
-        {/* --- TABLE --- */}
-        <Table 
-            columns={columns} 
-            dataSource={exercises} 
-            rowKey="id" 
-            loading={loading}
-            locale={{ emptyText: !selectedLessonId ? 'Vui lòng chọn đầy đủ Môn -> Chương -> Bài học' : 'Chưa có dữ liệu bài tập' }}
-            pagination={{ pageSize: 10 }}
-            bordered
-        />
+                <Table 
+                    columns={columns} 
+                    dataSource={exercises} 
+                    rowKey="id" 
+                    loading={loading}
+                    locale={{ emptyText: <Empty description="Bài học này chưa có bài tập nào" image={Empty.PRESENTED_IMAGE_SIMPLE} /> }}
+                    pagination={{ pageSize: 10 }}
+                    rowClassName={() => 'custom-table-row'}
+                />
+            </>
+        )}
       </Card>
 
       <ExerciseModal 

@@ -8,20 +8,29 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.lifecycleScope
+import com.example.finalproject.data.remote.ApiService
 import com.example.finalproject.ui.MainScreen
 import com.example.finalproject.ui.navigation.AppRoutes
 import com.example.finalproject.ui.theme.FinalProjectTheme
 import com.example.finalproject.utils.DataStoreManager
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var dataStoreManager: DataStoreManager
+
+    // Gọi ApiService để push token lên BE
+    @Inject
+    lateinit var apiService: ApiService
 
     // Bộ công cụ xin quyền thông báo (Bắt buộc từ Android 13+)
     private val requestPermissionLauncher = registerForActivityResult(
@@ -38,7 +47,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         // =================================================================
-        // PHẦN 1: CẤU HÌNH THÔNG BÁO FIREBASE (FCM)
+        // PHẦN 1: CẤU HÌNH THÔNG BÁO FIREBASE & GỬI TOKEN LÊN BACKEND
         // =================================================================
 
         // Xin quyền hiển thị thông báo (Chỉ gọi lệnh này trên Android 13 trở lên)
@@ -46,7 +55,7 @@ class MainActivity : ComponentActivity() {
             requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
 
-        // Lấy FCM Token (Mã định danh thiết bị) để in ra Logcat
+        // Lấy FCM Token và gửi lên BE
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (!task.isSuccessful) {
                 Log.w("FCM_TOKEN", "Lấy token thất bại", task.exception)
@@ -56,8 +65,26 @@ class MainActivity : ComponentActivity() {
             val token = task.result
             Log.d("FCM_TOKEN", "MÃ THIẾT BỊ LÀ: $token")
 
-            // (Tùy chọn) Gợi ý: Về sau, nếu người dùng đã đăng nhập,
-            // bạn có thể gọi API gửi token này lên Spring Boot tại đây.
+            // Gửi Token lên Backend bằng Coroutine
+            lifecycleScope.launch(Dispatchers.IO) {
+                // Chỉ gửi nếu người dùng đã đăng nhập (có JWT)
+                val jwtToken = dataStoreManager.getTokenSync()
+                if (!jwtToken.isNullOrEmpty()) {
+                    try {
+                        val requestBody = mapOf("fcmToken" to token)
+                        val response = apiService.updateFcmToken(requestBody)
+                        if (response.isSuccessful) {
+                            Log.d("FCM_API", "Đã lưu FCM Token lên Backend thành công!")
+                        } else {
+                            Log.e("FCM_API", "Lỗi BE trả về: ${response.errorBody()?.string()}")
+                        }
+                    } catch (e: Exception) {
+                        Log.e("FCM_API", "Call API thất bại: ${e.message}")
+                    }
+                } else {
+                    Log.d("FCM_API", "User chưa đăng nhập, không gửi token lên BE")
+                }
+            }
         }
 
         // =================================================================
@@ -79,7 +106,7 @@ class MainActivity : ComponentActivity() {
             FinalProjectTheme {
                 MainScreen(
                     dataStoreManager = dataStoreManager,
-                    startDestination = startDestination // Truyền biến này vào MainScreen
+                    startDestination = startDestination
                 )
             }
         }

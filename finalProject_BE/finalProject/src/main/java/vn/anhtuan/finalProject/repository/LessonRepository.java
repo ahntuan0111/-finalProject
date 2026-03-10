@@ -4,6 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import vn.anhtuan.finalProject.entity.Lesson;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface LessonRepository extends JpaRepository<Lesson, Long> {
@@ -27,4 +29,13 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
             "WHERE l.chapter.subject.code = :subjectCode AND l.chapter.subject.grade.id = :gradeId " +
             "ORDER BY l.chapter.orderNo ASC, l.orderNo ASC")
     List<Long> findAllLessonIds(@Param("subjectCode") String subjectCode, @Param("gradeId") Integer gradeId);
+
+    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+
+    List<Lesson> findTop5ByOrderByCreatedAtDesc();
+
+    // Query đếm số bài học theo từng Môn học (Cho biểu đồ Donut)
+    // Giả định Lesson liên kết với Chapter, Chapter liên kết với Subject
+    @Query("SELECT s.name, COUNT(l.id) FROM Lesson l JOIN l.chapter c JOIN c.subject s GROUP BY s.name")
+    List<Object[]> countLessonsGroupedBySubject();
 }

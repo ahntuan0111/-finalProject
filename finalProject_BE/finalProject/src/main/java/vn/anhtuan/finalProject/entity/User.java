@@ -55,6 +55,9 @@ public class User {
     @Column(name = "total_minutes")
     private Integer totalMinutes = 0;
 
+    @Column(name = "fcm_token")
+    private String fcmToken;
+
     public Long getId() {
         return id;
     }
@@ -149,5 +152,13 @@ public class User {
 
     public void setTotalMinutes(Integer totalMinutes) {
         this.totalMinutes = totalMinutes;
+    }
+
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
     }
 }

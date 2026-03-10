@@ -1,8 +1,12 @@
-import React, { useEffect } from 'react';
-import { Modal, Form, Input, InputNumber, Button, Space, Card, Select, Upload, message, Image } from 'antd';
-import { MinusCircleOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import React, { useEffect, useState } from 'react';
+import { Modal, Form, Input, InputNumber, Button, Space, Select, Upload, message, Image, Collapse, Typography, Divider } from 'antd';
+// ĐÃ THÊM PlayCircleOutlined VÀO ĐÂY
+import { MinusCircleOutlined, PlusOutlined, UploadOutlined, FileTextOutlined, PictureOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import MathEditor from '../../components/editor/MathEditor';
 import uploadApi from '../../api/uploadApi';
+
+const { Text } = Typography;
+const { Panel } = Collapse;
 
 const getFullImageUrl = (path) => {
   if (!path) return '';
@@ -12,11 +16,11 @@ const getFullImageUrl = (path) => {
 
 const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrderNo }) => {
   const [form] = Form.useForm();
+  const [activeKey, setActiveKey] = useState(['0']); 
 
   useEffect(() => {
     if (open) {
       if (initialValues) {
-        // --- CHẾ ĐỘ SỬA ---
         form.setFieldsValue({
           title: initialValues.title,
           videoUrl: initialValues.videoUrl,
@@ -27,13 +31,15 @@ const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrde
             order: c.contentOrder
           }))
         });
+        const keys = initialValues.contents.map((_, i) => i.toString());
+        setActiveKey(keys);
       } else {
-        // --- CHẾ ĐỘ TẠO MỚI ---
         form.resetFields();
         form.setFieldsValue({
             orderNo: nextOrderNo || 1, 
             contents: [{ type: 'TEXT', value: '', order: 1 }] 
         });
+        setActiveKey(['0']);
       }
     }
   }, [initialValues, open, form, nextOrderNo]);
@@ -43,7 +49,6 @@ const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrde
       const res = await uploadApi.uploadImage(file);
       if (res.success) {
         onSuccess("ok");
-        // Update form value
         const contents = form.getFieldValue('contents');
         contents[name].value = res.data;
         form.setFieldsValue({ contents });
@@ -57,7 +62,6 @@ const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrde
 
   const handleOk = () => {
     form.validateFields().then((values) => {
-      // Đảm bảo thứ tự order
       const processedContents = values.contents.map((c, idx) => ({
           ...c,
           order: idx + 1
@@ -68,7 +72,11 @@ const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrde
 
   return (
     <Modal
-      title={initialValues ? "Cập nhật Bài học" : "Tạo Bài học mới"}
+      title={
+        <Text strong style={{ fontSize: '18px' }}>
+          {initialValues ? "Chỉnh sửa Bài học" : "Tạo Bài học mới"}
+        </Text>
+      }
       open={open}
       onOk={handleOk}
       onCancel={onClose}
@@ -76,137 +84,169 @@ const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrde
       width={900}
       maskClosable={false}
       style={{ top: 20 }}
+      okText="Lưu Bài học"
+      cancelText="Hủy bỏ"
     >
-      <Form form={form} layout="vertical">
+      <Form form={form} layout="vertical" style={{ marginTop: '20px' }}>
+        
         <div style={{ display: 'flex', gap: 16 }}>
             <Form.Item
                 name="title"
-                label="Tên bài học"
+                label={<Text strong>Tên bài học <span style={{color:'red'}}>*</span></Text>}
                 style={{ flex: 1 }}
                 rules={[{ required: true, message: 'Vui lòng nhập tên bài học' }]}
             >
-                <Input placeholder="Ví dụ: Bài 1: Số nguyên tố" />
+                <Input size="large" placeholder="Ví dụ: Bài 1: Số nguyên tố" />
             </Form.Item>
 
             <Form.Item
                 name="orderNo"
-                label="Thứ tự"
-                style={{ width: 100 }}
+                label={<Text strong>Thứ tự <span style={{color:'red'}}>*</span></Text>}
+                style={{ width: 120 }}
                 rules={[{ required: true }]}
             >
-                <InputNumber min={1} style={{ width: '100%' }} />
+                <InputNumber size="large" min={1} style={{ width: '100%' }} />
             </Form.Item>
         </div>
 
-        <Form.Item name="videoUrl" label="Link Video (Youtube)">
-            <Input placeholder="https://youtube.com/..." prefix={<UploadOutlined />} />
+        <Form.Item name="videoUrl" label={<Text strong>Link Video (Youtube)</Text>}>
+            <Input size="large" placeholder="https://youtube.com/..." prefix={<PlayCircleOutlined style={{color: '#bfbfbf'}}/>} />
         </Form.Item>
 
-        <h4 style={{ marginTop: 10, marginBottom: 10, borderBottom: '1px solid #eee', paddingBottom: 5 }}>
-            Nội dung chi tiết
-        </h4>
+        <Divider style={{ margin: '16px 0' }} />
+        
+        <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text strong style={{ fontSize: '16px' }}>Nội dung chi tiết</Text>
+        </div>
         
         <Form.List name="contents">
           {(fields, { add, remove }) => (
-            <div style={{ maxHeight: '500px', overflowY: 'auto', paddingRight: 5 }}>
-              {fields.map(({ key, name, ...restField }, index) => (
-                <Card 
-                  key={key} 
-                  size="small" 
-                  style={{ marginBottom: 15, background: '#fafafa', borderColor: '#d9d9d9' }}
-                  title={`Khối nội dung #${index + 1}`}
-                  extra={
-                    <Button type="text" danger icon={<MinusCircleOutlined />} onClick={() => remove(name)}>Xóa</Button>
-                  }
-                >
-                  <Space style={{ display: 'flex', marginBottom: 8 }} align="baseline">
-                    <Form.Item
-                      {...restField}
-                      name={[name, 'type']}
-                      label="Loại"
-                      rules={[{ required: true }]}
-                      style={{ width: 180 }}
-                    >
-                      <Select onChange={() => {
-                          const contents = form.getFieldValue('contents');
-                          contents[name].value = '';
-                          form.setFieldsValue({ contents });
-                      }}>
-                        <Select.Option value="TEXT">📝 Văn bản & Toán</Select.Option>
-                        <Select.Option value="IMAGE">🖼️ Hình ảnh</Select.Option>
-                      </Select>
-                    </Form.Item>
-                  </Space>
-
-                  <Form.Item
-                    noStyle
-                    shouldUpdate={(prev, curr) => 
-                        prev.contents?.[name]?.type !== curr.contents?.[name]?.type ||
-                        prev.contents?.[name]?.value !== curr.contents?.[name]?.value
+            <div style={{ maxHeight: '50vh', overflowY: 'auto', paddingRight: 8 }}>
+              
+              <Collapse 
+                activeKey={activeKey} 
+                onChange={(keys) => setActiveKey(keys)}
+                style={{ background: '#fff', border: 'none' }}
+              >
+                {fields.map(({ key, name, ...restField }, index) => (
+                  <Panel 
+                    key={index.toString()} 
+                    style={{ marginBottom: 12, border: '1px solid #d9d9d9', borderRadius: 8, overflow: 'hidden' }}
+                    header={
+                      <Space>
+                        {form.getFieldValue(['contents', name, 'type']) === 'IMAGE' ? <PictureOutlined style={{ color: '#52c41a' }} /> : <FileTextOutlined style={{ color: '#1890ff' }} />}
+                        <Text strong>Khối nội dung #{index + 1}</Text>
+                      </Space>
+                    }
+                    extra={
+                      <Button 
+                        type="text" 
+                        danger 
+                        icon={<MinusCircleOutlined />} 
+                        size="small"
+                        onClick={(e) => {
+                            e.stopPropagation(); 
+                            remove(name);
+                        }}
+                      >
+                        Xóa
+                      </Button>
                     }
                   >
-                    {({ getFieldValue }) => {
-                        const type = getFieldValue(['contents', name, 'type']);
-                        const value = getFieldValue(['contents', name, 'value']);
+                    <Space style={{ display: 'flex', marginBottom: 12 }} align="baseline">
+                      <Form.Item
+                        {...restField}
+                        name={[name, 'type']}
+                        label="Loại khối"
+                        rules={[{ required: true }]}
+                        style={{ width: 200, margin: 0 }}
+                      >
+                        <Select onChange={() => {
+                            const contents = form.getFieldValue('contents');
+                            contents[name].value = '';
+                            form.setFieldsValue({ contents });
+                        }}>
+                          <Select.Option value="TEXT">📝 Văn bản & Toán</Select.Option>
+                          <Select.Option value="IMAGE">🖼️ Hình ảnh</Select.Option>
+                        </Select>
+                      </Form.Item>
+                    </Space>
 
-                        // 1. TRƯỜNG HỢP HÌNH ẢNH
-                        if (type === 'IMAGE') {
-                            return (
-                                <Form.Item
-                                    {...restField}
-                                    name={[name, 'value']}
-                                    rules={[{ required: true, message: 'Vui lòng upload ảnh' }]}
-                                >
-                                    <div style={{ border: '1px dashed #d9d9d9', padding: 20, textAlign: 'center', borderRadius: 6, background: '#fff' }}>
-                                        {value ? (
-                                            <div>
-                                                <Image src={getFullImageUrl(value)} height={150} style={{ objectFit: 'contain' }} />
-                                                <div style={{ marginTop: 8 }}>
-                                                    <Button size="small" danger onClick={() => {
-                                                        const contents = form.getFieldValue('contents');
-                                                        contents[name].value = '';
-                                                        form.setFieldsValue({ contents });
-                                                    }}>Gỡ ảnh</Button>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <Upload customRequest={(options) => customRequest(options, add, name)} showUploadList={false} accept="image/*">
-                                                <Button icon={<UploadOutlined />}>Tải ảnh lên</Button>
-                                            </Upload>
-                                        )}
-                                    </div>
-                                </Form.Item>
-                            );
-                        }
+                    <Form.Item
+                      noStyle
+                      shouldUpdate={(prev, curr) => 
+                          prev.contents?.[name]?.type !== curr.contents?.[name]?.type ||
+                          prev.contents?.[name]?.value !== curr.contents?.[name]?.value
+                      }
+                    >
+                      {({ getFieldValue }) => {
+                          const type = getFieldValue(['contents', name, 'type']);
+                          const value = getFieldValue(['contents', name, 'value']);
 
-                        // 2. TRƯỜNG HỢP VĂN BẢN (Sử dụng MathEditor mới)
-                        return (
-                            <Form.Item
-                                {...restField}
-                                name={[name, 'value']}
-                                rules={[{ required: true, message: 'Nhập nội dung' }]}
-                            >
-                                <MathEditor 
-                                    placeholder="Gõ nội dung bài học. Bấm 'Chèn công thức Toán' để thêm LaTeX..." 
-                                />
-                            </Form.Item>
-                        );
-                    }}
-                  </Form.Item>
-                </Card>
-              ))}
+                          if (type === 'IMAGE') {
+                              return (
+                                  <Form.Item
+                                      {...restField}
+                                      name={[name, 'value']}
+                                      rules={[{ required: true, message: 'Vui lòng upload ảnh' }]}
+                                      style={{ margin: 0 }}
+                                  >
+                                      <div style={{ border: '1px dashed #d9d9d9', padding: 20, textAlign: 'center', borderRadius: 6, background: '#fafafa' }}>
+                                          {value ? (
+                                              <div>
+                                                  <Image src={getFullImageUrl(value)} height={150} style={{ objectFit: 'contain', borderRadius: 4 }} />
+                                                  <div style={{ marginTop: 12 }}>
+                                                      <Button danger onClick={() => {
+                                                          const contents = form.getFieldValue('contents');
+                                                          contents[name].value = '';
+                                                          form.setFieldsValue({ contents });
+                                                      }}>Gỡ ảnh</Button>
+                                                  </div>
+                                              </div>
+                                          ) : (
+                                              <Upload customRequest={(options) => customRequest(options, add, name)} showUploadList={false} accept="image/*">
+                                                  <Button icon={<UploadOutlined />}>Tải ảnh lên (Max 2MB)</Button>
+                                              </Upload>
+                                          )}
+                                      </div>
+                                  </Form.Item>
+                              );
+                          }
 
-              <Form.Item>
+                          return (
+                              <Form.Item
+                                  {...restField}
+                                  name={[name, 'value']}
+                                  rules={[{ required: true, message: 'Nhập nội dung' }]}
+                                  style={{ margin: 0 }}
+                              >
+                                  <MathEditor 
+                                      placeholder="Gõ nội dung bài học. Bấm 'Chèn công thức Toán' để thêm LaTeX..." 
+                                  />
+                              </Form.Item>
+                          );
+                      }}
+                    </Form.Item>
+                  </Panel>
+                ))}
+              </Collapse>
+
+              <div style={{ padding: '8px 0' }}>
                 <Button 
                     type="dashed" 
-                    onClick={() => add({ type: 'TEXT', value: '', order: fields.length + 1 })} 
+                    onClick={() => {
+                        const newIndex = fields.length.toString();
+                        add({ type: 'TEXT', value: '', order: fields.length + 1 });
+                        setActiveKey([...activeKey, newIndex]); 
+                    }} 
                     block 
                     icon={<PlusOutlined />}
-                    style={{ height: 40 }}
+                    style={{ height: 45, borderColor: '#1890ff', color: '#1890ff' }}
                 >
-                  Thêm nội dung
+                  Thêm khối nội dung mới
                 </Button>
-              </Form.Item>
+              </div>
+
             </div>
           )}
         </Form.List>

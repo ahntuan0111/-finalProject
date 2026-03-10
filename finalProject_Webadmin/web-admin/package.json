@@ -11,10 +11,11 @@
   },
   "dependencies": {
     "@ant-design/icons": "^6.1.0",
+    "@ant-design/plots": "^2.6.8",
     "@ckeditor/ckeditor5-build-classic": "^41.4.2",
     "@ckeditor/ckeditor5-react": "^11.0.1",
     "antd": "^6.1.2",
-    "axios": "^1.13.2",
+    "axios": "^1.13.6",
     "jwt-decode": "^4.0.0",
     "katex": "^0.16.27",
     "mathlive": "^0.108.2",

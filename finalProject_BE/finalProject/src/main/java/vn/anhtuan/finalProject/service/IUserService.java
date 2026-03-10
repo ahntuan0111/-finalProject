@@ -26,4 +26,8 @@ public interface IUserService {
     // Trong IUserService.java thêm:
     UserProfileResponse getMyProfile();
     UserProfileResponse updateMyProfile(UserProfileUpdateRequest request);
+
+    void updateFcmToken(String token);
+
+    void recordDailyActivity(String username);
 }

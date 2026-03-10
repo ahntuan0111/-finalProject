@@ -1,66 +1,80 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button, Tooltip, Tabs, Modal, Input } from 'antd';
-// Import thêm icon EnterOutlined cho nút xuống dòng
-import { FunctionOutlined, EnterOutlined } from '@ant-design/icons';
+// ĐÃ SỬA LỖI: Thay PlusMinusOutlined bằng CalculatorOutlined
+import { FunctionOutlined, EnterOutlined, CalculatorOutlined, BorderOutlined, BuildOutlined, AppstoreOutlined } from '@ant-design/icons';
 import 'mathlive';
 
-// --- DANH SÁCH CÁC KÝ HIỆU TOÁN HỌC ---
+// --- DANH SÁCH CÁC KÝ HIỆU TOÁN HỌC (CHUẨN THCS) ---
 const MATH_GROUPS = [
   {
-    key: 'basic',
-    label: 'Cơ bản',
+    key: 'algebra',
+    // ĐÃ SỬA: Dùng CalculatorOutlined
+    label: <span><CalculatorOutlined /> Phép toán & Đại số</span>,
     items: [
-      { label: 'Phân số', latex: '\\frac{\\placeholder}{\\placeholder}', icon: 'numerator/denominator' },
-      { label: 'Căn bậc 2', latex: '\\sqrt{\\placeholder}', icon: '√' },
-      { label: 'Bình phương', latex: '^2', icon: 'x²' },
-      { label: 'Mũ tổng quát', latex: '^{\\placeholder}', icon: 'xⁿ' },
-      { label: 'Chỉ số dưới', latex: '_\\placeholder', icon: 'xₙ' },
-      { label: 'Ngoặc đơn', latex: '(\\placeholder)', icon: '( )' },
-      { label: 'Ngoặc vuông', latex: '[\\placeholder]', icon: '[ ]' },
+      { label: 'Nhân', latex: '\\times', icon: '×' },
+      { label: 'Chia', latex: '\\div', icon: '÷' },
+      { label: 'Cộng trừ', latex: '\\pm', icon: '±' },
+      { label: 'Xấp xỉ', latex: '\\approx', icon: '≈' },
+      { label: 'Khác', latex: '\\neq', icon: '≠' },
+      { label: 'Lớn hơn/bằng', latex: '\\ge', icon: '≥' },
+      { label: 'Nhỏ hơn/bằng', latex: '\\le', icon: '≤' },
+      { label: 'Phần trăm', latex: '\\%', icon: '%' },
+      { label: 'Tỷ lệ', latex: ':', icon: ':' },
+      { label: 'Căn bậc 2', latex: '\\sqrt{\\placeholder}', icon: '√x' },
+      { label: 'Căn bậc 3', latex: '\\sqrt[3]{\\placeholder}', icon: '∛x' },
       { label: 'Trị tuyệt đối', latex: '|\\placeholder|', icon: '|x|' },
+      { label: 'Bình phương', latex: '^2', icon: 'x²' },
+      { label: 'Lập phương', latex: '^3', icon: 'x³' },
+      { label: 'Lũy thừa', latex: '^{\\placeholder}', icon: 'xⁿ' },
+      { label: 'Chỉ số dưới', latex: '_\\placeholder', icon: 'xₙ' },
+    ]
+  },
+  {
+    key: 'structures',
+    label: <span><BuildOutlined /> Phân số & Biểu thức</span>,
+    items: [
+      { label: 'Phân số', latex: '\\frac{\\placeholder}{\\placeholder}', icon: '◻/◻' },
+      { label: 'Hỗn số', latex: '\\placeholder\\frac{\\placeholder}{\\placeholder}', icon: '◻ ◻/◻' },
+      { label: 'Ngoặc đơn', latex: '(\\placeholder)', icon: '(◻)' },
+      { label: 'Ngoặc vuông', latex: '[\\placeholder]', icon: '[◻]' },
+      { label: 'Ngoặc nhọn', latex: '\\{\\placeholder\\}', icon: '{◻}' },
+      { label: 'Hệ phương trình (2 dòng)', latex: '\\begin{cases} \\placeholder \\\\ \\placeholder \\end{cases}', icon: '{...' },
     ]
   },
   {
     key: 'geometry',
-    label: 'Hình học',
+    label: <span><BorderOutlined /> Hình học</span>,
     items: [
-      { label: 'Góc', latex: '\\widehat{\\placeholder}', icon: 'x̂' },
+      { label: 'Góc', latex: '\\widehat{\\placeholder}', icon: 'Â' },
       { label: 'Ký hiệu Góc', latex: '\\angle', icon: '∠' },
       { label: 'Độ', latex: '^\\circ', icon: '°' },
       { label: 'Tam giác', latex: '\\triangle', icon: '△' },
       { label: 'Vuông góc', latex: '\\perp', icon: '⊥' },
       { label: 'Song song', latex: '\\parallel', icon: '∥' },
+      { label: 'Đồng dạng', latex: '\\backsim', icon: '∽' },
+      { label: 'Bằng nhau', latex: '=', icon: '=' },
       { label: 'Dấu Pi', latex: '\\pi', icon: 'π' },
+      { label: 'Cung tròn', latex: '\\stackrel{\\frown}{\\placeholder}', icon: '⌒' },
       { label: 'Vector', latex: '\\vec{\\placeholder}', icon: '→' },
     ]
   },
   {
-    key: 'algebra',
-    label: 'Đại số',
-    items: [
-      { label: 'Delta', latex: '\\Delta', icon: 'Δ' },
-      { label: 'Alpha', latex: '\\alpha', icon: 'α' },
-      { label: 'Beta', latex: '\\beta', icon: 'β' },
-      { label: 'Omega', latex: '\\Omega', icon: 'Ω' },
-      { label: 'Tổng (Sigma)', latex: '\\sum', icon: '∑' },
-      { label: 'Vô cực', latex: '\\infty', icon: '∞' },
-      { label: 'Hệ phương trình', latex: '\\begin{cases} \\placeholder \\\\ \\placeholder \\end{cases}', icon: '{' },
-      { label: 'Tích phân', latex: '\\int', icon: '∫' },
-      { label: 'Giới hạn', latex: '\\lim_{x \\to \\infty}', icon: 'lim' },
-    ]
-  },
-  {
     key: 'logic',
-    label: 'Logic',
+    label: <span><AppstoreOutlined /> Tập hợp & Logic</span>,
     items: [
+      { label: 'Tập N (Tự nhiên)', latex: '\\mathbb{N}', icon: 'ℕ' },
+      { label: 'Tập Z (Nguyên)', latex: '\\mathbb{Z}', icon: 'ℤ' },
+      { label: 'Tập Q (Hữu tỉ)', latex: '\\mathbb{Q}', icon: 'ℚ' },
+      { label: 'Tập R (Thực)', latex: '\\mathbb{R}', icon: 'ℝ' },
+      { label: 'Tập rỗng', latex: '\\emptyset', icon: '∅' },
       { label: 'Thuộc', latex: '\\in', icon: '∈' },
       { label: 'Không thuộc', latex: '\\notin', icon: '∉' },
+      { label: 'Tập con', latex: '\\subset', icon: '⊂' },
+      { label: 'Chứa tập con', latex: '\\supset', icon: '⊃' },
       { label: 'Giao', latex: '\\cap', icon: '∩' },
       { label: 'Hợp', latex: '\\cup', icon: '∪' },
       { label: 'Suy ra', latex: '\\Rightarrow', icon: '⇒' },
       { label: 'Tương đương', latex: '\\Leftrightarrow', icon: '⇔' },
-      { label: 'Với mọi', latex: '\\forall', icon: '∀' },
-      { label: 'Tồn tại', latex: '\\exists', icon: '∃' },
     ]
   }
 ];
@@ -69,7 +83,6 @@ const MathEditor = ({ value = '', onChange, placeholder }) => {
   const textAreaRef = useRef(null);
   const mfRef = useRef(null);
   
-  // State quản lý Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cursorPos, setCursorPos] = useState(null);
 
@@ -78,35 +91,28 @@ const MathEditor = ({ value = '', onChange, placeholder }) => {
     if (onChange) onChange(e.target.value);
   };
 
-  // Luôn cập nhật vị trí con trỏ khi người dùng click hoặc gõ phím
   const saveCursorPosition = (e) => {
     setCursorPos(e.target.selectionStart);
   };
 
-  // --- 2. HÀM CHÈN TEXT VÀO VỊ TRÍ CON TRỎ (Dùng chung cho cả <br/> và LaTeX) ---
+  // --- 2. HÀM CHÈN TEXT VÀO VỊ TRÍ CON TRỎ ---
   const insertTextAtCursor = (textToInsert) => {
     const currentText = value || '';
-    // Nếu chưa click vào đâu (cursorPos là null), chèn xuống cuối
     const position = cursorPos !== null ? cursorPos : currentText.length;
     
-    // Cắt chuỗi và chèn
     const newText = 
       currentText.substring(0, position) + 
       textToInsert + 
       currentText.substring(position);
 
-    // Cập nhật giá trị ra ngoài Form
     if (onChange) onChange(newText);
     
-    // Tính toán vị trí con trỏ mới (sau đoạn text vừa chèn)
     const newPos = position + textToInsert.length;
     setCursorPos(newPos);
 
-    // Focus lại vào ô nhập liệu và đặt con trỏ đúng chỗ
     setTimeout(() => {
         if(textAreaRef.current) {
             textAreaRef.current.focus();
-            // setSelectionRange giúp người dùng gõ tiếp ngay sau chỗ vừa chèn
             textAreaRef.current.resizableTextArea.textArea.setSelectionRange(newPos, newPos);
         }
     }, 50);
@@ -114,19 +120,16 @@ const MathEditor = ({ value = '', onChange, placeholder }) => {
 
   // --- 3. XỬ LÝ NÚT XUỐNG DÒNG ---
   const handleInsertBreak = () => {
-    // Chèn thẻ <br/>. Mobile App (WebView) sẽ hiểu đây là xuống dòng.
     insertTextAtCursor('<br/>');
   };
 
   // --- 4. XỬ LÝ MODAL TOÁN HỌC ---
   const openMathModal = () => {
-    // Nếu chưa có vị trí con trỏ, đặt mặc định ở cuối để tránh lỗi
     if (cursorPos === null && value) {
         setCursorPos(value.length);
     }
     setIsModalOpen(true);
     
-    // Reset và Focus vào MathField sau khi modal mở
     setTimeout(() => {
       if (mfRef.current) {
         mfRef.current.value = ''; 
@@ -136,7 +139,6 @@ const MathEditor = ({ value = '', onChange, placeholder }) => {
   };
 
   const handleInsertLatexToText = () => {
-    // Lấy giá trị trực tiếp từ MathField
     const latexValue = mfRef.current ? mfRef.current.getValue() : '';
 
     if (!latexValue) {
@@ -144,20 +146,21 @@ const MathEditor = ({ value = '', onChange, placeholder }) => {
       return;
     }
 
-    // Format công thức: Thêm khoảng trắng và dấu $ để Mobile nhận diện
     const formattedLatex = ` $${latexValue}$ `; 
-    
-    // Dùng hàm chèn chung
     insertTextAtCursor(formattedLatex);
-    
     setIsModalOpen(false);
   };
 
-  // Insert từ Toolbar ký hiệu vào MathField trong Modal
+  // NÂNG CẤP: Chèn và tự động nhảy vào Placeholder
   const insertToMathField = (latex) => {
     if (mfRef.current) {
       mfRef.current.executeCommand(['insert', latex]);
       mfRef.current.focus();
+      
+      // Nếu latex có chứa placeholder, tự động nhảy con trỏ vào ô đầu tiên
+      if (latex.includes('\\placeholder')) {
+         mfRef.current.executeCommand(['moveToNextPlaceholder']);
+      }
     }
   };
 
@@ -179,7 +182,6 @@ const MathEditor = ({ value = '', onChange, placeholder }) => {
         </span>
         
         <div style={{ display: 'flex', gap: 8 }}>
-            {/* NÚT XUỐNG DÒNG (MỚI) */}
             <Tooltip title="Chèn ngắt dòng (Xuống dòng)">
                 <Button 
                     icon={<EnterOutlined />} 
@@ -190,7 +192,6 @@ const MathEditor = ({ value = '', onChange, placeholder }) => {
                 </Button>
             </Tooltip>
 
-            {/* NÚT CHÈN TOÁN */}
             <Tooltip title="Mở bàn phím công thức Toán">
                 <Button 
                   type="primary" 
@@ -209,12 +210,10 @@ const MathEditor = ({ value = '', onChange, placeholder }) => {
         ref={textAreaRef}
         value={value}
         onChange={handleTextChange}
-        // Các sự kiện quan trọng để theo dõi vị trí con trỏ
         onSelect={saveCursorPosition} 
         onClick={saveCursorPosition}
         onKeyUp={saveCursorPosition}
         onFocus={saveCursorPosition}
-        
         placeholder={placeholder || "Ví dụ: Diện tích hình tròn được tính bằng công thức..."}
         autoSize={{ minRows: 4, maxRows: 10 }}
         style={{ 
@@ -224,70 +223,83 @@ const MathEditor = ({ value = '', onChange, placeholder }) => {
         }}
       />
 
-      {/* --- MODAL SOẠN THẢO CÔNG THỨC --- */}
+      {/* --- MODAL SOẠN THẢO CÔNG THỨC NÂNG CẤP --- */}
       <Modal
-        title="Soạn thảo Công thức Toán"
+        title={
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <FunctionOutlined style={{ color: '#1677ff' }} />
+                <span>Bàn phím Toán học</span>
+            </div>
+        }
         open={isModalOpen}
         onOk={handleInsertLatexToText}
         onCancel={() => setIsModalOpen(false)}
         okText="Chèn vào bài học"
         cancelText="Hủy"
-        width={700}
-        destroyOnClose // Reset modal khi đóng
+        width={750}
+        destroyOnClose 
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 12 }}>
           
-          {/* MathLive Input */}
-          <div style={{ border: '1px solid #1677ff', borderRadius: 8, padding: 4 }}>
-            <math-field 
-                ref={mfRef} 
-                style={{ 
-                    width: '100%', 
-                    fontSize: '24px', 
-                    padding: '10px', 
-                    outline: 'none', 
-                    border: 'none', 
-                    minHeight: '50px' 
-                }}
-            >
-            </math-field>
+          {/* NÂNG CẤP: Khu vực MathLive Input */}
+          <div>
+              <div style={{ fontSize: 12, fontWeight: 'bold', color: '#888', marginBottom: 6, textTransform: 'uppercase' }}>
+                  KẾT QUẢ HIỂN THỊ:
+              </div>
+              <div style={{ border: '2px solid #1677ff', borderRadius: 8, padding: '16px', background: '#fafafa', minHeight: '90px' }}>
+                <math-field 
+                    ref={mfRef} 
+                    style={{ 
+                        width: '100%', 
+                        fontSize: '32px', // Tăng kích thước chữ cho dễ nhìn
+                        outline: 'none', 
+                        border: 'none', 
+                        background: 'transparent'
+                    }}
+                >
+                </math-field>
+              </div>
           </div>
 
-          {/* Toolbar ký hiệu trong Modal */}
-          <div style={{ background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 8 }}>
+          {/* NÂNG CẤP: Toolbar ký hiệu (Sử dụng CSS Grid) */}
+          <div style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 8, overflow: 'hidden' }}>
             <Tabs 
-                defaultActiveKey="basic" 
-                size="small"
-                tabBarStyle={{ marginBottom: 0, paddingLeft: 10 }}
+                defaultActiveKey="algebra" 
+                size="middle"
+                tabBarStyle={{ marginBottom: 0, paddingLeft: 16, background: '#fafafa', borderBottom: '1px solid #e8e8e8' }}
                 items={MATH_GROUPS.map(group => ({
                     key: group.key,
                     label: group.label,
                     children: (
                         <div style={{ 
-                            padding: '12px', 
-                            display: 'flex', 
-                            flexWrap: 'wrap', 
-                            gap: 8, 
-                            maxHeight: '200px', 
+                            padding: '16px', 
+                            display: 'grid', 
+                            // Lưới tự động dãn đều
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', 
+                            gap: '10px', 
+                            maxHeight: '250px', 
                             overflowY: 'auto' 
                         }}>
                             {group.items.map((tool, idx) => (
-                                <Tooltip title={tool.label} key={idx}>
+                                <Tooltip title={tool.label} key={idx} placement="bottom">
                                     <Button 
-                                        size="middle" 
+                                        size="large" 
                                         onClick={() => insertToMathField(tool.latex)}
                                         style={{ 
                                             fontWeight: 'bold', 
-                                            fontFamily: 'Cambria, serif', 
-                                            minWidth: 40, 
-                                            fontSize: '16px' 
+                                            fontFamily: '"Cambria Math", "Times New Roman", serif', // Font toán học chuẩn
+                                            fontSize: '18px',
+                                            height: '45px', // Cố định hình vuông
+                                            width: '100%',
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            background: '#fff',
+                                            borderColor: '#d9d9d9',
+                                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
                                         }}
                                     >
-                                        {tool.icon === 'numerator/denominator' ? (
-                                            <div style={{display:'flex', flexDirection:'column', lineHeight:0.8, fontSize:10}}>
-                                                <span>a</span><span style={{borderTop:'1px solid'}}>b</span>
-                                            </div>
-                                        ) : tool.icon}
+                                        {tool.icon}
                                     </Button>
                                 </Tooltip>
                             ))}
@@ -297,8 +309,8 @@ const MathEditor = ({ value = '', onChange, placeholder }) => {
             />
           </div>
           
-          <div style={{ fontSize: 12, color: '#888', fontStyle: 'italic' }}>
-             * Mẹo: Bạn có thể gõ trực tiếp (vd: gõ "sqrt" rồi Tab) hoặc dùng các nút ở trên.
+          <div style={{ fontSize: 12, color: '#888', fontStyle: 'italic', textAlign: 'center' }}>
+             * Mẹo: Click vào biểu tượng để chèn. Nếu có ô trống, hệ thống sẽ tự động focus để bạn gõ số.
           </div>
         </div>
       </Modal>

@@ -71,6 +71,14 @@ public class LessonProgressServiceImpl implements ILessonProgressService {
         if (isNewlyCompleted) {
             updateSubjectProgress(user, lesson.getChapter().getSubject());
         }
+
+        // =========================================================================
+        // 5. TRIGGER QUAN TRỌNG: Ghi nhận hoạt động ngày & Tính Chuỗi (Streak)
+        // =========================================================================
+        // Dù user chỉ mới hoàn thành lý thuyết hay bài tập, ta đều tính là hôm nay có học bài.
+        // Việc này sẽ cập nhật cột lastActiveDate thành hôm nay -> Cron Job 8h tối sẽ bỏ qua học sinh này.
+        userService.recordDailyActivity(user.getUsername());
+        // =========================================================================
     }
 
     private void updateSubjectProgress(User user, Subject subject) {
@@ -155,4 +163,5 @@ public class LessonProgressServiceImpl implements ILessonProgressService {
         }
         return new SubjectOverviewResponse(progressPercent, nextLessonId);
     }
+
 }

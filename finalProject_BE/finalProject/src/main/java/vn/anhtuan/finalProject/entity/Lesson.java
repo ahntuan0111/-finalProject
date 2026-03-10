@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.util.List;
+import org.hibernate.annotations.CreationTimestamp;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "lessons")
@@ -31,6 +33,10 @@ public class Lesson {
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("contentOrder ASC") // Đảm bảo nội dung luôn sắp xếp đúng thứ tự 1, 2, 3...
     private List<LessonContent> contents;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
     public String getVideoUrl() {
         return videoUrl;
@@ -78,5 +84,13 @@ public class Lesson {
 
     public void setContents(List<LessonContent> contents) {
         this.contents = contents;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

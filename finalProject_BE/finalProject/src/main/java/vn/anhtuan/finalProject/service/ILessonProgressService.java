@@ -12,4 +12,5 @@ public interface ILessonProgressService {
     List<ProgressResponse> getMyProgress(Integer gradeId);
 
     SubjectOverviewResponse getSubjectOverview(String subjectCode, Integer gradeId);
+
 }

@@ -1,6 +1,7 @@
 package com.example.finalproject.data.remote
 
 import com.example.finalproject.data.remote.model.*
+import com.example.finalproject.data.remote.model.BaseResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -103,4 +104,21 @@ interface ApiService {
 
     @GET("statistics/dashboard")
     suspend fun getDashboardData(): ApiResponse<DashboardResponse>
+
+    // Trong interface ApiService của bạn, thêm hàm sau:
+    @POST("users/update-fcm-token") // Đổi lại URL cho khớp với mapping trong UserController của bạn
+    suspend fun updateFcmToken(@Body request: Map<String, String>): Response<Any>
+// Lưu ý: Response<Any> hoặc Response<BaseResponse<Any>> tuỳ thuộc vào cấu trúc trả về của BE bạn
+
+    @GET("api/notifications")
+    suspend fun getNotifications(): Response<BaseResponse<List<NotificationDto>>>
+
+    @GET("api/notifications/unread-count")
+    suspend fun getUnreadNotificationCount(): Response<BaseResponse<Int>>
+
+    @PUT("api/notifications/{id}/read")
+    suspend fun markNotificationAsRead(@Path("id") id: Long): Response<BaseResponse<Any>>
+
+    @PUT("api/notifications/read-all")
+    suspend fun markAllNotificationsAsRead(): Response<BaseResponse<Any>>
 }

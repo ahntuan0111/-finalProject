@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import vn.anhtuan.finalProject.dto.request.FcmTokenRequest;
 import vn.anhtuan.finalProject.dto.request.PasswordChangeRequest;
 import vn.anhtuan.finalProject.dto.request.UpdateGradeRequest;
 import vn.anhtuan.finalProject.dto.request.UserProfileUpdateRequest;
@@ -13,6 +14,8 @@ import vn.anhtuan.finalProject.dto.response.ApiResponse;
 import vn.anhtuan.finalProject.entity.User;
 import vn.anhtuan.finalProject.service.IUserService;
 import org.springframework.security.core.Authentication;
+
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/users")
@@ -93,5 +96,12 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ApiResponse.error(400, e.getMessage()));
         }
+    }
+
+    @PostMapping("/update-fcm-token")
+    public ResponseEntity<?> updateFcmToken(@RequestBody FcmTokenRequest request) {
+        // Không cần bóc tách username ở Controller nữa, Service sẽ tự lo
+        userService.updateFcmToken(request.getFcmToken());
+        return ResponseEntity.ok(ApiResponse.success(null, "Cập nhật Token thành công"));
     }
 }

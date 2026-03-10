@@ -19,6 +19,8 @@ import vn.anhtuan.finalProject.repository.StudentProfileRepository;
 import vn.anhtuan.finalProject.repository.UserRepository;
 import vn.anhtuan.finalProject.service.IUserService;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -186,5 +188,51 @@ public class UserServiceImpl implements IUserService {
                 user.getAvatarUrl(),
                 user.getDateOfBirth()
         );
+    }
+
+    @Override
+    public void updateFcmToken(String token) {
+        // Sử dụng hàm getCurrentUser() cực xịn mà bạn đã viết ở trên
+        User user = getCurrentUser();
+
+        user.setFcmToken(token);
+        userRepository.save(user);
+
+        logger.info("--- Đã cập nhật FCM Token cho user: {}", user.getUsername());
+    }
+
+    @Override
+    @Transactional
+    public void recordDailyActivity(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy user"));
+
+        LocalDate today = LocalDate.now();
+        LocalDate lastActive = user.getLastActiveDate();
+
+        // Nếu hôm nay đã ghi nhận rồi thì KHÔNG làm gì cả (tránh cộng dồn sai streak)
+        if (today.equals(lastActive)) {
+            return;
+        }
+
+        // Tính toán chuỗi Streak
+        if (lastActive != null && ChronoUnit.DAYS.between(lastActive, today) == 1) {
+            // Học liên tiếp ngày hôm qua -> Cộng 1
+            user.setCurrentStreak(user.getCurrentStreak() + 1);
+        } else {
+            // Bỏ lỡ ngày hoặc mới học lần đầu -> Reset về 1
+            user.setCurrentStreak(1);
+        }
+
+        // Kỷ lục chuỗi dài nhất
+        if (user.getCurrentStreak() > user.getLongestStreak()) {
+            user.setLongestStreak(user.getCurrentStreak());
+        }
+
+        // Cập nhật ngày học cuối cùng thành HÔM NAY
+        user.setLastActiveDate(today);
+        userRepository.save(user);
+
+        logger.info("Đã ghi nhận tiến độ ngày cho {}. Chuỗi hiện tại: {} ngày", username, user.getCurrentStreak());
     }
 }

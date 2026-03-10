@@ -2,12 +2,13 @@ import React from 'react';
 import { Menu } from 'antd';
 import { 
   DashboardOutlined, 
-  UserOutlined, 
+  TeamOutlined, 
   BookOutlined, 
-  FormOutlined, 
+  EditOutlined, 
   FilePdfOutlined,
-  CheckSquareOutlined, // <-- Import thêm icon cho Quiz
-  LogoutOutlined 
+  CheckSquareOutlined,
+  LogoutOutlined,
+  SettingOutlined
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -16,25 +17,42 @@ const SidebarMenu = () => {
   const location = useLocation();
 
   const items = [
-    { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
-    { key: '/users', icon: <UserOutlined />, label: 'Quản lý Người dùng' },
-    { key: '/courses', icon: <BookOutlined />, label: 'Quản lý Bài học' },
-    { key: '/exercises', icon: <FormOutlined />, label: 'Quản lý Bài tập' },
-    { key: '/documents', icon: <FilePdfOutlined />, label: 'Quản lý Tài liệu' },
-    
-    // --- THÊM MỤC QUẢN LÝ QUIZ ---
-    { key: '/quizzes', icon: <CheckSquareOutlined />, label: 'Quản lý Quiz' },
-    // -----------------------------
-
+    { 
+        key: 'group1', 
+        type: 'group', 
+        label: 'CHÍNH',
+        children: [
+            { key: '/dashboard', icon: <DashboardOutlined />, label: 'Bảng điều khiển' },
+        ]
+    },
+    { 
+        key: 'group2', 
+        type: 'group', 
+        label: 'HỌC TẬP & NỘI DUNG',
+        children: [
+            { key: '/courses', icon: <BookOutlined />, label: 'Quản lý Bài học' },
+            { key: '/exercises', icon: <EditOutlined />, label: 'Ngân hàng Bài tập' },
+            { key: '/quizzes', icon: <CheckSquareOutlined />, label: 'Quản lý Đề thi' },
+            { key: '/documents', icon: <FilePdfOutlined />, label: 'Quản lý Tài liệu' },
+        ]
+    },
+    { 
+        key: 'group3', 
+        type: 'group', 
+        label: 'TÀI KHOẢN',
+        children: [
+            { key: '/users', icon: <TeamOutlined />, label: 'Quản lý Học sinh' },
+        ]
+    },
     { type: 'divider' },
+    { key: '/settings', icon: <SettingOutlined />, label: 'Cài đặt hệ thống' },
     { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', danger: true },
   ];
 
   const handleMenuClick = ({ key }) => {
     if (key === 'logout') {
-      // Đã sửa lại thành 'access_token' cho khớp với tên biến bạn đang lưu
       localStorage.removeItem('access_token'); 
-      localStorage.removeItem('user_info'); // Nên xóa thêm thông tin user nếu có lưu
+      localStorage.removeItem('user_info'); 
       window.location.href = '/login';
     } else {
       navigate(key);
@@ -48,6 +66,7 @@ const SidebarMenu = () => {
       selectedKeys={[location.pathname]}
       items={items}
       onClick={handleMenuClick}
+      style={{ borderRight: 0, padding: '0 8px' }} // Cách lề một chút cho các item menu khỏi chạm viền
     />
   );
 };
