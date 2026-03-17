@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.anhtuan.finalProject.dto.request.*;
 import vn.anhtuan.finalProject.dto.response.QuizResponse;
 import vn.anhtuan.finalProject.entity.*;
-import vn.anhtuan.finalProject.entity.ContentType;
 import vn.anhtuan.finalProject.repository.ChapterRepository;
 import vn.anhtuan.finalProject.repository.QuizRepository;
 import vn.anhtuan.finalProject.repository.QuizTypeRepository;
@@ -44,37 +43,37 @@ public class QuizAdminService {
         quiz.setChapter(chapter);
         quiz.setQuizType(quizType);
         quiz.setCode(request.getCode());
-        quiz.setTitle(request.getTitle()); // Map tiêu đề mới
+
+        // Cập nhật lưu đa ngôn ngữ
+        quiz.setTitleVi(request.getTitleVi());
+        quiz.setTitleEn(request.getTitleEn());
 
         if (request.getQuestions() != null) {
             for (QuestionRequest qRequest : request.getQuestions()) {
 
                 Question question = new Question();
-                question.setExplanation(qRequest.getExplanation());
-                // Gán mặc định là 1 nếu Front-end không truyền xuống
+                question.setExplanationVi(qRequest.getExplanationVi());
+                question.setExplanationEn(qRequest.getExplanationEn());
                 question.setOrderNo(qRequest.getOrderNo() != null ? qRequest.getOrderNo() : 1);
 
                 if (qRequest.getContents() != null) {
                     for (QuestionContentRequest cRequest : qRequest.getContents()) {
-
                         QuestionContent content = new QuestionContent();
                         content.setContentType(ContentType.valueOf(cRequest.getContentType()));
-                        content.setContentValue(cRequest.getContentValue());
+                        content.setContentValueVi(cRequest.getContentValueVi());
+                        content.setContentValueEn(cRequest.getContentValueEn());
                         content.setContentOrder(cRequest.getContentOrder() != null ? cRequest.getContentOrder() : 1);
-
                         question.addContent(content);
                     }
                 }
 
                 if (qRequest.getChoices() != null) {
                     for (ChoiceRequest chRequest : qRequest.getChoices()) {
-
                         Choice choice = new Choice();
-                        // Hỗ trợ cả TEXT và IMAGE cho đáp án
                         choice.setContentType(ContentType.valueOf(chRequest.getContentType()));
-                        choice.setContentValue(chRequest.getContentValue());
+                        choice.setContentValueVi(chRequest.getContentValueVi());
+                        choice.setContentValueEn(chRequest.getContentValueEn());
                         choice.setCorrect(chRequest.getCorrect());
-
                         question.addChoice(choice);
                     }
                 }
@@ -86,11 +85,12 @@ public class QuizAdminService {
         return quizRepository.save(quiz);
     }
 
-    public List<QuizResponse> getAllQuizzes() {
+    // Thêm tham số lang để Admin có thể xem được nội dung (mặc định truyền "vi" từ Controller xuống)
+    public List<QuizResponse> getAllQuizzes(String lang) {
         List<Quiz> quizzes = quizRepository.findAll();
 
         return quizzes.stream()
-                .map(QuizResponse::fromEntity)
+                .map(quiz -> QuizResponse.fromEntity(quiz, lang))
                 .collect(Collectors.toList());
     }
 
@@ -102,28 +102,23 @@ public class QuizAdminService {
         quizRepository.deleteById(id);
     }
 
-    // Lấy danh sách loại Quiz cho Dropdown
     public List<QuizType> getAllQuizTypes() {
         return quizTypeRepository.findAll();
     }
 
-    // Lấy danh sách Chương học cho Dropdown
     public List<Chapter> getAllChapters() {
         return chapterRepository.findAll();
     }
 
     @Transactional
     public Quiz updateQuiz(Integer id, QuizRequest request) {
-        // 1. Tìm Quiz cũ trong DB
         Quiz existingQuiz = quizRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bài Quiz với ID: " + id));
 
-        // Kiểm tra xem mã code mới có bị trùng với Quiz KHÁC không
         if (!existingQuiz.getCode().equals(request.getCode()) && quizRepository.existsByCode(request.getCode())) {
             throw new RuntimeException("Mã Code này đã được sử dụng cho một bài Quiz khác!");
         }
 
-        // 2. Cập nhật thông tin cơ bản của Quiz
         Chapter chapter = chapterRepository.findById(request.getChapterId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Chương học!"));
         QuizType quizType = quizTypeRepository.findById(request.getQuizTypeId())
@@ -132,33 +127,28 @@ public class QuizAdminService {
         existingQuiz.setChapter(chapter);
         existingQuiz.setQuizType(quizType);
         existingQuiz.setCode(request.getCode());
-        existingQuiz.setTitle(request.getTitle());
 
-        // ====================================================================
-        // 3. SMART MERGE CHO DANH SÁCH CÂU HỎI (QUESTIONS)
-        // ====================================================================
+        existingQuiz.setTitleVi(request.getTitleVi());
+        existingQuiz.setTitleEn(request.getTitleEn());
+
         if (request.getQuestions() != null) {
-            // Tạo Map các câu hỏi cũ để tra cứu nhanh bằng ID
             Map<Long, Question> existingQuestionMap = existingQuiz.getQuestions().stream()
                     .collect(Collectors.toMap(Question::getId, q -> q));
 
-            // Xóa rỗng danh sách hiện tại (Hibernate sẽ tự động xóa những câu không được add lại nhờ orphanRemoval=true)
             existingQuiz.getQuestions().clear();
 
             for (QuestionRequest qReq : request.getQuestions()) {
                 Question question;
-                // Nếu Frontend gửi lên ID và ID đó có trong DB -> Đây là câu hỏi cũ cần Cập nhật
                 if (qReq.getId() != null && existingQuestionMap.containsKey(qReq.getId())) {
                     question = existingQuestionMap.get(qReq.getId());
                 } else {
-                    // Nếu không có ID -> Đây là câu hỏi Mới được thêm vào
                     question = new Question();
                 }
 
-                question.setExplanation(qReq.getExplanation());
+                question.setExplanationVi(qReq.getExplanationVi());
+                question.setExplanationEn(qReq.getExplanationEn());
                 question.setOrderNo(qReq.getOrderNo() != null ? qReq.getOrderNo() : 1);
 
-                // --- 3.1 SMART MERGE CHO NỘI DUNG ĐỀ BÀI (CONTENTS) ---
                 if (qReq.getContents() != null) {
                     Map<Long, QuestionContent> existingContentMap = question.getContents().stream()
                             .collect(Collectors.toMap(QuestionContent::getId, c -> c));
@@ -173,13 +163,13 @@ public class QuizAdminService {
                             content = new QuestionContent();
                         }
                         content.setContentType(ContentType.valueOf(cReq.getContentType()));
-                        content.setContentValue(cReq.getContentValue());
+                        content.setContentValueVi(cReq.getContentValueVi());
+                        content.setContentValueEn(cReq.getContentValueEn());
                         content.setContentOrder(cReq.getContentOrder() != null ? cReq.getContentOrder() : 1);
                         question.addContent(content);
                     }
                 }
 
-                // --- 3.2 SMART MERGE CHO ĐÁP ÁN (CHOICES) ---
                 if (qReq.getChoices() != null) {
                     Map<Long, Choice> existingChoiceMap = question.getChoices().stream()
                             .collect(Collectors.toMap(Choice::getId, ch -> ch));
@@ -194,21 +184,30 @@ public class QuizAdminService {
                             choice = new Choice();
                         }
                         choice.setContentType(ContentType.valueOf(chReq.getContentType()));
-                        choice.setContentValue(chReq.getContentValue());
+                        choice.setContentValueVi(chReq.getContentValueVi());
+                        choice.setContentValueEn(chReq.getContentValueEn());
                         choice.setCorrect(chReq.getCorrect());
                         question.addChoice(choice);
                     }
                 }
 
-                // Gắn câu hỏi (đã cập nhật/tạo mới) vào Quiz
                 existingQuiz.addQuestion(question);
             }
         } else {
-            // Nếu Frontend gửi mảng rỗng -> Xóa toàn bộ câu hỏi
             existingQuiz.getQuestions().clear();
         }
 
-        // Lưu lại (JPA sẽ tự động phân giải cái nào là INSERT, cái nào UPDATE, cái nào DELETE)
         return quizRepository.save(existingQuiz);
+    }
+
+    // Lấy chi tiết 1 bài Quiz (Dành cho Admin)
+    public Quiz getQuizById(Integer id) {
+        return quizRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài Quiz với ID: " + id));
+    }
+
+    // Lấy toàn bộ danh sách Quiz (Dữ liệu Entity thô, chưa lọc ngôn ngữ)
+    public List<Quiz> getAllQuizzesRaw() {
+        return quizRepository.findAll();
     }
 }

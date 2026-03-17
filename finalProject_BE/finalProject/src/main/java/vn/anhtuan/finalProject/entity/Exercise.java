@@ -23,8 +23,11 @@ public class Exercise {
     @Column(name = "question_type", nullable = false)
     private ContentType questionType; // Sử dụng Enum TEXT/IMAGE có sẵn
 
-    @Column(name = "question_value", nullable = false, columnDefinition = "TEXT")
-    private String questionValue; // Nội dung text hoặc URL ảnh
+    @Column(name = "question_value_vi", nullable = false, columnDefinition = "TEXT")
+    private String questionValueVi;
+
+    @Column(name = "question_value_en", columnDefinition = "TEXT")
+    private String questionValueEn;
 
     // ---------------------------------------------------
 
@@ -57,14 +60,17 @@ public class Exercise {
     }
 
     // Cập nhật Constructor
-    public Exercise(Long id, ContentType questionType, String questionValue, Integer orderNo, Lesson lesson, List<ExerciseSolution> solutions) {
+
+    public Exercise(Long id, ContentType questionType, String questionValueVi, String questionValueEn, Integer orderNo, List<ExerciseSolution> solutions, Lesson lesson) {
         this.id = id;
         this.questionType = questionType;
-        this.questionValue = questionValue;
+        this.questionValueVi = questionValueVi;
+        this.questionValueEn = questionValueEn;
         this.orderNo = orderNo;
-        this.lesson = lesson;
         this.solutions = solutions;
+        this.lesson = lesson;
     }
+
 
     // --- Cập nhật Getter/Setter cho field mới ---
 
@@ -76,12 +82,20 @@ public class Exercise {
         this.questionType = questionType;
     }
 
-    public String getQuestionValue() {
-        return questionValue;
+    public String getQuestionValueVi() {
+        return questionValueVi;
     }
 
-    public void setQuestionValue(String questionValue) {
-        this.questionValue = questionValue;
+    public void setQuestionValueVi(String questionValueVi) {
+        this.questionValueVi = questionValueVi;
+    }
+
+    public String getQuestionValueEn() {
+        return questionValueEn;
+    }
+
+    public void setQuestionValueEn(String questionValueEn) {
+        this.questionValueEn = questionValueEn;
     }
 
     // ... Các getter/setter khác giữ nguyên ...

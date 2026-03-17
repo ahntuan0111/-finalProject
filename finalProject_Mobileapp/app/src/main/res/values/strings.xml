@@ -1,3 +1,235 @@
 <resources>
-    <string name="app_name">FinalProject</string>
+    <string name="app_name">Final Project</string>
+
+    <string name="welcome_skip">Bỏ qua</string>
+    <string name="welcome_page1_title">Học tập mọi lúc</string>
+    <string name="welcome_page1_desc">Truy cập bài giảng và làm bài tập bất cứ đâu, bất cứ khi nào.</string>
+    <string name="welcome_page2_title">Theo dõi tiến độ</string>
+    <string name="welcome_page2_desc">Biểu đồ trực quan giúp bạn nắm bắt kết quả học tập từng ngày.</string>
+    <string name="welcome_page3_title">Trao đổi dễ dàng</string>
+    <string name="welcome_page3_desc">Kết nối với giáo viên và bạn bè để giải đáp thắc mắc.</string>
+    <string name="welcome_btn_next">Tiếp tục</string>
+    <string name="welcome_btn_start">Bắt đầu ngay</string>
+
+    <string name="auth_btn_login">Đăng nhập</string>
+    <string name="auth_btn_register">Đăng ký tài khoản mới</string>
+
+    <string name="login_title">Đăng nhập</string>
+    <string name="login_subtitle">Đăng nhập vào tài khoản của bạn</string>
+    <string name="login_username_hint">Tên đăng nhập</string>
+    <string name="login_password_hint">Mật khẩu</string>
+    <string name="login_forgot_password">Quên mật khẩu?</string>
+    <string name="login_no_account">Chưa có tài khoản? </string>
+    <string name="login_btn_signup">Đăng ký</string>
+    <string name="login_toast_success">Đăng nhập thành công!</string>
+
+    <string name="register_title">Đăng ký</string>
+    <string name="register_subtitle">Tạo tài khoản, hoàn toàn miễn phí</string>
+    <string name="register_username_hint">Tên đăng nhập</string>
+    <string name="register_email_hint">Email</string>
+    <string name="register_password_hint">Mật khẩu</string>
+    <string name="register_confirm_password_hint">Xác nhận mật khẩu</string>
+    <string name="register_btn_signup">Đăng ký</string>
+    <string name="register_already_have_account">Đã có tài khoản? </string>
+    <string name="register_btn_login">Đăng nhập</string>
+    <string name="register_toast_empty">Vui lòng điền đầy đủ thông tin</string>
+    <string name="register_toast_pass_mismatch">Mật khẩu xác nhận không khớp</string>
+    <string name="register_toast_success">Đăng ký thành công! Vui lòng đăng nhập.</string>
+
+    <string name="forgot_title">Quên mật khẩu</string>
+    <string name="forgot_subtitle">Nhập email đã đăng ký để nhận mã OTP xác thực.</string>
+    <string name="forgot_email_hint">Email đăng ký</string>
+    <string name="forgot_btn_send_otp">Gửi mã OTP</string>
+    <string name="forgot_back_to_login">Quay lại Đăng nhập</string>
+    <string name="forgot_toast_empty_email">Vui lòng nhập email</string>
+    <string name="forgot_toast_otp_sent">Đã gửi mã OTP! Kiểm tra email.</string>
+
+    <string name="reset_title">Đặt lại mật khẩu</string>
+    <string name="reset_email_label">Email: %1$s</string>
+    <string name="reset_otp_hint">Mã OTP (6 số)</string>
+    <string name="reset_new_password_hint">Mật khẩu mới</string>
+    <string name="reset_confirm_password_hint">Xác nhận mật khẩu</string>
+    <string name="reset_btn_confirm">Xác nhận đổi</string>
+    <string name="reset_toast_empty">Vui lòng nhập đủ thông tin</string>
+    <string name="reset_toast_pass_mismatch">Mật khẩu xác nhận không khớp</string>
+    <string name="reset_toast_success">Đổi mật khẩu thành công! Hãy đăng nhập lại.</string>
+
+    <string name="home_welcome_user">👋 Xin chào, %1$s!</string>
+    <string name="home_what_to_learn">Hôm nay bạn muốn học gì?</string>
+    <string name="home_search_hint">Tìm bài học, chương, từ khoá...</string>
+
+    <string name="home_dashboard_progress">Tiến độ</string>
+    <string name="home_dashboard_completed">Bài đã xong</string>
+    <string name="home_dashboard_days">Ngày</string>
+    <string name="home_dashboard_streak">Streak</string>
+
+    <string name="home_your_subjects">Môn học của bạn</string>
+    <string name="home_fallback_subject">Môn học</string>
+    <string name="home_no_data">Chưa có dữ liệu</string>
+    <string name="home_lesson_count_format">%1$d/%2$d bài học</string>
+
+    <string name="home_ai_assistant">Trợ lý học tập AI</string>
+    <string name="home_ai_desc">Hỏi bài - Giải thích - Gợi ý</string>
+    <string name="home_ai_hint">Hỏi AI: Giải giúp mình bài này...</string>
+
+    <string name="home_content_desc_notification">Thông báo</string>
+    <string name="home_content_desc_avatar">Ảnh đại diện</string>
+    <string name="home_content_desc_search">Tìm kiếm</string>
+    <string name="home_content_desc_ai">AI</string>
+    <string name="home_content_desc_send">Gửi</string>
+
+    <string name="class_selection_title">📚 Bạn đang học lớp mấy?</string>
+    <string name="class_selection_subtitle">Chọn lớp để xem bài học phù hợp với bạn nhé!</string>
+    <string name="class_selection_motivation">✨ Học mỗi ngày một chút, giỏi lên từng ngày!</string>
+    <string name="class_selection_btn_start">🚀 Bắt đầu học</string>
+    <string name="class_selection_toast_empty">Vui lòng chọn một lớp</string>
+    <string name="class_selection_grade_format">Lớp %1$d</string>
+    <string name="class_selection_selected">✔ Đã chọn</string>
+
+    <string name="subject_detail_top_bar_title">Khối %1$d - %2$s</string>
+    <string name="subject_detail_no_content_toast">Môn học này chưa có nội dung hoặc đã học xong!</string>
+    <string name="subject_detail_new_curriculum">CHƯƠNG TRÌNH MỚI 2024</string>
+    <string name="subject_detail_hero_title">%1$s\ncho Khối %2$d</string>
+    <string name="subject_detail_hero_desc">Sẵn sàng chinh phục tri thức chưa?\nHãy bắt đầu ngay hôm nay nhé!</string>
+    <string name="subject_detail_hero_learning_with_you">Đang học cùng bạn</string>
+
+    <string name="subject_detail_learning_path">Lộ trình học tập</string>
+    <string name="subject_detail_view_all">Xem tất cả</string>
+
+    <string name="subject_detail_theory_title">Lý thuyết trọng tâm</string>
+    <string name="subject_detail_theory_subtitle">12 chương • 48 bài học</string> <string name="subject_detail_btn_continue">Tiếp tục</string>
+    <string name="subject_detail_progress_label">Tiến độ hoàn thành</string>
+
+    <string name="subject_detail_exercise_title">Giải bài tập</string>
+    <string name="subject_detail_exercise_subtitle">Lời giải chi tiết SGK &amp; SBT</string>
+
+    <string name="subject_detail_quiz_title">Quiz</string>
+    <string name="subject_detail_quiz_subtitle">Kiểm tra nhanh 15p hàng ngày</string>
+
+    <string name="subject_detail_exam_title">Bộ đề thi</string>
+    <string name="subject_detail_exam_subtitle">Sẵn sàng thi học kỳ • Đề thi thử mới nhất</string>
+
+    <string name="common_back">Quay lại</string>
+
+    <string name="theory_detail_title">Chi tiết bài học</string>
+    <string name="theory_detail_video_title">Video bài giảng</string>
+    <string name="theory_detail_invalid_video">Link video không hợp lệ</string>
+    <string name="theory_detail_image_placeholder">Hình ảnh minh họa</string>
+    <string name="theory_detail_btn_mark_complete">Đánh dấu hoàn thành</string>
+    <string name="theory_detail_btn_completed">Đã hoàn thành</string>
+
+    <string name="theory_screen_title_exercise">Giải bài tập</string>
+    <string name="theory_screen_title_theory">Lý thuyết</string>
+    <string name="theory_screen_top_bar_title">%1$s - %2$s (Lớp %3$d)</string>
+    <string name="theory_screen_no_content">Chưa có nội dung.</string>
+
+    <string name="theory_screen_desc_expand">Mở rộng</string>
+    <string name="theory_screen_desc_completed">Đã hoàn thành</string>
+    <string name="theory_screen_desc_go">Đi tiếp</string>
+
+    <string name="exercise_detail_title">Luyện tập</string>
+    <string name="exercise_detail_empty">Chưa có bài tập nào.</string>
+    <string name="exercise_detail_btn_complete">Đánh dấu hoàn thành</string>
+    <string name="exercise_detail_btn_completed">Đã hoàn thành bài tập</string>
+
+    <string name="exercise_item_question_num">Câu %1$d</string>
+    <string name="exercise_item_btn_hide_solution">Ẩn lời giải</string>
+    <string name="exercise_item_btn_show_solution">Xem lời giải chi tiết</string>
+    <string name="exercise_item_solution_guide">Hướng dẫn giải:</string>
+    <string name="exercise_item_solution_empty">Đang cập nhật lời giải...</string>
+    <string name="exercise_item_solution_step">Bước %1$d:</string>
+
+    <string name="exercise_item_content_desc_image">Hình ảnh bài tập</string>
+
+    <string name="dashboard_title">DashBoard</string>
+    <string name="dashboard_total_time">TỔNG THỜI GIAN</string>
+    <string name="dashboard_unit_hours">Giờ</string>
+    <string name="dashboard_hard_working">Học tập chăm chỉ</string>
+    <string name="dashboard_current_streak">STREAK HIỆN TẠI</string>
+    <string name="dashboard_unit_days">Ngày</string>
+    <string name="dashboard_unit_days_lowercase"> ngày</string>
+    <string name="dashboard_tap_to_view_calendar">Chạm để xem lịch</string>
+
+    <string name="dashboard_streak_journey">Hành trình giữ lửa</string>
+    <string name="dashboard_longest_streak">STREAK DÀI NHẤT</string>
+    <string name="dashboard_month_year_format">Tháng %1$d năm %2$d</string>
+
+    <string name="dashboard_day_mon">T2</string>
+    <string name="dashboard_day_tue">T3</string>
+    <string name="dashboard_day_wed">T4</string>
+    <string name="dashboard_day_thu">T5</string>
+    <string name="dashboard_day_fri">T6</string>
+    <string name="dashboard_day_sat">T7</string>
+    <string name="dashboard_day_sun">CN</string>
+
+    <string name="dashboard_streak_encourage_1">Cố lên! Bạn chỉ còn </string>
+    <string name="dashboard_streak_encourage_days_left">%1$d ngày</string>
+    <string name="dashboard_streak_encourage_2"> nữa để đạt mục tiêu tháng!</string>
+    <string name="dashboard_continue_learning">Tiếp tục học ngay</string>
+
+    <string name="dashboard_progress_track">Đường Đua Tiến Độ</string>
+    <string name="dashboard_lesson_progress_format">%1$d/%2$d Bài </string>
+
+    <string name="dashboard_performance_chart">Hiệu suất học tập</string>
+    <string name="dashboard_performance_desc">Tiến độ bài kiểm tra theo tuần</string>
+    <string name="dashboard_this_month">Tháng này ▾</string>
+    <string name="dashboard_no_exam_data">Chưa có dữ liệu bài thi</string>
+
+    <string name="dashboard_ai_prediction">Dự đoán điểm AI</string>
+    <string name="dashboard_ai_prediction_desc">Kỳ thi học kỳ I sắp tới</string>
+    <string name="dashboard_weekly_goal_format">MỤC TIÊU TUẦN: %1$dH HỌC</string>
+
+    <string name="dashboard_heatmap_title">Mật độ học tập</string>
+    <string name="dashboard_heatmap_desc">3 tháng qua</string>
+    <string name="dashboard_heatmap_less">ÍT HƠN</string>
+    <string name="dashboard_heatmap_more">NHIỀU HƠN</string>
+
+    <string name="dashboard_desc_back">Quay lại</string>
+    <string name="dashboard_desc_bell">Thông báo</string>
+    <string name="dashboard_desc_prev_month">Tháng trước</string>
+    <string name="dashboard_desc_next_month">Tháng sau</string>
+    <string name="dashboard_desc_flag">Cờ mục tiêu</string>
+
+    <string name="quiz_list_title">Bài Kiểm Tra - Khối %1$d</string>
+    <string name="quiz_list_empty">Chưa có bài kiểm tra nào cho môn học này.</string>
+    <string name="quiz_list_chapter">Chương: %1$s</string>
+    <string name="quiz_list_type">Loại: %1$s</string>
+    <string name="quiz_list_question_count">%1$d câu hỏi</string>
+
+    <string name="quiz_taking_error_data">Lỗi dữ liệu bài thi</string>
+    <string name="quiz_taking_time_up_title">Đã hết thời gian!</string>
+    <string name="quiz_taking_time_up_msg">Hệ thống đang tự động nộp bài của bạn...</string>
+    <string name="quiz_taking_warning_unanswered">Bạn chưa trả lời hết các câu hỏi!</string>
+    <string name="quiz_taking_btn_prev">Câu trước</string>
+    <string name="quiz_taking_btn_next">Câu tiếp</string>
+    <string name="quiz_taking_btn_submit">Nộp bài</string>
+    <string name="quiz_taking_question_count">Câu %1$d / %2$d</string>
+    <string name="quiz_taking_answered_count">Đã trả lời: %1$d/%2$d</string>
+    <string name="quiz_taking_select_answer">Chọn đáp án:</string>
+
+    <string name="quiz_result_excellent">Xuất sắc!</string>
+    <string name="quiz_result_good">Khá tốt!</string>
+    <string name="quiz_result_needs_improvement">Cần cố gắng hơn!</string>
+    <string name="quiz_result_top_title">Kết quả kiểm tra</string>
+    <string name="quiz_result_your_score">ĐIỂM CỦA BẠN</string>
+    <string name="quiz_result_correct_answers">Trả lời đúng</string>
+    <string name="quiz_result_time_taken">Thời gian</string>
+    <string name="quiz_result_detail_title">Chi tiết bài làm</string>
+    <string name="quiz_result_btn_finish">Hoàn thành &amp; Quay lại</string>
+    <string name="quiz_result_question_number">Câu %1$d</string>
+    <string name="quiz_result_you_selected">Bạn đã chọn:</string>
+    <string name="quiz_result_skipped">Bạn đã bỏ qua câu này</string>
+    <string name="quiz_result_correct_is">Đáp án đúng là:</string>
+    <string name="quiz_result_explanation">Lời giải chi tiết:</string>
+
+    <string name="pdf_viewer_loading">Đang tải tài liệu...</string>
+    <string name="pdf_viewer_error_load">Không thể tải file PDF</string>
+    <string name="pdf_viewer_page_desc">Trang %1$d</string>
+
+    <string name="doc_list_title">Tài liệu ôn tập</string>
+    <string name="doc_list_empty">Chưa có tài liệu nào.</string>
+    <string name="doc_list_error_empty_url">Tài liệu này chưa có đường dẫn file!</string>
+    <string name="doc_list_error_encode">Lỗi đọc đường dẫn!</string>
+    <string name="doc_list_fallback_title">Tai_lieu</string>
+    <string name="doc_list_item_meta">%1$s • %2$s</string>
 </resources>

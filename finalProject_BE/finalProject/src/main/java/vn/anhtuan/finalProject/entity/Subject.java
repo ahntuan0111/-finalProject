@@ -22,8 +22,11 @@ public class Subject {
     @Column(nullable = false, length = 50)
     private String code; // Ví dụ: "toan", "khtn"
 
-    @Column(nullable = false, length = 100)
-    private String name; // Ví dụ: "Toán học", "Khoa học tự nhiên"
+    @Column(name = "name_vi", nullable = false, length = 100)
+    private String nameVi;
+
+    @Column(name = "name_en", length = 100)
+    private String nameEn;
 
     @ManyToOne
     @JoinColumn(name = "grade_id", nullable = false)
@@ -55,12 +58,28 @@ public class Subject {
         this.code = code;
     }
 
-    public String getName() {
-        return name;
+    public String getNameVi() {
+        return nameVi;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setNameVi(String nameVi) {
+        this.nameVi = nameVi;
+    }
+
+    public String getNameEn() {
+        return nameEn;
+    }
+
+    public void setNameEn(String nameEn) {
+        this.nameEn = nameEn;
+    }
+
+    public List<Chapter> getChapters() {
+        return chapters;
+    }
+
+    public void setChapters(List<Chapter> chapters) {
+        this.chapters = chapters;
     }
 
     public Grade getGrade() {

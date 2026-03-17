@@ -17,8 +17,12 @@ public class LessonContent {
     private ContentType contentType; // Enum: TEXT, IMAGE
 
     @Lob // Để lưu văn bản dài (TEXT trong MySQL)
-    @Column(name = "content_value", nullable = false, columnDefinition = "TEXT")
-    private String contentValue; // Đây là nơi lưu HTML hoặc LaTeX raw
+    @Column(name = "content_value_vi", nullable = false, columnDefinition = "TEXT")
+    private String contentValueVi;
+
+    @Lob
+    @Column(name = "content_value_en", columnDefinition = "TEXT")
+    private String contentValueEn;
 
     @Column(name = "content_order", nullable = false)
     private Integer contentOrder;
@@ -31,12 +35,13 @@ public class LessonContent {
     public LessonContent() {
     }
 
-    public LessonContent(Long id, ContentType contentType, String contentValue, Integer contentOrder, Lesson lesson) {
+    public LessonContent(Long id, Lesson lesson, Integer contentOrder, String contentValueEn, String contentValueVi, ContentType contentType) {
         this.id = id;
-        this.contentType = contentType;
-        this.contentValue = contentValue;
-        this.contentOrder = contentOrder;
         this.lesson = lesson;
+        this.contentOrder = contentOrder;
+        this.contentValueEn = contentValueEn;
+        this.contentValueVi = contentValueVi;
+        this.contentType = contentType;
     }
 
     public Long getId() {
@@ -63,12 +68,20 @@ public class LessonContent {
         this.contentOrder = contentOrder;
     }
 
-    public String getContentValue() {
-        return contentValue;
+    public String getContentValueVi() {
+        return contentValueVi;
     }
 
-    public void setContentValue(String contentValue) {
-        this.contentValue = contentValue;
+    public void setContentValueVi(String contentValueVi) {
+        this.contentValueVi = contentValueVi;
+    }
+
+    public String getContentValueEn() {
+        return contentValueEn;
+    }
+
+    public void setContentValueEn(String contentValueEn) {
+        this.contentValueEn = contentValueEn;
     }
 
     public ContentType getContentType() {

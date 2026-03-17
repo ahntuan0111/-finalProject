@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class QuizUserService {
-    private final QuizResultRepository quizResultRepository;
 
+    private final QuizResultRepository quizResultRepository;
     private final QuizRepository quizRepository;
 
     public QuizUserService(QuizResultRepository quizResultRepository, QuizRepository quizRepository) {
@@ -29,31 +29,25 @@ public class QuizUserService {
     }
 
     @Transactional(readOnly = true)
-    public List<QuizResponse> getQuizzesForMobile(String subjectCode, Integer grade) {
-        // Lấy danh sách các bài Quiz từ DB thông qua custom query
+    public List<QuizResponse> getQuizzesForMobile(String subjectCode, Integer grade, String lang) {
         List<Quiz> quizzes = quizRepository.findQuizzesBySubjectAndGrade(subjectCode, grade);
 
-        // Convert toàn bộ Entity Quiz sang DTO QuizResponse
         return quizzes.stream()
-                .map(QuizResponse::fromEntity)
+                .map(quiz -> QuizResponse.fromEntity(quiz, lang))
                 .collect(Collectors.toList());
     }
 
     @Transactional
     public void submitQuizResult(Integer quizId, Long userId, QuizSubmitRequest request) {
-        // 1. Tìm bài Quiz
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bài Quiz"));
 
-        // 2. Tìm số lần làm bài hiện tại (Attempt No)
         Integer maxAttempt = quizResultRepository.findMaxAttemptNoByQuizIdAndUserId(quizId, userId);
         int currentAttempt = (maxAttempt == null) ? 1 : maxAttempt + 1;
 
-        // 3. Tính điểm (Thang điểm 10)
         double scoreValue = (double) request.getCorrectAnswers() / request.getTotalQuestions() * 10.0;
         BigDecimal score = new BigDecimal(scoreValue).setScale(2, RoundingMode.HALF_UP);
 
-        // 4. Tạo entity và lưu vào DB
         QuizResult result = new QuizResult();
         result.setUserId(userId);
         result.setQuiz(quiz);
@@ -62,11 +56,9 @@ public class QuizUserService {
         result.setTotalQuestions(request.getTotalQuestions());
         result.setScore(score);
         result.setDurationSeconds(request.getDurationSeconds() != null ? request.getDurationSeconds() : 0);
-        // Đảm bảo Enum QuizStatus của bạn có giá trị COMPLETED nhé
         result.setStatus(QuizStatus.COMPLETED);
         result.setCompletedAt(LocalDateTime.now());
 
         quizResultRepository.save(result);
     }
-
 }

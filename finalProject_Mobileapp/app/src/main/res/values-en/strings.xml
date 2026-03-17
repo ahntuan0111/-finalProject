@@ -1,0 +1,236 @@
+<resources>
+    <string name="app_name">Final Project</string>
+
+    <string name="welcome_skip">Skip</string>
+    <string name="welcome_page1_title">Learn Anywhere</string>
+    <string name="welcome_page1_desc">Access lectures and do exercises anytime, anywhere.</string>
+    <string name="welcome_page2_title">Track Progress</string>
+    <string name="welcome_page2_desc">Visual charts help you grasp your daily learning results.</string>
+    <string name="welcome_page3_title">Easy Communication</string>
+    <string name="welcome_page3_desc">Connect with teachers and friends to answer questions.</string>
+    <string name="welcome_btn_next">Next</string>
+    <string name="welcome_btn_start">Get Started</string>
+
+    <string name="auth_btn_login">Login</string>
+    <string name="auth_btn_register">Create new account</string>
+
+    <string name="login_title">Login</string>
+    <string name="login_subtitle">Login to your account</string>
+    <string name="login_username_hint">Username</string>
+    <string name="login_password_hint">Password</string>
+    <string name="login_forgot_password">Forgot Password?</string>
+    <string name="login_no_account">Don\'t have an account? </string>
+    <string name="login_btn_signup">Sign up</string>
+    <string name="login_toast_success">Login successful!</string>
+
+    <string name="register_title">Sign up</string>
+    <string name="register_subtitle">Create an account, It\'s free</string>
+    <string name="register_username_hint">Username</string>
+    <string name="register_email_hint">Email</string>
+    <string name="register_password_hint">Password</string>
+    <string name="register_confirm_password_hint">Confirm Password</string>
+    <string name="register_btn_signup">Sign up</string>
+    <string name="register_already_have_account">Already have an account? </string>
+    <string name="register_btn_login">Login</string>
+    <string name="register_toast_empty">Please fill in all fields</string>
+    <string name="register_toast_pass_mismatch">Passwords do not match</string>
+    <string name="register_toast_success">Registration successful! Please login.</string>
+
+    <string name="forgot_title">Forgot Password</string>
+    <string name="forgot_subtitle">Enter your registered email to receive an OTP code.</string>
+    <string name="forgot_email_hint">Registered Email</string>
+    <string name="forgot_btn_send_otp">Send OTP</string>
+    <string name="forgot_back_to_login">Back to Login</string>
+    <string name="forgot_toast_empty_email">Please enter your email</string>
+    <string name="forgot_toast_otp_sent">OTP sent! Check your email.</string>
+
+    <string name="reset_title">Reset Password</string>
+    <string name="reset_email_label">Email: %1$s</string>
+    <string name="reset_otp_hint">OTP Code (6 digits)</string>
+    <string name="reset_new_password_hint">New Password</string>
+    <string name="reset_confirm_password_hint">Confirm Password</string>
+    <string name="reset_btn_confirm">Confirm Reset</string>
+    <string name="reset_toast_empty">Please enter all fields</string>
+    <string name="reset_toast_pass_mismatch">Passwords do not match</string>
+    <string name="reset_toast_success">Password reset successful! Please login again.</string>
+
+    <string name="home_welcome_user">👋 Hello, %1$s!</string>
+    <string name="home_what_to_learn">What do you want to learn today?</string>
+    <string name="home_search_hint">Search lessons, chapters, keywords...</string>
+
+    <string name="home_dashboard_progress">Progress</string>
+    <string name="home_dashboard_completed">Completed</string>
+    <string name="home_dashboard_days">Days</string>
+    <string name="home_dashboard_streak">Streak</string>
+
+    <string name="home_your_subjects">Your Subjects</string>
+    <string name="home_fallback_subject">Subject</string>
+    <string name="home_no_data">No data available</string>
+    <string name="home_lesson_count_format">%1$d/%2$d lessons</string>
+
+    <string name="home_ai_assistant">AI Learning Assistant</string>
+    <string name="home_ai_desc">Ask - Explain - Suggest</string>
+    <string name="home_ai_hint">Ask AI: Help me solve this...</string>
+
+    <string name="home_content_desc_notification">Notifications</string>
+    <string name="home_content_desc_avatar">Avatar</string>
+    <string name="home_content_desc_search">Search</string>
+    <string name="home_content_desc_ai">AI</string>
+    <string name="home_content_desc_send">Send</string>
+
+    <string name="class_selection_title">📚 What grade are you in?</string>
+    <string name="class_selection_subtitle">Choose your grade to see tailored lessons!</string>
+    <string name="class_selection_motivation">✨ Learn a little every day, get better every day!</string>
+    <string name="class_selection_btn_start">🚀 Start Learning</string>
+    <string name="class_selection_toast_empty">Please select a grade</string>
+    <string name="class_selection_grade_format">Grade %1$d</string>
+    <string name="class_selection_selected">✔ Selected</string>
+
+    <string name="subject_detail_top_bar_title">Grade %1$d - %2$s</string>
+    <string name="subject_detail_no_content_toast">This subject has no content yet or is already completed!</string>
+    <string name="subject_detail_new_curriculum">NEW CURRICULUM 2024</string>
+    <string name="subject_detail_hero_title">%1$s\nfor Grade %2$d</string>
+    <string name="subject_detail_hero_desc">Ready to conquer knowledge?\nLet\'s start learning today!</string>
+    <string name="subject_detail_hero_learning_with_you">Learning with you</string>
+
+    <string name="subject_detail_learning_path">Learning Path</string>
+    <string name="subject_detail_view_all">View All</string>
+
+    <string name="subject_detail_theory_title">Core Theory</string>
+    <string name="subject_detail_theory_subtitle">12 chapters • 48 lessons</string>
+    <string name="subject_detail_btn_continue">Continue</string>
+    <string name="subject_detail_progress_label">Completion Progress</string>
+
+    <string name="subject_detail_exercise_title">Exercises</string>
+    <string name="subject_detail_exercise_subtitle">Detailed textbook solutions</string>
+
+    <string name="subject_detail_quiz_title">Quiz</string>
+    <string name="subject_detail_quiz_subtitle">Quick 15-min daily tests</string>
+
+    <string name="subject_detail_exam_title">Exam Papers</string>
+    <string name="subject_detail_exam_subtitle">Ready for finals • Latest mock exams</string>
+
+    <string name="common_back">Back</string>
+
+    <string name="theory_detail_title">Lesson Details</string>
+    <string name="theory_detail_video_title">Lecture Video</string>
+    <string name="theory_detail_invalid_video">Invalid video link</string>
+    <string name="theory_detail_image_placeholder">Illustration Image</string>
+    <string name="theory_detail_btn_mark_complete">Mark as Completed</string>
+    <string name="theory_detail_btn_completed">Completed</string>
+
+    <string name="theory_screen_title_exercise">Exercises</string>
+    <string name="theory_screen_title_theory">Theory</string>
+    <string name="theory_screen_top_bar_title">%1$s - %2$s (Grade %3$d)</string>
+    <string name="theory_screen_no_content">No content available.</string>
+
+    <string name="theory_screen_desc_expand">Expand</string>
+    <string name="theory_screen_desc_completed">Completed</string>
+    <string name="theory_screen_desc_go">Go</string>
+
+    <string name="exercise_detail_title">Practice</string>
+    <string name="exercise_detail_empty">No exercises available yet.</string>
+    <string name="exercise_detail_btn_complete">Mark as Completed</string>
+    <string name="exercise_detail_btn_completed">Practice Completed</string>
+
+    <string name="exercise_item_question_num">Question %1$d</string>
+    <string name="exercise_item_btn_hide_solution">Hide Solution</string>
+    <string name="exercise_item_btn_show_solution">View Detailed Solution</string>
+    <string name="exercise_item_solution_guide">Solution Guide:</string>
+    <string name="exercise_item_solution_empty">Updating solution...</string>
+    <string name="exercise_item_solution_step">Step %1$d:</string>
+
+    <string name="exercise_item_content_desc_image">Exercise Image</string>
+
+    <string name="dashboard_title">Dashboard</string>
+    <string name="dashboard_total_time">TOTAL TIME</string>
+    <string name="dashboard_unit_hours">Hours</string>
+    <string name="dashboard_hard_working">Hard working</string>
+    <string name="dashboard_current_streak">CURRENT STREAK</string>
+    <string name="dashboard_unit_days">Days</string>
+    <string name="dashboard_unit_days_lowercase"> days</string>
+    <string name="dashboard_tap_to_view_calendar">Tap to view calendar</string>
+
+    <string name="dashboard_streak_journey">Streak Journey</string>
+    <string name="dashboard_longest_streak">LONGEST STREAK</string>
+    <string name="dashboard_month_year_format">Month %1$d Year %2$d</string>
+
+    <string name="dashboard_day_mon">Mo</string>
+    <string name="dashboard_day_tue">Tu</string>
+    <string name="dashboard_day_wed">We</string>
+    <string name="dashboard_day_thu">Th</string>
+    <string name="dashboard_day_fri">Fr</string>
+    <string name="dashboard_day_sat">Sa</string>
+    <string name="dashboard_day_sun">Su</string>
+
+    <string name="dashboard_streak_encourage_1">Keep it up! You only have </string>
+    <string name="dashboard_streak_encourage_days_left">%1$d days</string>
+    <string name="dashboard_streak_encourage_2"> left to reach the monthly goal!</string>
+    <string name="dashboard_continue_learning">Continue Learning</string>
+
+    <string name="dashboard_progress_track">Progress Track</string>
+    <string name="dashboard_lesson_progress_format">%1$d/%2$d Lessons </string>
+
+    <string name="dashboard_performance_chart">Learning Performance</string>
+    <string name="dashboard_performance_desc">Weekly test progress</string>
+    <string name="dashboard_this_month">This month ▾</string>
+    <string name="dashboard_no_exam_data">No exam data available</string>
+
+    <string name="dashboard_ai_prediction">AI Score Prediction</string>
+    <string name="dashboard_ai_prediction_desc">Upcoming Term 1 Exam</string>
+    <string name="dashboard_weekly_goal_format">WEEKLY GOAL: %1$dH LEARNING</string>
+
+    <string name="dashboard_heatmap_title">Learning Density</string>
+    <string name="dashboard_heatmap_desc">Last 3 months</string>
+    <string name="dashboard_heatmap_less">LESS</string>
+    <string name="dashboard_heatmap_more">MORE</string>
+
+    <string name="dashboard_desc_back">Back</string>
+    <string name="dashboard_desc_bell">Notifications</string>
+    <string name="dashboard_desc_prev_month">Previous month</string>
+    <string name="dashboard_desc_next_month">Next month</string>
+    <string name="dashboard_desc_flag">Goal flag</string>
+
+    <string name="quiz_list_title">Tests - Grade %1$d</string>
+    <string name="quiz_list_empty">No tests available for this subject yet.</string>
+    <string name="quiz_list_chapter">Chapter: %1$s</string>
+    <string name="quiz_list_type">Type: %1$s</string>
+    <string name="quiz_list_question_count">%1$d questions</string>
+
+    <string name="quiz_taking_error_data">Test data error</string>
+    <string name="quiz_taking_time_up_title">Time\'s up!</string>
+    <string name="quiz_taking_time_up_msg">The system is automatically submitting your test...</string>
+    <string name="quiz_taking_warning_unanswered">You haven\'t answered all questions!</string>
+    <string name="quiz_taking_btn_prev">Previous</string>
+    <string name="quiz_taking_btn_next">Next</string>
+    <string name="quiz_taking_btn_submit">Submit</string>
+    <string name="quiz_taking_question_count">Question %1$d / %2$d</string>
+    <string name="quiz_taking_answered_count">Answered: %1$d/%2$d</string>
+    <string name="quiz_taking_select_answer">Select an answer:</string>
+
+    <string name="quiz_result_excellent">Excellent!</string>
+    <string name="quiz_result_good">Good job!</string>
+    <string name="quiz_result_needs_improvement">Needs improvement!</string>
+    <string name="quiz_result_top_title">Test Results</string>
+    <string name="quiz_result_your_score">YOUR SCORE</string>
+    <string name="quiz_result_correct_answers">Correct answers</string>
+    <string name="quiz_result_time_taken">Time</string>
+    <string name="quiz_result_detail_title">Submission Details</string>
+    <string name="quiz_result_btn_finish">Finish &amp; Go Back</string>
+    <string name="quiz_result_question_number">Question %1$d</string>
+    <string name="quiz_result_you_selected">You selected:</string>
+    <string name="quiz_result_skipped">You skipped this question</string>
+    <string name="quiz_result_correct_is">The correct answer is:</string>
+    <string name="quiz_result_explanation">Detailed explanation:</string>
+
+    <string name="pdf_viewer_loading">Loading document...</string>
+    <string name="pdf_viewer_error_load">Failed to load PDF file</string>
+    <string name="pdf_viewer_page_desc">Page %1$d</string>
+
+    <string name="doc_list_title">Revision Documents</string>
+    <string name="doc_list_empty">No documents available yet.</string>
+    <string name="doc_list_error_empty_url">This document has no file path!</string>
+    <string name="doc_list_error_encode">Error reading path!</string>
+    <string name="doc_list_fallback_title">Document</string>
+    <string name="doc_list_item_meta">%1$s • %2$s</string>
+</resources>

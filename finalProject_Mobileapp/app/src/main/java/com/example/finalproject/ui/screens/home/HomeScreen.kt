@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,7 +51,7 @@ import com.example.finalproject.ui.viewmodel.NotificationViewModel
 fun HomeScreen(
     navController: NavController,
     viewModel: HomeViewModel = hiltViewModel(),
-    notificationViewModel: NotificationViewModel = hiltViewModel() // Inject thêm NotificationViewModel
+    notificationViewModel: NotificationViewModel = hiltViewModel()
 ) {
     val userName by viewModel.userName.collectAsState()
     val subjects by viewModel.subjects.collectAsState()
@@ -62,23 +63,21 @@ fun HomeScreen(
     val isNotifLoading by notificationViewModel.isLoading.collectAsState()
     var showNotificationSheet by remember { mutableStateOf(false) }
 
-    // Gọi API để cập nhật tiến trình và thông báo mỗi khi HomeScreen hiển thị
     LaunchedEffect(Unit) {
         viewModel.fetchProgress()
         notificationViewModel.fetchData()
     }
 
-    // Cấu trúc chính: Scroll dọc
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFAFAFA)) // Nền xám rất nhạt
+            .background(Color(0xFFFAFAFA))
             .verticalScroll(scrollState)
             .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 1. Khu vực chào mừng (Đã truyền thêm unreadCount và sự kiện click chuông)
+        // 1. Khu vực chào mừng
         HomeHeader(
             userName = userName,
             unreadCount = unreadCount,
@@ -94,21 +93,23 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 3. Dashboard Thống kê (UI MỚI)
+        // 3. Dashboard Thống kê
         HomeDashboard(stats = viewModel.stats)
 
         Spacer(modifier = Modifier.height(32.dp))
 
         // 4. Môn học
+        // Lấy tên môn học fallback từ strings.xml
+        val fallbackSubjectName = stringResource(id = R.string.home_fallback_subject)
+
         HomeSubjects(subjects = subjects) { subjectIdString ->
             val dbSubjectCode = when(subjectIdString) {
                 "math" -> "toan"
                 "science" -> "khtn"
-                else -> subjectIdString // Fallback
+                else -> subjectIdString
             }
 
-            val subjectName = subjects.find { it.id == subjectIdString }?.name ?: "Môn học"
-
+            val subjectName = subjects.find { it.id == subjectIdString }?.name ?: fallbackSubjectName
             navController.navigate(AppRoutes.createSubjectDetailRoute(dbSubjectCode, subjectName))
         }
 
@@ -119,7 +120,7 @@ fun HomeScreen(
             // TODO: Navigate to Chat Screen
         })
 
-        Spacer(modifier = Modifier.height(80.dp)) // Bottom padding cho thoáng
+        Spacer(modifier = Modifier.height(80.dp))
     }
 
     // --- HIỂN THỊ BOTTOM SHEET THÔNG BÁO ---
@@ -130,13 +131,10 @@ fun HomeScreen(
             onDismiss = { showNotificationSheet = false },
             onMarkAllRead = { notificationViewModel.markAllAsRead() },
             onItemClick = { notif ->
-                // 1. Đánh dấu đã đọc
                 if (!notif.isRead) {
                     notificationViewModel.markAsRead(notif.id)
                 }
-                // 2. Đóng sheet
                 showNotificationSheet = false
-                // 3. Xử lý Deep Link
                 if (!notif.actionUrl.isNullOrEmpty()) {
                     try {
                         navController.navigate(notif.actionUrl)
@@ -166,23 +164,21 @@ fun HomeHeader(
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "👋 Xin chào, $userName!",
+                    text = stringResource(id = R.string.home_welcome_user, userName),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color(0xFF1C2A3A)
                 )
             }
             Text(
-                text = "Hôm nay bạn muốn học gì?",
+                text = stringResource(id = R.string.home_what_to_learn),
                 fontSize = 14.sp,
                 color = Color.Gray,
                 modifier = Modifier.padding(top = 4.dp)
             )
         }
 
-        // Khu vực Chuông Thông Báo & Avatar
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // Nút cái chuông
             IconButton(
                 onClick = onNotificationClick,
                 modifier = Modifier.padding(end = 8.dp)
@@ -201,14 +197,13 @@ fun HomeHeader(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Notifications,
-                        contentDescription = "Thông báo",
+                        contentDescription = stringResource(id = R.string.home_content_desc_notification),
                         tint = Color(0xFF1C2A3A),
                         modifier = Modifier.size(28.dp)
                     )
                 }
             }
 
-            // Avatar
             Box(
                 modifier = Modifier
                     .size(48.dp)
@@ -219,7 +214,7 @@ fun HomeHeader(
             ) {
                 Icon(
                     imageVector = Icons.Default.Person,
-                    contentDescription = "Avatar",
+                    contentDescription = stringResource(id = R.string.home_content_desc_avatar),
                     tint = Color.Gray,
                     modifier = Modifier.size(28.dp)
                 )
@@ -246,12 +241,12 @@ fun HomeSearchBar(onSearchClick: () -> Unit) {
         ) {
             Icon(
                 imageVector = Icons.Default.Search,
-                contentDescription = "Search",
+                contentDescription = stringResource(id = R.string.home_content_desc_search),
                 tint = Color.Gray
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = "Tìm bài học, chương, từ khoá...",
+                text = stringResource(id = R.string.home_search_hint),
                 color = Color.LightGray,
                 fontSize = 15.sp
             )
@@ -262,9 +257,15 @@ fun HomeSearchBar(onSearchClick: () -> Unit) {
 // ================= GIAO DIỆN DASHBOARD MỚI =================
 @Composable
 fun HomeDashboard(stats: List<DashboardStat>) {
-    val progressStat = stats.getOrNull(0) ?: DashboardStat(0, "0%", "Tiến độ", Color.White)
-    val completedStat = stats.getOrNull(1) ?: DashboardStat(0, "0", "Bài đã xong", Color.White)
-    val streakStat = stats.getOrNull(2) ?: DashboardStat(0, "0", "Ngày", Color.White)
+    // Đọc String từ resources để làm fallback nếu index không tồn tại
+    val progressLabel = stringResource(id = R.string.home_dashboard_progress)
+    val completedLabel = stringResource(id = R.string.home_dashboard_completed)
+    val daysLabel = stringResource(id = R.string.home_dashboard_days)
+    val streakLabel = stringResource(id = R.string.home_dashboard_streak)
+
+    val progressStat = stats.getOrNull(0) ?: DashboardStat(0, "0%", progressLabel, Color.White)
+    val completedStat = stats.getOrNull(1) ?: DashboardStat(0, "0", completedLabel, Color.White)
+    val streakStat = stats.getOrNull(2) ?: DashboardStat(0, "0", daysLabel, Color.White)
 
     val progressValue = progressStat.value.replace("%", "").toFloatOrNull()?.div(100f) ?: 0f
 
@@ -334,8 +335,8 @@ fun HomeDashboard(stats: List<DashboardStat>) {
                 MiniStatCard(
                     modifier = Modifier.weight(1f),
                     iconRes = streakStat.imageRes,
-                    value = "${streakStat.value} Ngày",
-                    label = "Streak",
+                    value = "${streakStat.value} $daysLabel", // Ép chuỗi động: "0 Ngày" / "0 Days"
+                    label = streakLabel,
                     bgColor = Color(0xFFFFF9F0),
                     iconBg = Color.White
                 )
@@ -402,7 +403,7 @@ fun HomeSubjects(subjects: List<SubjectItem>, onClick: (String) -> Unit) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 16.dp)) {
             Text("📚 ", fontSize = 20.sp)
             Text(
-                text = "Môn học của bạn",
+                text = stringResource(id = R.string.home_your_subjects),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color(0xFF1C2A3A)
@@ -468,8 +469,10 @@ fun SubjectCard(subject: SubjectItem, onClick: () -> Unit) {
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    text = if (subject.totalLessons == 0) "Chưa có dữ liệu"
-                    else "${subject.finishedLessons}/${subject.totalLessons} bài học",
+                    text = if (subject.totalLessons == 0)
+                        stringResource(id = R.string.home_no_data)
+                    else
+                        stringResource(id = R.string.home_lesson_count_format, subject.finishedLessons, subject.totalLessons),
                     fontSize = 12.sp,
                     color = Color.Gray
                 )
@@ -499,7 +502,7 @@ fun HomeAiAssistant(onAiClick: () -> Unit) {
                 ) {
                     Icon(
                         imageVector = Icons.Default.SmartToy,
-                        contentDescription = "AI",
+                        contentDescription = stringResource(id = R.string.home_content_desc_ai),
                         tint = PrimaryBlue,
                         modifier = Modifier.size(26.dp)
                     )
@@ -508,13 +511,13 @@ fun HomeAiAssistant(onAiClick: () -> Unit) {
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = "Trợ lý học tập AI",
+                        text = stringResource(id = R.string.home_ai_assistant),
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 17.sp,
                         color = PrimaryBlue
                     )
                     Text(
-                        text = "Hỏi bài - Giải thích - Gợi ý",
+                        text = stringResource(id = R.string.home_ai_desc),
                         fontSize = 13.sp,
                         color = Color.Gray
                     )
@@ -534,7 +537,7 @@ fun HomeAiAssistant(onAiClick: () -> Unit) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "Hỏi AI: Giải giúp mình bài này...",
+                        text = stringResource(id = R.string.home_ai_hint),
                         color = Color.LightGray,
                         fontSize = 14.sp
                     )
@@ -548,7 +551,7 @@ fun HomeAiAssistant(onAiClick: () -> Unit) {
                     ) {
                         Icon(
                             imageVector = Icons.Default.Send,
-                            contentDescription = "Send",
+                            contentDescription = stringResource(id = R.string.home_content_desc_send),
                             tint = Color.White,
                             modifier = Modifier.size(18.dp)
                         )

@@ -18,11 +18,19 @@ public class Document {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String title;
+    // --- Đa ngôn ngữ cho Tiêu đề ---
+    @Column(name = "title_vi", nullable = false, length = 255)
+    private String titleVi;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
+    @Column(name = "title_en", length = 255)
+    private String titleEn;
+
+    // --- Đa ngôn ngữ cho Mô tả ---
+    @Column(name = "description_vi", columnDefinition = "TEXT")
+    private String descriptionVi;
+
+    @Column(name = "description_en", columnDefinition = "TEXT")
+    private String descriptionEn;
 
     @Column(name = "file_path", nullable = false, length = 500)
     private String filePath;
@@ -39,8 +47,11 @@ public class Document {
     @Column(nullable = false)
     private Integer grade;      // VD: 10, 11, 12
 
-    @Column(name = "exam_type")
-    private String examType;    // VD: "TEST", "THEORY"
+    @Column(name = "exam_type_vi", length = 50)
+    private String examTypeVi;
+
+    @Column(name = "exam_type_en", length = 50)
+    private String examTypeEn;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -53,18 +64,21 @@ public class Document {
     public Document() {
     }
 
-    public Document(Long id, String title, String description, String filePath, Long fileSize, String subjectCode, String fileType, Integer grade, String examType, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public Document(String titleVi, Long id, String titleEn, String descriptionVi, String descriptionEn, String filePath, String fileType, String subjectCode, Long fileSize, Integer grade, String examTypeVi, String examTypeEn, LocalDateTime updatedAt, LocalDateTime createdAt) {
+        this.titleVi = titleVi;
         this.id = id;
-        this.title = title;
-        this.description = description;
+        this.titleEn = titleEn;
+        this.descriptionVi = descriptionVi;
+        this.descriptionEn = descriptionEn;
         this.filePath = filePath;
-        this.fileSize = fileSize;
-        this.subjectCode = subjectCode;
         this.fileType = fileType;
+        this.subjectCode = subjectCode;
+        this.fileSize = fileSize;
         this.grade = grade;
-        this.examType = examType;
-        this.createdAt = createdAt;
+        this.examTypeVi = examTypeVi;
+        this.examTypeEn = examTypeEn;
         this.updatedAt = updatedAt;
+        this.createdAt = createdAt;
     }
 
     public Long getId() {
@@ -75,20 +89,36 @@ public class Document {
         this.id = id;
     }
 
-    public String getTitle() {
-        return title;
+    public String getTitleVi() {
+        return titleVi;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setTitleVi(String titleVi) {
+        this.titleVi = titleVi;
     }
 
-    public String getDescription() {
-        return description;
+    public String getTitleEn() {
+        return titleEn;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setTitleEn(String titleEn) {
+        this.titleEn = titleEn;
+    }
+
+    public String getDescriptionVi() {
+        return descriptionVi;
+    }
+
+    public void setDescriptionVi(String descriptionVi) {
+        this.descriptionVi = descriptionVi;
+    }
+
+    public String getDescriptionEn() {
+        return descriptionEn;
+    }
+
+    public void setDescriptionEn(String descriptionEn) {
+        this.descriptionEn = descriptionEn;
     }
 
     public String getFilePath() {
@@ -131,12 +161,20 @@ public class Document {
         this.grade = grade;
     }
 
-    public String getExamType() {
-        return examType;
+    public String getExamTypeVi() {
+        return examTypeVi;
     }
 
-    public void setExamType(String examType) {
-        this.examType = examType;
+    public void setExamTypeVi(String examTypeVi) {
+        this.examTypeVi = examTypeVi;
+    }
+
+    public String getExamTypeEn() {
+        return examTypeEn;
+    }
+
+    public void setExamTypeEn(String examTypeEn) {
+        this.examTypeEn = examTypeEn;
     }
 
     public LocalDateTime getCreatedAt() {

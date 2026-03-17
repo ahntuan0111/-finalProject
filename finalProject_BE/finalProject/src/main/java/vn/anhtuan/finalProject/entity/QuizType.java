@@ -12,8 +12,11 @@ public class QuizType {
     @Id
     private Integer id;
 
-    @Column(nullable = false, length = 50)
-    private String name;
+    @Column(name = "name_vi", nullable = false, length = 50)
+    private String nameVi;
+
+    @Column(name = "name_en", length = 50)
+    private String nameEn;
 
     @Column(name = "duration_minutes", nullable = false)
     private Integer durationMinutes;
@@ -29,12 +32,20 @@ public class QuizType {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getNameVi() {
+        return nameVi;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setNameVi(String nameVi) {
+        this.nameVi = nameVi;
+    }
+
+    public String getNameEn() {
+        return nameEn;
+    }
+
+    public void setNameEn(String nameEn) {
+        this.nameEn = nameEn;
     }
 
     public Integer getDurationMinutes() {

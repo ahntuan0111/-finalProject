@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -23,8 +24,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.finalproject.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -34,7 +37,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
-import android.util.Log
 
 const val BASE_URL = "http://10.0.2.2:8080"
 
@@ -52,7 +54,6 @@ fun PdfViewerScreen(
     var isLoading by remember { mutableStateOf(true) }
     var isError by remember { mutableStateOf(false) }
 
-    // Tối ưu 4: Dọn dẹp file tạm khi thoát khỏi màn hình
     DisposableEffect(Unit) {
         onDispose {
             localFile?.let {
@@ -81,7 +82,7 @@ fun PdfViewerScreen(
                 title = { Text(title, maxLines = 1, style = MaterialTheme.typography.titleMedium) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(id = R.string.common_back))
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
@@ -97,12 +98,12 @@ fun PdfViewerScreen(
                     ) {
                         CircularProgressIndicator(color = Color(0xFFD32F2F))
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Đang tải tài liệu...", color = Color.Gray)
+                        Text(stringResource(id = R.string.pdf_viewer_loading), color = Color.Gray)
                     }
                 }
                 isError -> {
                     Text(
-                        "Không thể tải file PDF",
+                        stringResource(id = R.string.pdf_viewer_error_load),
                         modifier = Modifier.align(Alignment.Center),
                         color = Color.Red
                     )
@@ -119,10 +120,8 @@ fun PdfViewerScreen(
 fun PdfNativeViewer(file: File) {
     var pdfRenderer by remember { mutableStateOf<PdfRenderer?>(null) }
     var fileDescriptor by remember { mutableStateOf<ParcelFileDescriptor?>(null) }
-
     val pdfMutex = remember { Mutex() }
 
-    // Tối ưu 2: Thêm state cho Pinch-to-Zoom
     var scale by remember { mutableFloatStateOf(1f) }
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
@@ -143,7 +142,6 @@ fun PdfNativeViewer(file: File) {
         }
     }
 
-    // Tối ưu 3: Tính toán chiều rộng chính xác theo Density
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
     val screenWidthPx = with(density) { configuration.screenWidthDp.dp.roundToPx() }
@@ -153,11 +151,9 @@ fun PdfNativeViewer(file: File) {
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Gray)
-                // Cấu hình gesture để thu phóng và di chuyển
                 .pointerInput(Unit) {
                     detectTransformGestures { _, pan, zoom, _ ->
-                        scale = (scale * zoom).coerceIn(1f, 5f) // Giới hạn zoom từ 1x đến 5x
-                        // Tính toán giới hạn di chuyển để không bị vuốt ra ngoài màn hình
+                        scale = (scale * zoom).coerceIn(1f, 5f)
                         val maxOffsetX = (size.width * (scale - 1)) / 2
                         val maxOffsetY = (size.height * (scale - 1)) / 2
                         offsetX = (offsetX + pan.x).coerceIn(-maxOffsetX, maxOffsetX)
@@ -198,24 +194,17 @@ fun PdfPageItem(
 ) {
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
 
-    // Tối ưu 1: Giải phóng bộ nhớ khi Component bị hủy (cuộn qua)
     DisposableEffect(pageIndex) {
         onDispose {
-            // Không gọi bitmap.recycle() trực tiếp vì Compose có thể đang vẽ nó,
-            // Gán null để báo hiệu cho Garbage Collector dọn dẹp an toàn.
             bitmap = null
         }
     }
 
     LaunchedEffect(pageIndex) {
         withContext(Dispatchers.IO) {
-            // Coroutine tự động bị hủy nếu cuộn quá nhanh, nhưng Mutex vẫn cần lock an toàn
             mutex.withLock {
                 try {
                     val page = renderer.openPage(pageIndex)
-
-                    // Tăng độ sắc nét bằng cách render to hơn một chút (Hệ số 1.5 hoặc 2.0 tùy RAM)
-                    // Ở đây dùng 1.5 để cân bằng giữa độ nét và bộ nhớ
                     val qualityFactor = 1.5f
                     val scale = (screenWidth.toFloat() * qualityFactor) / page.width
                     val width = (page.width * scale).toInt()
@@ -235,6 +224,9 @@ fun PdfPageItem(
         }
     }
 
+    // Lấy chuỗi mô tả số trang
+    val pageDesc = stringResource(id = R.string.pdf_viewer_page_desc, pageIndex + 1)
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -245,16 +237,15 @@ fun PdfPageItem(
         if (bitmap != null) {
             Image(
                 bitmap = bitmap!!.asImageBitmap(),
-                contentDescription = "Trang ${pageIndex + 1}",
+                contentDescription = pageDesc,
                 modifier = Modifier.fillMaxWidth(),
                 contentScale = ContentScale.FillWidth
             )
         } else {
-            // Khung skeleton loading chờ render
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(0.7f) // Tỷ lệ trung bình của giấy A4
+                    .aspectRatio(0.7f)
                     .background(Color.LightGray.copy(alpha = 0.3f)),
                 contentAlignment = Alignment.Center
             ) {
@@ -268,7 +259,7 @@ suspend fun downloadPdfToCache(context: Context, urlString: String): File? {
     return withContext(Dispatchers.IO) {
         try {
             val url = URL(urlString)
-            Log.d("PdfViewer", "Đang tải PDF từ URL: $urlString") // In ra log để check link
+            Log.d("PdfViewer", "Đang tải PDF từ URL: $urlString")
 
             val connection = url.openConnection() as HttpURLConnection
             connection.connectTimeout = 10000
@@ -276,9 +267,8 @@ suspend fun downloadPdfToCache(context: Context, urlString: String): File? {
             connection.connect()
 
             val responseCode = connection.responseCode
-            Log.d("PdfViewer", "Mã phản hồi từ Server: $responseCode") // Xem là 200, 403, hay 404?
+            Log.d("PdfViewer", "Mã phản hồi từ Server: $responseCode")
 
-            // ĐÚNG 200 (HTTP_OK) THÌ MỚI CHO TẢI
             if (responseCode != HttpURLConnection.HTTP_OK) {
                 Log.e("PdfViewer", "Lỗi mạng hoặc bị Server chặn! Response: ${connection.responseMessage}")
                 return@withContext null

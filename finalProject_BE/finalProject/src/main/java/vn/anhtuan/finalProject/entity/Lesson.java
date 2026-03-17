@@ -15,8 +15,11 @@ public class Lesson {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String title;
+    @Column(name = "title_vi", nullable = false)
+    private String titleVi;
+
+    @Column(name = "title_en")
+    private String titleEn;
 
     @Column(name = "video_url")
     private String videoUrl;
@@ -38,6 +41,10 @@ public class Lesson {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("orderNo ASC")
+    private List<Exercise> exercises;
+
     public String getVideoUrl() {
         return videoUrl;
     }
@@ -46,12 +53,20 @@ public class Lesson {
         this.videoUrl = videoUrl;
     }
 
-    public String getTitle() {
-        return title;
+    public String getTitleVi() {
+        return titleVi;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setTitleVi(String titleVi) {
+        this.titleVi = titleVi;
+    }
+
+    public String getTitleEn() {
+        return titleEn;
+    }
+
+    public void setTitleEn(String titleEn) {
+        this.titleEn = titleEn;
     }
 
     public Long getId() {
@@ -92,5 +107,13 @@ public class Lesson {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public List<Exercise> getExercises() {
+        return exercises;
+    }
+
+    public void setExercises(List<Exercise> exercises) {
+        this.exercises = exercises;
     }
 }

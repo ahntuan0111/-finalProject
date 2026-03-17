@@ -1,7 +1,7 @@
 package vn.anhtuan.finalProject.service;
 
 import org.springframework.stereotype.Service;
-import vn.anhtuan.finalProject.dto.response.AdminDashboardResponse;
+import vn.anhtuan.finalProject.dto.response.admin.AdminDashboardResponse;
 import vn.anhtuan.finalProject.entity.Lesson;
 import vn.anhtuan.finalProject.entity.User;
 import vn.anhtuan.finalProject.repository.LessonRepository;
@@ -19,7 +19,7 @@ public class AdminDashboardService {
 
     private final UserRepository userRepository;
     private final LessonRepository lessonRepository;
-    private final QuizRepository quizRepository; // Inject thêm QuizRepo
+    private final QuizRepository quizRepository;
 
     public AdminDashboardService(UserRepository userRepository, LessonRepository lessonRepository, QuizRepository quizRepository) {
         this.userRepository = userRepository;
@@ -27,7 +27,17 @@ public class AdminDashboardService {
         this.quizRepository = quizRepository;
     }
 
-    public AdminDashboardResponse getDashboardData() {
+
+    // HELPER: Lọc ngôn ngữ chung
+    private String getLocalizedText(String textVi, String textEn, String lang) {
+        if ("en".equalsIgnoreCase(lang) && textEn != null && !textEn.trim().isEmpty()) {
+            return textEn;
+        }
+        return textVi;
+    }
+
+    // THÊM THAM SỐ lang vào hàm
+    public AdminDashboardResponse getDashboardData(String lang) {
         AdminDashboardResponse response = new AdminDashboardResponse();
         LocalDateTime now = LocalDateTime.now();
         LocalDate today = LocalDate.now();
@@ -37,12 +47,10 @@ public class AdminDashboardService {
         // ==========================================
         AdminDashboardResponse.OverviewStats stats = new AdminDashboardResponse.OverviewStats();
         stats.setTotalStudents(userRepository.count());
-        // Số người online: Đếm những ai có last_active_date là hôm nay
         stats.setOnlineUsers(userRepository.countByLastActiveDate(today));
         stats.setTotalLessons(lessonRepository.count());
         stats.setTotalExams(quizRepository.count());
 
-        // Tính % Tăng trưởng User (Tháng này vs Tháng trước)
         LocalDateTime startOfThisMonth = now.withDayOfMonth(1).withHour(0).withMinute(0);
         LocalDateTime startOfLastMonth = startOfThisMonth.minusMonths(1);
 
@@ -50,7 +58,6 @@ public class AdminDashboardService {
         long usersLastMonth = userRepository.countByCreatedAtBetween(startOfLastMonth, startOfThisMonth.minusSeconds(1));
         stats.setStudentGrowth(calculateGrowthPercent(usersThisMonth, usersLastMonth));
 
-        // Tính % Tăng trưởng Lesson (Tuần này vs Tuần trước)
         LocalDateTime startOfThisWeek = now.minusDays(now.getDayOfWeek().getValue() - 1).withHour(0).withMinute(0);
         LocalDateTime startOfLastWeek = startOfThisWeek.minusWeeks(1);
 
@@ -69,7 +76,6 @@ public class AdminDashboardService {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM");
         for (Object[] row : rawGrowthData) {
-            // row[0] là Date (SQL Date), row[1] là Count (Long)
             String dateStr = ((java.sql.Date) row[0]).toLocalDate().format(formatter);
             int count = ((Number) row[1]).intValue();
             growth.add(new AdminDashboardResponse.UserGrowthChart(dateStr, count));
@@ -83,6 +89,8 @@ public class AdminDashboardService {
         List<Object[]> rawDistributionData = lessonRepository.countLessonsGroupedBySubject();
 
         for (Object[] row : rawDistributionData) {
+            // LƯU Ý: Nếu query countLessonsGroupedBySubject của bạn dùng SQL raw chọn cột "name",
+            // bạn cần vào LessonRepository sửa lại thành chọn "name_vi" nhé.
             String subjectName = (String) row[0];
             int count = ((Number) row[1]).intValue();
             distribution.add(new AdminDashboardResponse.ContentDistribution(subjectName, count));
@@ -98,10 +106,9 @@ public class AdminDashboardService {
 
         for (User u : recentUsers) {
             AdminDashboardResponse.RecentStudent s = new AdminDashboardResponse.RecentStudent();
-            // Lấy 2 chữ cái đầu làm Avatar (VD: Alice Johnson -> AJ)
             s.setId(getInitials(u.getUsername()));
-            s.setName(u.getUsername()); // Hoặc u.getFullName() nếu có
-            s.setGrade("User"); // Thay bằng u.getGrade().getName() nếu có liên kết Grade
+            s.setName(u.getUsername());
+            s.setGrade("User");
             s.setJoinDate(u.getCreatedAt().format(joinDateFormatter));
             students.add(s);
         }
@@ -116,9 +123,13 @@ public class AdminDashboardService {
         for (Lesson l : recentLessons) {
             AdminDashboardResponse.RecentContent c = new AdminDashboardResponse.RecentContent();
             c.setId(l.getId().toString());
-            c.setTitle(l.getTitle());
-            c.setSubject(l.getChapter().getSubject().getName());
-            // Giả sử có logic check status. Nếu không có cột status, có thể fix cứng là PUBLISHED
+
+            // SỬA LỖI TẠI ĐÂY: Dùng helper đa ngôn ngữ cho Title (Bài học)
+            c.setTitle(getLocalizedText(l.getTitleVi(), l.getTitleEn(), lang));
+
+            // SỬA LỖI TẠI ĐÂY: Dùng helper đa ngôn ngữ cho Name (Môn học)
+            c.setSubject(getLocalizedText(l.getChapter().getSubject().getNameVi(), l.getChapter().getSubject().getNameEn(), lang));
+
             c.setStatus("PUBLISHED");
             contents.add(c);
         }
@@ -128,8 +139,6 @@ public class AdminDashboardService {
     }
 
     // --- CÁC HÀM PHỤ TRỢ (HELPER METHODS) ---
-
-    // Tính % tăng trưởng
     private String calculateGrowthPercent(long current, long previous) {
         if (previous == 0) {
             return current > 0 ? "+100%" : "0%";
@@ -139,7 +148,6 @@ public class AdminDashboardService {
         return (roundedGrowth >= 0 ? "+" : "") + roundedGrowth + "%";
     }
 
-    // Lấy 2 chữ cái đầu của Tên (Cho Avatar)
     private String getInitials(String name) {
         if (name == null || name.isEmpty()) return "US";
         String[] words = name.trim().split("\\s+");

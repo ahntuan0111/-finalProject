@@ -1,127 +1,38 @@
 package vn.anhtuan.finalProject.dto.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import vn.anhtuan.finalProject.entity.Question;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class QuestionResponse {
     private Long id;
     private String explanation;
     private Integer orderNo;
-    // Thay vì dùng Entity, ta dùng các list DTO ẩn hoặc map sang dạng thô
-    private List<QuestionContentDto> contents;
-    private List<ChoiceDto> choices;
+    private List<QuestionContentResponse> contents;
+    private List<ChoiceResponse> choices;
 
-    // Cấu trúc DTO con nội bộ (để code gọn, bạn có thể tách ra file riêng nếu muốn)
-    @Data
-    public static class QuestionContentDto {
-        private Long id;
-        private String contentType;
-        private String contentValue;
-        private Integer contentOrder;
-
-        public Long getId() {
-            return id;
-        }
-
-        public void setId(Long id) {
-            this.id = id;
-        }
-
-        public String getContentType() {
-            return contentType;
-        }
-
-        public void setContentType(String contentType) {
-            this.contentType = contentType;
-        }
-
-        public String getContentValue() {
-            return contentValue;
-        }
-
-        public void setContentValue(String contentValue) {
-            this.contentValue = contentValue;
-        }
-
-        public Integer getContentOrder() {
-            return contentOrder;
-        }
-
-        public void setContentOrder(Integer contentOrder) {
-            this.contentOrder = contentOrder;
-        }
-    }
-
-    @Data
-    public static class ChoiceDto {
-        private Long id;
-        private String contentType;
-        private String contentValue;
-        private Boolean correct;
-
-        public Long getId() {
-            return id;
-        }
-
-        public void setId(Long id) {
-            this.id = id;
-        }
-
-        public Boolean getCorrect() {
-            return correct;
-        }
-
-        public void setCorrect(Boolean correct) {
-            this.correct = correct;
-        }
-
-        public String getContentValue() {
-            return contentValue;
-        }
-
-        public void setContentValue(String contentValue) {
-            this.contentValue = contentValue;
-        }
-
-        public String getContentType() {
-            return contentType;
-        }
-
-        public void setContentType(String contentType) {
-            this.contentType = contentType;
-        }
-    }
-
-    // Hàm map từ Entity Question sang QuestionResponse (Cắt đứt liên kết tới Quiz)
-    public static QuestionResponse fromEntity(Question question) {
+    public static QuestionResponse fromEntity(Question question, String lang) {
         QuestionResponse response = new QuestionResponse();
         response.setId(question.getId());
-        response.setExplanation(question.getExplanation());
+        response.setExplanation(QuizResponse.getLocalizedText(question.getExplanationVi(), question.getExplanationEn(), lang));
         response.setOrderNo(question.getOrderNo());
 
         if (question.getContents() != null) {
-            response.setContents(question.getContents().stream().map(c -> {
-                QuestionContentDto dto = new QuestionContentDto();
-                dto.setId(c.getId());
-                dto.setContentType(c.getContentType().name());
-                dto.setContentValue(c.getContentValue());
-                dto.setContentOrder(c.getContentOrder());
-                return dto;
-            }).collect(Collectors.toList()));
+            response.setContents(question.getContents().stream()
+                    .map(c -> QuestionContentResponse.fromEntity(c, lang))
+                    .collect(Collectors.toList()));
         }
 
         if (question.getChoices() != null) {
-            response.setChoices(question.getChoices().stream().map(ch -> {
-                ChoiceDto dto = new ChoiceDto();
-                dto.setId(ch.getId());
-                dto.setContentType(ch.getContentType().name());
-                dto.setContentValue(ch.getContentValue());
-                dto.setCorrect(ch.getCorrect());
-                return dto;
-            }).collect(Collectors.toList()));
+            response.setChoices(question.getChoices().stream()
+                    .map(ch -> ChoiceResponse.fromEntity(ch, lang))
+                    .collect(Collectors.toList()));
         }
 
         return response;
@@ -135,12 +46,20 @@ public class QuestionResponse {
         this.id = id;
     }
 
-    public String getExplanation() {
-        return explanation;
+    public List<ChoiceResponse> getChoices() {
+        return choices;
     }
 
-    public void setExplanation(String explanation) {
-        this.explanation = explanation;
+    public void setChoices(List<ChoiceResponse> choices) {
+        this.choices = choices;
+    }
+
+    public List<QuestionContentResponse> getContents() {
+        return contents;
+    }
+
+    public void setContents(List<QuestionContentResponse> contents) {
+        this.contents = contents;
     }
 
     public Integer getOrderNo() {
@@ -151,19 +70,11 @@ public class QuestionResponse {
         this.orderNo = orderNo;
     }
 
-    public List<QuestionContentDto> getContents() {
-        return contents;
+    public String getExplanation() {
+        return explanation;
     }
 
-    public void setContents(List<QuestionContentDto> contents) {
-        this.contents = contents;
-    }
-
-    public List<ChoiceDto> getChoices() {
-        return choices;
-    }
-
-    public void setChoices(List<ChoiceDto> choices) {
-        this.choices = choices;
+    public void setExplanation(String explanation) {
+        this.explanation = explanation;
     }
 }

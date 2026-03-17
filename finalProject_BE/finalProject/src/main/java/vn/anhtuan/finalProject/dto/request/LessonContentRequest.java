@@ -6,16 +6,18 @@ import vn.anhtuan.finalProject.entity.ContentType;
 @Data
 public class LessonContentRequest {
     private ContentType type; // TEXT hoặc IMAGE
-    private String value;     // Chứa text thường hoặc chuỗi LaTeX "$$ x^2 $$"
+    private String valueVi;   // Nội dung Tiếng Việt (Bắt buộc)
+    private String valueEn;   // Nội dung Tiếng Anh     // Chứa text thường hoặc chuỗi LaTeX "$$ x^2 $$"
     private Integer order;
 
     public LessonContentRequest() {
     }
 
-    public LessonContentRequest(ContentType type, String value, Integer order) {
+    public LessonContentRequest(ContentType type, Integer order, String valueEn, String valueVi) {
         this.type = type;
-        this.value = value;
         this.order = order;
+        this.valueEn = valueEn;
+        this.valueVi = valueVi;
     }
 
     public ContentType getType() {
@@ -26,19 +28,27 @@ public class LessonContentRequest {
         this.type = type;
     }
 
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
     public Integer getOrder() {
         return order;
     }
 
     public void setOrder(Integer order) {
         this.order = order;
+    }
+
+    public String getValueEn() {
+        return valueEn;
+    }
+
+    public void setValueEn(String valueEn) {
+        this.valueEn = valueEn;
+    }
+
+    public String getValueVi() {
+        return valueVi;
+    }
+
+    public void setValueVi(String valueVi) {
+        this.valueVi = valueVi;
     }
 }

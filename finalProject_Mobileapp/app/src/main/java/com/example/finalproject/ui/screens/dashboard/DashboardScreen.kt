@@ -25,12 +25,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.finalproject.R
 import com.example.finalproject.data.remote.model.AiPredictionDto
 import com.example.finalproject.data.remote.model.ChartPointDto
 import com.example.finalproject.data.remote.model.DashboardResponse
@@ -42,7 +44,7 @@ import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.line.lineChart
 import com.patrykandpatrick.vico.compose.chart.line.lineSpec
-import com.patrykandpatrick.vico.compose.component.shape.shader.fromBrush // Import quan trọng để sửa lỗi fromBrush
+import com.patrykandpatrick.vico.compose.component.shape.shader.fromBrush
 import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
 import com.patrykandpatrick.vico.core.component.shape.shader.DynamicShaders
 import com.patrykandpatrick.vico.core.entry.FloatEntry
@@ -70,7 +72,7 @@ fun DashboardScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val scrollState = rememberScrollState()
 
-    // Quản lý trạng thái Bottom Sheet (Lịch Streak 30 ngày)
+    // Quản lý trạng thái Bottom Sheet
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     var showStreakSheet by remember { mutableStateOf(false) }
 
@@ -87,12 +89,22 @@ fun DashboardScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
+                    contentDescription = stringResource(id = R.string.dashboard_desc_back),
                     modifier = Modifier.clickable { navController.popBackStack() }
                 )
-                Text("DashBoard", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1C2A3A))
+                Text(
+                    text = stringResource(id = R.string.dashboard_title),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1C2A3A)
+                )
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Notifications, contentDescription = "Bell", tint = Color.Gray, modifier = Modifier.size(24.dp))
+                    Icon(
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription = stringResource(id = R.string.dashboard_desc_bell),
+                        tint = Color.Gray,
+                        modifier = Modifier.size(24.dp)
+                    )
                     Spacer(modifier = Modifier.width(12.dp))
                     Box(modifier = Modifier.size(36.dp).clip(CircleShape).background(Color.LightGray))
                 }
@@ -113,16 +125,16 @@ fun DashboardScreen(
                             .verticalScroll(scrollState)
                             .padding(horizontal = 20.dp, vertical = 8.dp)
                     ) {
-                        // 1. TOP CARDS (TỔNG THỜI GIAN & STREAK)
+                        // 1. TOP CARDS
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                             TopStatCard(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Rounded.HourglassEmpty,
                                 iconTint = PrimaryBlue,
-                                title = "TỔNG THỜI GIAN",
+                                title = stringResource(id = R.string.dashboard_total_time),
                                 value = (data.topStats.totalMinutes / 60).toString(),
-                                unit = "Giờ",
-                                badgeText = "Học tập chăm chỉ",
+                                unit = stringResource(id = R.string.dashboard_unit_hours),
+                                badgeText = stringResource(id = R.string.dashboard_hard_working),
                                 badgeColor = Color(0xFFE8F5E9),
                                 badgeTextColor = Color(0xFF4CAF50),
                                 onClick = {}
@@ -131,13 +143,13 @@ fun DashboardScreen(
                                 modifier = Modifier.weight(1f),
                                 icon = Icons.Rounded.LocalFireDepartment,
                                 iconTint = OrangeFlame,
-                                title = "STREAK HIỆN TẠI",
+                                title = stringResource(id = R.string.dashboard_current_streak),
                                 value = data.topStats.currentStreak.toString(),
-                                unit = "Ngày",
-                                badgeText = "Chạm để xem lịch",
+                                unit = stringResource(id = R.string.dashboard_unit_days),
+                                badgeText = stringResource(id = R.string.dashboard_tap_to_view_calendar),
                                 badgeColor = OrangeLight,
                                 badgeTextColor = OrangeFlame,
-                                onClick = { showStreakSheet = true } // Mở Bottom Sheet
+                                onClick = { showStreakSheet = true }
                             )
                         }
 
@@ -148,7 +160,7 @@ fun DashboardScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // 3. BIỂU ĐỒ HIỆU SUẤT (VICO CHART)
+                        // 3. BIỂU ĐỒ HIỆU SUẤT
                         PerformanceChartCard(data.performanceChart)
 
                         Spacer(modifier = Modifier.height(24.dp))
@@ -158,13 +170,13 @@ fun DashboardScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // 5. HEATMAP - MẬT ĐỘ HỌC TẬP
+                        // 5. HEATMAP
                         HeatmapCard(data.heatmap)
 
                         Spacer(modifier = Modifier.height(40.dp))
                     }
 
-                    // ================= BOTTOM SHEET LỊCH STREAK 30 NGÀY =================
+                    // ================= BOTTOM SHEET =================
                     if (showStreakSheet) {
                         ModalBottomSheet(
                             onDismissRequest = { showStreakSheet = false },
@@ -185,23 +197,20 @@ fun DashboardScreen(
     }
 }
 
-// ================= GIAO DIỆN BÊN TRONG BOTTOM SHEET LỊCH =================
+// ================= GIAO DIỆN BÊN TRONG BOTTOM SHEET =================
 @Composable
 fun StreakCalendarContent(data: DashboardResponse, onClose: () -> Unit) {
-    // Biến trạng thái để lùi tháng: 0 là tháng hiện tại, -1 là tháng trước, -2 là 2 tháng trước
     var monthOffset by remember { mutableIntStateOf(0) }
 
     val today = LocalDate.now()
     val currentViewMonth = YearMonth.now().plusMonths(monthOffset.toLong())
     val daysInMonth = currentViewMonth.lengthOfMonth()
-    // Lấy ngày đầu tiên của tháng để biết nó rơi vào thứ mấy (1 = T2, 7 = CN)
     val firstDayOfWeek = currentViewMonth.atDay(1).dayOfWeek.value
-    val emptyCellsBefore = firstDayOfWeek - 1 // Số ô trống trước mùng 1
+    val emptyCellsBefore = firstDayOfWeek - 1
 
-    // Chuyển đổi dữ liệu Heatmap từ BE thành Set<LocalDate> để check O(1)
     val studiedDates = remember(data.heatmap) {
         data.heatmap
-            .filter { it.intensity > 0 } // Chỉ lấy những ngày có học
+            .filter { it.intensity > 0 }
             .mapNotNull {
                 try {
                     LocalDate.parse(it.date, DateTimeFormatter.ISO_DATE)
@@ -219,14 +228,18 @@ fun StreakCalendarContent(data: DashboardResponse, onClose: () -> Unit) {
             .padding(bottom = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Hành trình giữ lửa", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF1C2A3A))
+        Text(
+            text = stringResource(id = R.string.dashboard_streak_journey),
+            fontSize = 22.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = Color(0xFF1C2A3A)
+        )
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 2 Thẻ Chỉ số phía trên
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             StreakInfoBox(
                 modifier = Modifier.weight(1f),
-                title = "STREAK HIỆN TẠI",
+                title = stringResource(id = R.string.dashboard_current_streak),
                 value = "${data.topStats.currentStreak}",
                 bgColor = OrangeLight,
                 valueColor = OrangeFlame
@@ -234,7 +247,7 @@ fun StreakCalendarContent(data: DashboardResponse, onClose: () -> Unit) {
             val longest = maxOf(data.topStats.currentStreak, 25) // Mock longest
             StreakInfoBox(
                 modifier = Modifier.weight(1f),
-                title = "STREAK DÀI NHẤT",
+                title = stringResource(id = R.string.dashboard_longest_streak),
                 value = "$longest",
                 bgColor = Color(0xFFF0F5FF),
                 valueColor = PrimaryBlue
@@ -243,39 +256,36 @@ fun StreakCalendarContent(data: DashboardResponse, onClose: () -> Unit) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Thanh điều hướng Tháng
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Nút lùi tháng (Chỉ cho phép lùi tối đa 2 tháng)
             IconButton(
                 onClick = { monthOffset-- },
                 enabled = monthOffset > -2
             ) {
                 Icon(
                     Icons.Rounded.ChevronLeft,
-                    contentDescription = "Tháng trước",
+                    contentDescription = stringResource(id = R.string.dashboard_desc_prev_month),
                     tint = if (monthOffset > -2) Color.Black else Color.LightGray
                 )
             }
 
             Text(
-                text = "Tháng ${currentViewMonth.monthValue} năm ${currentViewMonth.year}",
+                text = stringResource(id = R.string.dashboard_month_year_format, currentViewMonth.monthValue, currentViewMonth.year),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1C2A3A)
             )
 
-            // Nút tiến tháng (Không cho phép vượt quá tháng hiện tại)
             IconButton(
                 onClick = { monthOffset++ },
                 enabled = monthOffset < 0
             ) {
                 Icon(
                     Icons.Rounded.ChevronRight,
-                    contentDescription = "Tháng sau",
+                    contentDescription = stringResource(id = R.string.dashboard_desc_next_month),
                     tint = if (monthOffset < 0) Color.Black else Color.LightGray
                 )
             }
@@ -283,9 +293,16 @@ fun StreakCalendarContent(data: DashboardResponse, onClose: () -> Unit) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Header T2 -> CN
         Row(modifier = Modifier.fillMaxWidth()) {
-            val daysOfWeek = listOf("T2", "T3", "T4", "T5", "T6", "T7", "CN")
+            val daysOfWeek = listOf(
+                stringResource(id = R.string.dashboard_day_mon),
+                stringResource(id = R.string.dashboard_day_tue),
+                stringResource(id = R.string.dashboard_day_wed),
+                stringResource(id = R.string.dashboard_day_thu),
+                stringResource(id = R.string.dashboard_day_fri),
+                stringResource(id = R.string.dashboard_day_sat),
+                stringResource(id = R.string.dashboard_day_sun)
+            )
             daysOfWeek.forEach { day ->
                 Text(
                     text = day,
@@ -300,39 +317,30 @@ fun StreakCalendarContent(data: DashboardResponse, onClose: () -> Unit) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Lưới Lịch 7 cột
         LazyVerticalGrid(
             columns = GridCells.Fixed(7),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.heightIn(max = 280.dp) // Auto chiều cao
+            modifier = Modifier.heightIn(max = 280.dp)
         ) {
-            // Ô trống đầu tháng
             items(emptyCellsBefore) {
                 Box(modifier = Modifier.aspectRatio(1f))
             }
-
-            // Các ngày trong tháng
             items(daysInMonth) { dayIndex ->
                 val dayNumber = dayIndex + 1
                 val cellDate = currentViewMonth.atDay(dayNumber)
 
-                val isStudied = studiedDates.contains(cellDate)
-                val isToday = cellDate == today
-                val isFuture = cellDate.isAfter(today)
-
                 CalendarDayCell(
                     dayNumber = dayNumber,
-                    isStudied = isStudied,
-                    isToday = isToday,
-                    isFuture = isFuture
+                    isStudied = studiedDates.contains(cellDate),
+                    isToday = cellDate == today,
+                    isFuture = cellDate.isAfter(today)
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Card động viên
         Card(
             colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
             shape = RoundedCornerShape(16.dp),
@@ -347,24 +355,23 @@ fun StreakCalendarContent(data: DashboardResponse, onClose: () -> Unit) {
                 val daysLeft = if (data.topStats.currentStreak < 30) 30 - data.topStats.currentStreak else 0
                 Column {
                     Row {
-                        Text("Cố lên! Bạn chỉ còn ", fontSize = 13.sp, color = Color(0xFF1C2A3A))
-                        Text("$daysLeft ngày", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = PrimaryBlue)
+                        Text(stringResource(id = R.string.dashboard_streak_encourage_1), fontSize = 13.sp, color = Color(0xFF1C2A3A))
+                        Text(stringResource(id = R.string.dashboard_streak_encourage_days_left, daysLeft), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = PrimaryBlue)
                     }
-                    Text("nữa để đạt mục tiêu tháng!", fontSize = 13.sp, color = Color(0xFF1C2A3A))
+                    Text(stringResource(id = R.string.dashboard_streak_encourage_2), fontSize = 13.sp, color = Color(0xFF1C2A3A))
                 }
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Nút bấm
         Button(
             onClick = { onClose() },
             colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
             modifier = Modifier.fillMaxWidth().height(50.dp),
             shape = RoundedCornerShape(16.dp)
         ) {
-            Text("Tiếp tục học ngay", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(id = R.string.dashboard_continue_learning), fontSize = 16.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -375,15 +382,13 @@ fun CalendarDayCell(dayNumber: Int, isStudied: Boolean, isToday: Boolean, isFutu
         modifier = Modifier
             .aspectRatio(1f)
             .clip(CircleShape)
-            // Màu nền: Nếu đã học -> Cam. Nếu chưa học (quá khứ) -> Xám. Tương lai -> Xám siêu nhạt.
             .background(
                 when {
                     isStudied -> OrangeFlame
                     isFuture -> Color.Transparent
-                    else -> Color(0xFFE2E8F0) // Đứt chuỗi
+                    else -> Color(0xFFE2E8F0)
                 }
             )
-            // Viền chỉ dành cho ngày hôm nay
             .border(
                 width = if (isToday) 2.dp else 0.dp,
                 color = if (isToday && !isStudied) PrimaryBlue else Color.Transparent,
@@ -419,11 +424,12 @@ fun StreakInfoBox(modifier: Modifier, title: String, value: String, bgColor: Col
             Spacer(modifier = Modifier.height(4.dp))
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(value, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = valueColor)
-                Text(" ngày", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = valueColor, modifier = Modifier.padding(bottom = 3.dp, start = 2.dp))
+                Text(stringResource(id = R.string.dashboard_unit_days_lowercase), fontSize = 12.sp, fontWeight = FontWeight.Medium, color = valueColor, modifier = Modifier.padding(bottom = 3.dp, start = 2.dp))
             }
         }
     }
 }
+
 // ================= CÁC COMPONENT GIAO DIỆN CHÍNH =================
 
 @Composable
@@ -466,14 +472,14 @@ fun ProgressTrackCard(progressTrack: List<SubjectProgressDto>) {
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("Đường Đua Tiến Độ", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF1C2A3A))
-                Icon(Icons.Default.Notifications, contentDescription = "Flag", tint = Color.LightGray)
+                Text(stringResource(id = R.string.dashboard_progress_track), fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF1C2A3A))
+                Icon(Icons.Default.Notifications, contentDescription = stringResource(id = R.string.dashboard_desc_flag), tint = Color.LightGray)
             }
             Spacer(modifier = Modifier.height(20.dp))
 
             progressTrack.forEachIndexed { index, subject ->
                 val color = try { Color(android.graphics.Color.parseColor(subject.colorHex)) } catch (e: Exception) { PrimaryBlue }
-                val iconStr = if (subject.subjectName.contains("Toán", ignoreCase = true)) "Σ" else "∆"
+                val iconStr = if (subject.subjectName.contains("Toán", ignoreCase = true) || subject.subjectName.contains("Math", ignoreCase = true)) "Σ" else "∆"
 
                 SubjectProgressRow(
                     iconText = iconStr,
@@ -502,7 +508,7 @@ fun SubjectProgressRow(iconText: String, name: String, completed: Int, total: In
                 Text(name, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1C2A3A))
             }
             Row(verticalAlignment = Alignment.Bottom) {
-                Text("$completed/$total Bài ", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = color)
+                Text(stringResource(id = R.string.dashboard_lesson_progress_format, completed, total), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = color)
                 Text("(${if(total > 0) (completed*100/total) else 0}%)", fontSize = 10.sp, color = Color.Gray)
             }
         }
@@ -527,11 +533,11 @@ fun PerformanceChartCard(chartData: List<ChartPointDto>) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
-                    Text("Hiệu suất học tập", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF1C2A3A))
-                    Text("Tiến độ bài kiểm tra theo tuần", fontSize = 12.sp, color = Color.Gray)
+                    Text(stringResource(id = R.string.dashboard_performance_chart), fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF1C2A3A))
+                    Text(stringResource(id = R.string.dashboard_performance_desc), fontSize = 12.sp, color = Color.Gray)
                 }
                 Box(modifier = Modifier.border(1.dp, Color(0xFFF0F0F0), RoundedCornerShape(50)).padding(horizontal = 12.dp, vertical = 6.dp)) {
-                    Text("Tháng này ▾", fontSize = 12.sp, color = Color.DarkGray)
+                    Text(stringResource(id = R.string.dashboard_this_month), fontSize = 12.sp, color = Color.DarkGray)
                 }
             }
 
@@ -552,7 +558,7 @@ fun PerformanceChartCard(chartData: List<ChartPointDto>) {
                             lineSpec(
                                 lineColor = PrimaryBlue,
                                 lineThickness = 3.dp,
-                                lineBackgroundShader = DynamicShaders.fromBrush(gradientBrush) // Đã import và sửa lỗi thành công
+                                lineBackgroundShader = DynamicShaders.fromBrush(gradientBrush)
                             )
                         ),
                         axisValuesOverrider = AxisValuesOverrider.fixed(minY = 0f, maxY = 10f)
@@ -566,7 +572,7 @@ fun PerformanceChartCard(chartData: List<ChartPointDto>) {
                 )
             } else {
                 Box(modifier = Modifier.fillMaxWidth().height(180.dp), contentAlignment = Alignment.Center) {
-                    Text("Chưa có dữ liệu bài thi", color = Color.Gray)
+                    Text(stringResource(id = R.string.dashboard_no_exam_data), color = Color.Gray)
                 }
             }
         }
@@ -584,8 +590,8 @@ fun AiPredictionCard(aiData: AiPredictionDto) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
-                    Text("Dự đoán điểm AI", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
-                    Text("Kỳ thi học kỳ I sắp tới", fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f))
+                    Text(stringResource(id = R.string.dashboard_ai_prediction), fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+                    Text(stringResource(id = R.string.dashboard_ai_prediction_desc), fontSize = 13.sp, color = Color.White.copy(alpha = 0.8f))
                 }
                 Box(modifier = Modifier.background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(50)).padding(horizontal = 12.dp, vertical = 6.dp)) {
                     Text("${aiData.predictedScore} / 10", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
@@ -598,7 +604,7 @@ fun AiPredictionCard(aiData: AiPredictionDto) {
             } else 0f
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("MỤC TIÊU TUẦN: ${aiData.targetMinutes / 60}H HỌC", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text(stringResource(id = R.string.dashboard_weekly_goal_format, aiData.targetMinutes / 60), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 Text("${(progressPercent * 100).toInt()}%", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -622,8 +628,8 @@ fun HeatmapCard(heatmapData: List<HeatmapPointDto>) {
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("Mật độ học tập", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF1C2A3A))
-                Text("3 tháng qua", fontSize = 12.sp, color = Color.Gray)
+                Text(stringResource(id = R.string.dashboard_heatmap_title), fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF1C2A3A))
+                Text(stringResource(id = R.string.dashboard_heatmap_desc), fontSize = 12.sp, color = Color.Gray)
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -658,7 +664,7 @@ fun HeatmapCard(heatmapData: List<HeatmapPointDto>) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("ÍT HƠN", fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.dashboard_heatmap_less), fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Box(modifier = Modifier.size(10.dp).clip(RoundedCornerShape(2.dp)).background(Color(0xFFF0F0F0)))
                     Box(modifier = Modifier.size(10.dp).clip(RoundedCornerShape(2.dp)).background(PrimaryBlue.copy(alpha = 0.2f)))
@@ -666,7 +672,7 @@ fun HeatmapCard(heatmapData: List<HeatmapPointDto>) {
                     Box(modifier = Modifier.size(10.dp).clip(RoundedCornerShape(2.dp)).background(PrimaryBlue.copy(alpha = 0.8f)))
                     Box(modifier = Modifier.size(10.dp).clip(RoundedCornerShape(2.dp)).background(PrimaryBlue))
                 }
-                Text("NHIỀU HƠN", fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.dashboard_heatmap_more), fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
             }
         }
     }

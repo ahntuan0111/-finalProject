@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-// ĐÃ BỔ SUNG Row, Col, Image VÀO DÒNG DƯỚI ĐÂY
 import { Card, Table, Button, Space, message, Select, Popconfirm, Tag, Breadcrumb, Empty, Typography, Tooltip, Row, Col, Image } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, BookOutlined, FolderOpenOutlined, FileTextOutlined } from '@ant-design/icons';
 
@@ -198,7 +197,8 @@ const ExercisePage = () => {
     }
   };
 
-  const currentLessonName = lessons.find(l => l.id === selectedLessonId)?.title || "";
+  // Lấy tên bài học (Ưu tiên titleVi)
+  const currentLessonName = lessons.find(l => l.id === selectedLessonId)?.titleVi || "";
 
   // --- Columns Table ---
   const columns = [
@@ -210,7 +210,7 @@ const ExercisePage = () => {
       render: (text) => <Text type="secondary" strong>#{text}</Text>
     },
     {
-      title: 'Nội dung câu hỏi',
+      title: 'Nội dung câu hỏi (VN)',
       key: 'question',
       width: '55%',
       render: (_, record) => {
@@ -221,7 +221,7 @@ const ExercisePage = () => {
                         <Text type="secondary" style={{ fontSize: 10, fontWeight: 'bold', color: '#1677ff' }}>ẢNH</Text>
                     </div>
                     <Image 
-                        src={getFullImageUrl(record.questionValue)} 
+                        src={getFullImageUrl(record.questionValueVi)} 
                         alt="Question" 
                         style={{ maxHeight: 60, maxWidth: 200, objectFit: 'contain', borderRadius: 4, border: '1px solid #f0f0f0' }} 
                         fallback="https://via.placeholder.com/200x60?text=L%E1%BB%97i+%E1%BA%A3nh"
@@ -235,7 +235,8 @@ const ExercisePage = () => {
                <div style={{ padding: '4px 8px', background: '#f6ffed', borderRadius: 4, marginTop: 4 }}>
                     <Text type="secondary" style={{ fontSize: 10, fontWeight: 'bold', color: '#52c41a' }}>VĂN BẢN</Text>
                </div>
-               <MathRenderer htmlContent={record.questionValue} />
+               {/* SỬA LỖI TRỐNG: Đổi thành questionValueVi */}
+               <MathRenderer htmlContent={record.questionValueVi || '(Chưa có nội dung)'} />
             </div>
         );
       }
@@ -274,13 +275,11 @@ const ExercisePage = () => {
   return (
     <div style={{ padding: '24px', backgroundColor: '#f5f7fa', minHeight: '100vh' }}>
       
-      {/* --- BREADCRUMB & HEADER --- */}
       <div style={{ marginBottom: '24px' }}>
         <Breadcrumb items={[{ title: 'Dashboard' }, { title: 'Ngân hàng bài tập' }]} style={{ fontSize: '13px' }}/>
         <Title level={3} style={{ margin: '8px 0 0 0' }}>Quản lý Ngân hàng Bài tập</Title>
       </div>
       
-      {/* --- BỘ LỌC (TOOLBAR DẢI BĂNG) --- */}
       <Card 
         variant="borderless" 
         style={{ marginBottom: 24, borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
@@ -294,7 +293,8 @@ const ExercisePage = () => {
                     placeholder={<span><BookOutlined /> Chọn Môn học</span>}
                     onChange={setSelectedSubjectId}
                     value={selectedSubjectId}
-                    options={subjects.map(s => ({ label: s.name, value: s.id }))}
+                    // SỬA: Lấy nameVi
+                    options={subjects.map(s => ({ label: s.nameVi || s.name, value: s.id }))}
                     showSearch
                     filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                 />
@@ -308,7 +308,8 @@ const ExercisePage = () => {
                     onChange={setSelectedChapterId}
                     value={selectedChapterId}
                     disabled={!selectedSubjectId}
-                    options={chapters.map(c => ({ label: c.title, value: c.id }))}
+                    // SỬA: Lấy titleVi
+                    options={chapters.map(c => ({ label: c.titleVi || c.title, value: c.id }))}
                     showSearch
                     filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                 />
@@ -322,7 +323,8 @@ const ExercisePage = () => {
                     onChange={setSelectedLessonId}
                     value={selectedLessonId}
                     disabled={!selectedChapterId}
-                    options={lessons.map(l => ({ label: l.title, value: l.id }))}
+                    // SỬA: Lấy titleVi
+                    options={lessons.map(l => ({ label: l.titleVi || l.title, value: l.id }))}
                     showSearch
                     filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                 />
@@ -330,7 +332,6 @@ const ExercisePage = () => {
         </Row>
       </Card>
 
-      {/* --- KHU VỰC DỮ LIỆU --- */}
       <Card 
         variant="borderless" 
         style={{ borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', minHeight: '400px' }}

@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,6 +25,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
+import com.example.finalproject.R
 import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.viewmodel.TheoryDetailViewModel
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
@@ -52,7 +54,7 @@ fun TheoryDetailScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Chi tiết bài học",
+                        text = stringResource(id = R.string.theory_detail_title),
                         color = Color.Black,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
@@ -60,7 +62,11 @@ fun TheoryDetailScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = stringResource(id = R.string.common_back),
+                            tint = Color.Black
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -89,7 +95,7 @@ fun TheoryDetailScreen(
                         // 1. Tiêu đề
                         item {
                             Text(
-                                text = data.title,
+                                text = data.title ?: "Chưa cập nhật tiêu đề", // BỔ SUNG ?:
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = PrimaryBlue,
@@ -101,7 +107,7 @@ fun TheoryDetailScreen(
                         if (!data.videoUrl.isNullOrEmpty()) {
                             item {
                                 Text(
-                                    text = "Video bài giảng",
+                                    text = stringResource(id = R.string.theory_detail_video_title),
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     modifier = Modifier.padding(bottom = 8.dp)
@@ -118,7 +124,7 @@ fun TheoryDetailScreen(
                                             .background(Color.Black),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text("Link video không hợp lệ", color = Color.White)
+                                        Text(stringResource(id = R.string.theory_detail_invalid_video), color = Color.White)
                                     }
                                 }
 
@@ -129,18 +135,13 @@ fun TheoryDetailScreen(
                         }
 
                         // 3. NỘI DUNG (Text/LaTeX/Image)
-                        // LƯU Ý HIỆU NĂNG: Nếu danh sách data.contents có nhiều item "TEXT",
-                        // việc đặt LatexWebView (bản chất là 1 WebView) bên trong vòng lặp items()
-                        // sẽ tạo ra vô số WebView, gây giật lag cực mạnh khi cuộn (scroll).
-                        // CÁCH TỐI ƯU TỐT NHẤT: Bạn nên gộp tất cả content loại TEXT thành 1 chuỗi HTML duy nhất
-                        // và chỉ render 1 LatexWebView cho toàn bộ bài học.
                         items(data.contents) { content ->
                             when (content.contentType) {
                                 "TEXT" -> {
-                                    LatexWebView(content = content.contentValue)
+                                    // Thêm ?: "" để nếu Backend trả về null thì truyền chuỗi rỗng vào
+                                    LatexWebView(content = content.contentValue ?: "")
                                 }
                                 "IMAGE" -> {
-                                    // Placeholder cho ảnh
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -148,7 +149,7 @@ fun TheoryDetailScreen(
                                             .background(Color.LightGray),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text("Hình ảnh minh họa", color = Color.DarkGray)
+                                        Text(stringResource(id = R.string.theory_detail_image_placeholder), color = Color.DarkGray)
                                     }
                                 }
                             }
@@ -181,9 +182,9 @@ fun TheoryDetailScreen(
                                 } else if (finalIsCompleted) {
                                     Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.White)
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Đã hoàn thành", fontSize = 16.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                    Text(stringResource(id = R.string.theory_detail_btn_completed), fontSize = 16.sp, color = Color.White, fontWeight = FontWeight.Bold)
                                 } else {
-                                    Text("Đánh dấu hoàn thành", fontSize = 16.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                    Text(stringResource(id = R.string.theory_detail_btn_mark_complete), fontSize = 16.sp, color = Color.White, fontWeight = FontWeight.Bold)
                                 }
                             }
                             Spacer(modifier = Modifier.height(32.dp))
@@ -200,31 +201,27 @@ fun TheoryDetailScreen(
 fun NativeYouTubePlayer(videoId: String) {
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // Lưu trữ tham chiếu (reference) của player để update khi cần
     var youtubePlayerRef by remember { mutableStateOf<YouTubePlayer?>(null) }
 
     AndroidView(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(16f / 9f) // QUAN TRỌNG: Ép tỷ lệ 16:9 chuẩn của YouTube để View không bị co về 0
+            .aspectRatio(16f / 9f)
             .clip(RoundedCornerShape(8.dp))
-            .background(Color.Black), // Thêm nền đen trong lúc chờ load
+            .background(Color.Black),
         factory = { context ->
             YouTubePlayerView(context).apply {
-                // Rất quan trọng để quản lý vòng đời (pause khi ẩn app)
                 lifecycleOwner.lifecycle.addObserver(this)
 
                 addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
                     override fun onReady(youTubePlayer: YouTubePlayer) {
                         youtubePlayerRef = youTubePlayer
-                        youTubePlayer.cueVideo(videoId, 0f) // cueVideo: Nạp video nhưng không tự động phát
+                        youTubePlayer.cueVideo(videoId, 0f)
                     }
                 })
             }
         },
         update = { _ ->
-            // Mỗi khi videoId từ ViewModel thay đổi, Compose sẽ gọi khối update này
-            // Giúp nạp đúng video ngay cả khi API phản hồi chậm
             youtubePlayerRef?.cueVideo(videoId, 0f)
         }
     )

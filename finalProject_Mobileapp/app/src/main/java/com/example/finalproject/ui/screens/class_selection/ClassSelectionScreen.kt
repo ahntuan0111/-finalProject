@@ -13,15 +13,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.finalproject.R
 import com.example.finalproject.ui.components.PrimaryButton
 import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.theme.TextGray
-import com.example.finalproject.ui.theme.WhiteBackground
+import com.example.finalproject.ui.viewmodel.ClassSelectionState
+import com.example.finalproject.ui.viewmodel.ClassSelectionViewModel
 
 @Composable
 fun ClassSelectionScreen(
@@ -58,14 +61,14 @@ fun ClassSelectionScreen(
 
         // ===== Header =====
         Text(
-            text = "📚 Bạn đang học lớp mấy?",
+            text = stringResource(id = R.string.class_selection_title),
             fontSize = 26.sp,
             fontWeight = FontWeight.Bold,
             color = PrimaryBlue
         )
 
         Text(
-            text = "Chọn lớp để xem bài học phù hợp với bạn nhé!",
+            text = stringResource(id = R.string.class_selection_subtitle),
             fontSize = 15.sp,
             color = TextGray,
             modifier = Modifier.padding(top = 12.dp, bottom = 36.dp)
@@ -95,7 +98,7 @@ fun ClassSelectionScreen(
 
         // ===== Motivational text =====
         Text(
-            text = "✨ Học mỗi ngày một chút, giỏi lên từng ngày!",
+            text = stringResource(id = R.string.class_selection_motivation),
             fontSize = 13.sp,
             color = TextGray,
             modifier = Modifier.padding(bottom = 12.dp)
@@ -103,14 +106,14 @@ fun ClassSelectionScreen(
 
         // ===== Button =====
         PrimaryButton(
-            text = "🚀 Bắt đầu học",
+            text = stringResource(id = R.string.class_selection_btn_start),
             onClick = {
                 if (selectedGrade != 0) {
                     viewModel.selectGrade(selectedGrade)
                 } else {
                     Toast.makeText(
                         context,
-                        "Vui lòng chọn một lớp",
+                        context.getString(R.string.class_selection_toast_empty),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -161,8 +164,9 @@ fun RowScope.GradeOption(
 
             Spacer(modifier = Modifier.height(6.dp))
 
+            // Text hiển thị "Lớp 6" (hoặc "Grade 6" bên English)
             Text(
-                text = "Lớp $grade",
+                text = stringResource(id = R.string.class_selection_grade_format, grade),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = if (isSelected) Color.White else PrimaryBlue
@@ -171,7 +175,7 @@ fun RowScope.GradeOption(
             if (isSelected) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "✔ Đã chọn",
+                    text = stringResource(id = R.string.class_selection_selected),
                     fontSize = 13.sp,
                     color = Color.White.copy(alpha = 0.9f)
                 )

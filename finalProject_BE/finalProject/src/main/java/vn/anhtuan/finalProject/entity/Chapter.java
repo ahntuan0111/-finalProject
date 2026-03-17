@@ -16,8 +16,11 @@ public class Chapter {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String title;
+    @Column(name = "title_vi", nullable = false, length = 255)
+    private String titleVi;
+
+    @Column(name = "title_en", length = 255)
+    private String titleEn;
 
     @Column(name = "order_no", nullable = false)
     private Integer orderNo;
@@ -34,12 +37,13 @@ public class Chapter {
     public Chapter() {
     }
 
-    public Chapter(Long id, String title, Integer orderNo, Subject subject, List<Lesson> lessons) {
-        this.id = id;
-        this.title = title;
-        this.orderNo = orderNo;
-        this.subject = subject;
+    public Chapter(String titleEn, List<Lesson> lessons, Subject subject, Integer orderNo, String titleVi, Long id) {
+        this.titleEn = titleEn;
         this.lessons = lessons;
+        this.subject = subject;
+        this.orderNo = orderNo;
+        this.titleVi = titleVi;
+        this.id = id;
     }
 
     public Long getId() {
@@ -74,11 +78,19 @@ public class Chapter {
         this.lessons = lessons;
     }
 
-    public String getTitle() {
-        return title;
+    public String getTitleVi() {
+        return titleVi;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setTitleVi(String titleVi) {
+        this.titleVi = titleVi;
+    }
+
+    public String getTitleEn() {
+        return titleEn;
+    }
+
+    public void setTitleEn(String titleEn) {
+        this.titleEn = titleEn;
     }
 }

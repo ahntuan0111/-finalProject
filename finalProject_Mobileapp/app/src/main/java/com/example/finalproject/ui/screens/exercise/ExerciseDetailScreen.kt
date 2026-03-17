@@ -1,7 +1,7 @@
 package com.example.finalproject.ui.screens.exercise
 
 import android.annotation.SuppressLint
-import android.util.Base64 // <-- QUAN TRỌNG: Thêm import này
+import android.util.Base64
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,11 +33,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.finalproject.R
 import com.example.finalproject.data.remote.model.ExerciseDto
 import com.example.finalproject.data.remote.model.ExerciseSolutionDto
 import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.viewmodel.ExerciseDetailViewModel
-import com.example.finalproject.utils.Resource
 
 // IP máy chủ (Thay đổi tùy môi trường)
 const val BASE_IMAGE_URL = "http://10.0.2.2:8080"
@@ -56,7 +57,6 @@ fun ExerciseDetailScreen(
     val state by viewModel.exercises.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
-    // Lắng nghe trạng thái nút bấm từ ViewModel
     val isCompletedState by viewModel.isCompleted.collectAsState()
     val isSubmitting by viewModel.isSubmitting.collectAsState()
 
@@ -67,10 +67,18 @@ fun ExerciseDetailScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Luyện tập", fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        stringResource(id = R.string.exercise_detail_title),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = stringResource(id = R.string.common_back)
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
@@ -92,7 +100,7 @@ fun ExerciseDetailScreen(
                 val exercises = state
                 if (exercises.isEmpty()) {
                     Text(
-                        text = "Chưa có bài tập nào.",
+                        text = stringResource(id = R.string.exercise_detail_empty),
                         modifier = Modifier.align(Alignment.Center),
                         color = Color.Gray
                     )
@@ -105,7 +113,6 @@ fun ExerciseDetailScreen(
                             ExerciseItem(exercise = exercise)
                         }
 
-                        // --- THÊM NÚT ĐÁNH DẤU HOÀN THÀNH Ở CUỐI DANH SÁCH BÀI TẬP ---
                         item {
                             Spacer(modifier = Modifier.height(24.dp))
 
@@ -132,13 +139,22 @@ fun ExerciseDetailScreen(
                                 } else if (finalIsCompleted) {
                                     Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.White)
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Đã hoàn thành bài tập", fontSize = 16.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        stringResource(id = R.string.exercise_detail_btn_completed),
+                                        fontSize = 16.sp,
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold
+                                    )
                                 } else {
-                                    Text("Đánh dấu hoàn thành", fontSize = 16.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        stringResource(id = R.string.exercise_detail_btn_complete),
+                                        fontSize = 16.sp,
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold
+                                    )
                                 }
                             }
 
-                            // Khoảng trống dưới cùng để cuộn không bị sát mép
                             Spacer(modifier = Modifier.height(32.dp))
                         }
                     }
@@ -159,7 +175,7 @@ fun ExerciseItem(exercise: ExerciseDto) {
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // --- Header: Câu hỏi số X ---
+            // --- Header ---
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
@@ -167,7 +183,7 @@ fun ExerciseItem(exercise: ExerciseDto) {
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = "Câu ${exercise.orderNo}",
+                        text = stringResource(id = R.string.exercise_item_question_num, exercise.orderNo),
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp
@@ -199,7 +215,13 @@ fun ExerciseItem(exercise: ExerciseDto) {
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(if (isExpanded) "Ẩn lời giải" else "Xem lời giải chi tiết")
+
+                val btnText = if (isExpanded) {
+                    stringResource(id = R.string.exercise_item_btn_hide_solution)
+                } else {
+                    stringResource(id = R.string.exercise_item_btn_show_solution)
+                }
+                Text(btnText)
             }
 
             // --- Danh sách Lời giải ---
@@ -212,7 +234,7 @@ fun ExerciseItem(exercise: ExerciseDto) {
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = "Hướng dẫn giải:",
+                        text = stringResource(id = R.string.exercise_item_solution_guide),
                         fontWeight = FontWeight.Bold,
                         color = Color.Black,
                         fontSize = 14.sp
@@ -220,7 +242,11 @@ fun ExerciseItem(exercise: ExerciseDto) {
                     Spacer(modifier = Modifier.height(8.dp))
 
                     if (exercise.solutions.isNullOrEmpty()) {
-                        Text("Đang cập nhật lời giải...", fontSize = 13.sp, color = Color.Gray)
+                        Text(
+                            text = stringResource(id = R.string.exercise_item_solution_empty),
+                            fontSize = 13.sp,
+                            color = Color.Gray
+                        )
                     } else {
                         exercise.solutions.sortedBy { it.solutionOrder }.forEach { solution ->
                             SolutionItem(solution)
@@ -238,7 +264,7 @@ fun SolutionItem(solution: ExerciseSolutionDto) {
     Column {
         if (solution.solutionOrder > 0) {
             Text(
-                text = "Bước ${solution.solutionOrder}:",
+                text = stringResource(id = R.string.exercise_item_solution_step, solution.solutionOrder),
                 fontSize = 13.sp,
                 color = PrimaryBlue,
                 fontWeight = FontWeight.SemiBold,
@@ -260,7 +286,7 @@ fun ContentRenderer(type: String?, value: String?) {
                 .data(getFullImageUrl(safeValue))
                 .crossfade(true)
                 .build(),
-            contentDescription = "Content Image",
+            contentDescription = stringResource(id = R.string.exercise_item_content_desc_image),
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
@@ -268,19 +294,15 @@ fun ContentRenderer(type: String?, value: String?) {
             contentScale = ContentScale.FillWidth
         )
     } else {
-        // Sử dụng LatexMathView để hiển thị công thức
         LatexMathView(latex = safeValue, modifier = Modifier)
     }
 }
 
-// --- Component Render LaTeX sử dụng WebView và MathJax (SỬ DỤNG BASE64 ĐỂ FIX LỖI) ---
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun LatexMathView(latex: String, modifier: Modifier = Modifier) {
-    // Sửa lỗi quan trọng: Dùng ${'$'} để Kotlin không hiểu nhầm là biến
     val dollarSign = "$"
 
-    // Sử dụng KaTeX (nhẹ hơn MathJax) để render nhanh trong LazyColumn
     val htmlContent = """
         <!DOCTYPE html>
         <html>
@@ -300,12 +322,9 @@ fun LatexMathView(latex: String, modifier: Modifier = Modifier) {
                     margin: 0; 
                     padding: 0;
                     background-color: transparent;
-                    overflow-wrap: break-word; /* Tránh tràn chữ */
+                    overflow-wrap: break-word; 
                 }
-                /* Căn chỉnh ảnh */
                 img { max-width: 100%; height: auto; display: block; margin: 4px 0; }
-                
-                /* Tinh chỉnh công thức toán */
                 .katex { font-size: 1.1em; }
             </style>
             
@@ -313,7 +332,6 @@ fun LatexMathView(latex: String, modifier: Modifier = Modifier) {
                 document.addEventListener("DOMContentLoaded", function() {
                     renderMathInElement(document.body, {
                         delimiters: [
-                            // Cấu hình nhận diện dấu $ (Quan trọng)
                             {left: "$dollarSign$dollarSign", right: "$dollarSign$dollarSign", display: true},
                             {left: "$dollarSign", right: "$dollarSign", display: false},
                             {left: "\\(", right: "\\)", display: false},
@@ -333,23 +351,19 @@ fun LatexMathView(latex: String, modifier: Modifier = Modifier) {
     AndroidView(
         modifier = modifier
             .fillMaxWidth()
-            // WebView trong LazyColumn cần chiều cao cố định hoặc wrap_content cẩn thận
-            // Tuy nhiên, cách tốt nhất là set chiều cao tối thiểu để tránh bị collapsed về 0
             .defaultMinSize(minHeight = 40.dp),
         factory = { context ->
             WebView(context).apply {
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
                 settings.loadWithOverviewMode = true
-                settings.useWideViewPort = false // Quan trọng để text tự xuống dòng
+                settings.useWideViewPort = false
                 settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.TEXT_AUTOSIZING
 
-                // Tắt background và thanh cuộn
                 setBackgroundColor(android.graphics.Color.TRANSPARENT)
                 isVerticalScrollBarEnabled = false
                 isHorizontalScrollBarEnabled = false
 
-                // Không cho người dùng click vào link trong WebView (tránh nhảy ra trình duyệt)
                 webViewClient = object : WebViewClient() {
                     override fun onPageFinished(view: WebView?, url: String?) {
                         super.onPageFinished(view, url)
@@ -358,7 +372,6 @@ fun LatexMathView(latex: String, modifier: Modifier = Modifier) {
             }
         },
         update = { webView ->
-            // Base64 encode để giữ nguyên các ký tự đặc biệt
             val encodedHtml = Base64.encodeToString(htmlContent.toByteArray(), Base64.NO_PADDING)
             webView.loadData(encodedHtml, "text/html", "base64")
         }

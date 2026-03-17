@@ -24,8 +24,11 @@ public class Choice {
     private ContentType contentType = ContentType.TEXT;
 
     // SỬA: Đổi tên content thành content_value cho đồng bộ
-    @Column(name = "content_value", columnDefinition = "TEXT", nullable = false)
-    private String contentValue;
+    @Column(name = "content_value_vi", nullable = false, columnDefinition = "TEXT")
+    private String contentValueVi;
+
+    @Column(name = "content_value_en", columnDefinition = "TEXT")
+    private String contentValueEn;
 
     @Column(name = "is_correct", nullable = false)
     private Boolean correct = false;
@@ -46,12 +49,20 @@ public class Choice {
         this.correct = correct;
     }
 
-    public String getContentValue() {
-        return contentValue;
+    public String getContentValueVi() {
+        return contentValueVi;
     }
 
-    public void setContentValue(String contentValue) {
-        this.contentValue = contentValue;
+    public void setContentValueVi(String contentValueVi) {
+        this.contentValueVi = contentValueVi;
+    }
+
+    public String getContentValueEn() {
+        return contentValueEn;
+    }
+
+    public void setContentValueEn(String contentValueEn) {
+        this.contentValueEn = contentValueEn;
     }
 
     public ContentType getContentType() {

@@ -1,12 +1,16 @@
 package vn.anhtuan.finalProject.dto.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import vn.anhtuan.finalProject.entity.Quiz;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class QuizResponse {
     private Integer id;
     private String code;
@@ -16,31 +20,38 @@ public class QuizResponse {
     private String chapterTitle;
     private Integer quizTypeId;
     private String quizTypeName;
-
-    // SỬA DÒNG NÀY: Dùng QuestionResponse thay vì Entity Question
+    private Integer durationMinutes;
     private List<QuestionResponse> questions;
 
-    public static QuizResponse fromEntity(Quiz quiz) {
+    // Helper chọn ngôn ngữ - Đã sửa lỗi chống Null
+    public static String getLocalizedText(String textVi, String textEn, String lang) {
+        if ("en".equalsIgnoreCase(lang) && textEn != null && !textEn.trim().isEmpty()) {
+            return textEn;
+        }
+        return textVi != null ? textVi : ""; // Luôn trả về chuỗi rỗng nếu cả 2 đều null
+    }
+
+    public static QuizResponse fromEntity(Quiz quiz, String lang) {
         QuizResponse response = new QuizResponse();
         response.setId(quiz.getId());
         response.setCode(quiz.getCode());
-        response.setTitle(quiz.getTitle());
+        response.setTitle(getLocalizedText(quiz.getTitleVi(), quiz.getTitleEn(), lang));
         response.setCreatedAt(quiz.getCreatedAt());
 
         if (quiz.getChapter() != null) {
             response.setChapterId(quiz.getChapter().getId());
-            response.setChapterTitle(quiz.getChapter().getTitle());
+            response.setChapterTitle(getLocalizedText(quiz.getChapter().getTitleVi(), quiz.getChapter().getTitleEn(), lang));
         }
 
         if (quiz.getQuizType() != null) {
             response.setQuizTypeId(quiz.getQuizType().getId());
-            response.setQuizTypeName(quiz.getQuizType().getName());
+            response.setQuizTypeName(getLocalizedText(quiz.getQuizType().getNameVi(), quiz.getQuizType().getNameEn(), lang));
+            response.setDurationMinutes(quiz.getQuizType().getDurationMinutes());
         }
 
-        // SỬA ĐOẠN NÀY: Dùng luồng (stream) để map từng Question Entity sang QuestionResponse DTO
         if (quiz.getQuestions() != null) {
             response.setQuestions(quiz.getQuestions().stream()
-                    .map(QuestionResponse::fromEntity)
+                    .map(question -> QuestionResponse.fromEntity(question, lang))
                     .collect(Collectors.toList()));
         }
 
@@ -109,6 +120,14 @@ public class QuizResponse {
 
     public void setQuizTypeName(String quizTypeName) {
         this.quizTypeName = quizTypeName;
+    }
+
+    public Integer getDurationMinutes() {
+        return durationMinutes;
+    }
+
+    public void setDurationMinutes(Integer durationMinutes) {
+        this.durationMinutes = durationMinutes;
     }
 
     public List<QuestionResponse> getQuestions() {

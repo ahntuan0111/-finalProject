@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 // Model trả về từ API
 data class ChapterDto(
     val id: Long,
-    val title: String,
+    val title: String? = "",
     @SerializedName("orderNo") val orderNo: Int,
     val lessons: List<LessonDto>? = emptyList() // List bài học bên trong
 )

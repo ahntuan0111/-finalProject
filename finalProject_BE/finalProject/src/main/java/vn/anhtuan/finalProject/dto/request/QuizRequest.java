@@ -8,7 +8,8 @@ public class QuizRequest {
     private Long chapterId;
     private Integer quizTypeId;
     private String code;
-    private String title; // THÊM
+    private String titleVi; // Bắt buộc
+    private String titleEn; // Tùy chọn
     private List<QuestionRequest> questions;
 
     public String getCode() {
@@ -35,12 +36,20 @@ public class QuizRequest {
         this.chapterId = chapterId;
     }
 
-    public String getTitle() {
-        return title;
+    public String getTitleVi() {
+        return titleVi;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setTitleVi(String titleVi) {
+        this.titleVi = titleVi;
+    }
+
+    public String getTitleEn() {
+        return titleEn;
+    }
+
+    public void setTitleEn(String titleEn) {
+        this.titleEn = titleEn;
     }
 
     public List<QuestionRequest> getQuestions() {

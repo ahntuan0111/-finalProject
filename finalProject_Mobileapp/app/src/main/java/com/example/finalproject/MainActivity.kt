@@ -5,7 +5,8 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.ComponentActivity
+// XÓA: import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity // THÊM IMPORT NÀY
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
@@ -21,9 +22,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
-
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() { // SỬA: Kế thừa từ AppCompatActivity
 
     @Inject
     lateinit var dataStoreManager: DataStoreManager
@@ -46,8 +46,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val savedLang = runBlocking { dataStoreManager.getLanguageSync() }
+        val appLocale = androidx.core.os.LocaleListCompat.forLanguageTags(savedLang)
+        androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(appLocale)
+
         // =================================================================
-        // PHẦN 1: CẤU HÌNH THÔNG BÁO FIREBASE & GỬI TOKEN LÊN BACKEND
+    // PHẦN 1: CẤU HÌNH THÔNG BÁO FIREBASE & GỬI TOKEN LÊN BACKEND
         // =================================================================
 
         // Xin quyền hiển thị thông báo (Chỉ gọi lệnh này trên Android 13 trở lên)

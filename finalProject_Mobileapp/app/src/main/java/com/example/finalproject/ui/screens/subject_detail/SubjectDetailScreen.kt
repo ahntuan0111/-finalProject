@@ -27,11 +27,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.finalproject.R
 import com.example.finalproject.di.TheoryMode
 import com.example.finalproject.ui.navigation.AppRoutes
 import com.example.finalproject.ui.theme.PrimaryBlue
@@ -55,19 +57,17 @@ fun SubjectDetailScreen(
     navController: NavController,
     subjectCode: String,
     subjectName: String,
-    viewModel: SubjectDetailViewModel = hiltViewModel() // ĐÃ SỬA: Dùng SubjectDetailViewModel
+    viewModel: SubjectDetailViewModel = hiltViewModel()
 ) {
     val currentGrade by viewModel.currentGrade.collectAsState()
-    val overview by viewModel.overview.collectAsState() // Lấy data overview từ API
+    val overview by viewModel.overview.collectAsState()
     val scrollState = rememberScrollState()
     val context = LocalContext.current
 
-    // Gọi API mỗi khi currentGrade hoặc subjectCode thay đổi
     LaunchedEffect(currentGrade, subjectCode) {
         viewModel.fetchOverview(subjectCode, currentGrade)
     }
 
-    // Lấy data an toàn (mặc định 0% và id = -1 nếu đang tải hoặc chưa có)
     val progressValue = overview?.progressPercent?.div(100f)?.toFloat() ?: 0f
     val nextLessonId = overview?.nextLessonId ?: -1L
 
@@ -75,7 +75,7 @@ fun SubjectDetailScreen(
         containerColor = BgOffWhite,
         topBar = {
             CustomTopBar(
-                title = "Khối $currentGrade - $subjectName",
+                title = stringResource(id = R.string.subject_detail_top_bar_title, currentGrade, subjectName),
                 onBack = { navController.popBackStack() }
             )
         }
@@ -99,18 +99,17 @@ fun SubjectDetailScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Lộ trình học tập",
+                    text = stringResource(id = R.string.subject_detail_learning_path),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color(0xFF1C2A3A)
                 )
                 Text(
-                    text = "Xem tất cả",
+                    text = stringResource(id = R.string.subject_detail_view_all),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = PrimaryBlue,
                     modifier = Modifier.clickable {
-                        // BẤM VÀO ĐÂY ĐỂ XEM DANH SÁCH CHƯƠNG/BÀI HỌC
                         navController.navigate(
                             AppRoutes.createTheoryRoute(
                                 code = subjectCode,
@@ -124,15 +123,14 @@ fun SubjectDetailScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 3. THẺ LÝ THUYẾT (MAIN CARD - FULL WIDTH)
+            // 3. THẺ LÝ THUYẾT
             PrimaryTheoryCard(
-                progress = progressValue, // ĐÃ SỬA: Lấy progress từ API truyền vào
+                progress = progressValue,
                 onContinueClick = {
                     if (nextLessonId != -1L) {
-                        // ĐIỀU HƯỚNG VÀO BÀI HỌC TIẾP THEO CHƯA HỌC
                         navController.navigate(AppRoutes.createLessonDetailRoute(nextLessonId))
                     } else {
-                        Toast.makeText(context, "Môn học này chưa có nội dung hoặc đã học xong!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, context.getString(R.string.subject_detail_no_content_toast), Toast.LENGTH_SHORT).show()
                     }
                 }
             )
@@ -149,8 +147,8 @@ fun SubjectDetailScreen(
                     bgColor = GreenTint,
                     icon = Icons.Rounded.CheckCircle,
                     iconColor = GreenIcon,
-                    title = "Giải bài tập",
-                    subtitle = "Lời giải chi tiết SGK & SBT",
+                    title = stringResource(id = R.string.subject_detail_exercise_title),
+                    subtitle = stringResource(id = R.string.subject_detail_exercise_subtitle),
                     onClick = {
                         navController.navigate(
                             AppRoutes.createTheoryRoute(subjectCode, subjectName, TheoryMode.EXERCISE)
@@ -163,8 +161,8 @@ fun SubjectDetailScreen(
                     bgColor = OrangeTint,
                     icon = Icons.Rounded.Bolt,
                     iconColor = OrangeIcon,
-                    title = "Quiz",
-                    subtitle = "Kiểm tra nhanh 15p hàng ngày",
+                    title = stringResource(id = R.string.subject_detail_quiz_title),
+                    subtitle = stringResource(id = R.string.subject_detail_quiz_subtitle),
                     onClick = {
                         navController.navigate(AppRoutes.createQuizFlowRoute(subjectCode, currentGrade))
                     }
@@ -173,15 +171,15 @@ fun SubjectDetailScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 5. THẺ BỘ ĐỀ THI (TERTIARY CARD - FULL WIDTH)
+            // 5. THẺ BỘ ĐỀ THI
             BounceCard(
                 modifier = Modifier.fillMaxWidth().height(90.dp),
                 bgColor = PurpleTint,
                 icon = Icons.Rounded.Assignment,
                 iconColor = PurpleIcon,
-                title = "Bộ đề thi",
-                subtitle = "Sẵn sàng thi học kỳ • Đề thi thử mới nhất",
-                isHorizontal = true, // Layout xoay ngang
+                title = stringResource(id = R.string.subject_detail_exam_title),
+                subtitle = stringResource(id = R.string.subject_detail_exam_subtitle),
+                isHorizontal = true,
                 onClick = {
                     navController.navigate(AppRoutes.createDocumentListRoute(subjectCode, currentGrade))
                 }
@@ -204,7 +202,6 @@ fun CustomTopBar(title: String, onBack: () -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Nút Back tròn
         Box(
             modifier = Modifier
                 .size(40.dp)
@@ -219,7 +216,6 @@ fun CustomTopBar(title: String, onBack: () -> Unit) {
 
         Text(text = title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1C2A3A))
 
-        // Nút Dark/Light mode (Giả lập UI)
         Box(
             modifier = Modifier
                 .size(40.dp)
@@ -242,25 +238,23 @@ fun HeroBanner(subjectName: String, grade: Int) {
             .background(Brush.linearGradient(listOf(BannerStart, BannerEnd)))
             .padding(24.dp)
     ) {
-        // Họa tiết mờ (Math Symbols)
         Text("∑", color = Color.White.copy(alpha = 0.1f), fontSize = 60.sp, modifier = Modifier.align(Alignment.TopEnd).offset(x = (-40).dp, y = (-10).dp))
         Text("π", color = Color.White.copy(alpha = 0.1f), fontSize = 70.sp, modifier = Modifier.align(Alignment.CenterEnd).offset(x = 10.dp, y = (-20).dp))
         Text("√", color = Color.White.copy(alpha = 0.05f), fontSize = 80.sp, modifier = Modifier.align(Alignment.BottomEnd).offset(x = (-80).dp, y = 10.dp))
 
         Column {
-            // Tag
             Box(
                 modifier = Modifier
                     .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(50))
                     .padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
-                Text("CHƯƠNG TRÌNH MỚI 2024", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.subject_detail_new_curriculum), color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "$subjectName\ncho Khối $grade",
+                text = stringResource(id = R.string.subject_detail_hero_title, subjectName, grade),
                 fontSize = 28.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color.White,
@@ -270,7 +264,7 @@ fun HeroBanner(subjectName: String, grade: Int) {
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Sẵn sàng chinh phục các con số chưa?\nHãy bắt đầu ngay hôm nay nhé!",
+                text = stringResource(id = R.string.subject_detail_hero_desc),
                 fontSize = 13.sp,
                 color = Color.White.copy(alpha = 0.8f),
                 lineHeight = 20.sp
@@ -278,7 +272,6 @@ fun HeroBanner(subjectName: String, grade: Int) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Avatar những người đang học
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(modifier = Modifier.size(28.dp).clip(CircleShape).background(Color.Black).border(2.dp, BannerEnd, CircleShape))
                 Box(modifier = Modifier.size(28.dp).offset(x = (-10).dp).clip(CircleShape).background(Color.White).border(2.dp, BannerEnd, CircleShape))
@@ -288,7 +281,7 @@ fun HeroBanner(subjectName: String, grade: Int) {
                 ) {
                     Text("+12", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                 }
-                Text("Đang học cùng bạn", color = Color.White.copy(alpha = 0.9f), fontSize = 12.sp, modifier = Modifier.offset(x = (-10).dp))
+                Text(stringResource(id = R.string.subject_detail_hero_learning_with_you), color = Color.White.copy(alpha = 0.9f), fontSize = 12.sp, modifier = Modifier.offset(x = (-10).dp))
             }
         }
     }
@@ -310,7 +303,6 @@ fun PrimaryTheoryCard(progress: Float, onContinueClick: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Icon Box
                     Box(
                         modifier = Modifier
                             .size(48.dp)
@@ -322,31 +314,29 @@ fun PrimaryTheoryCard(progress: Float, onContinueClick: () -> Unit) {
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
-                        Text("Lý thuyết trọng tâm", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1C2A3A))
-                        Text("12 chương • 48 bài học", fontSize = 12.sp, color = Color.Gray)
+                        Text(stringResource(id = R.string.subject_detail_theory_title), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1C2A3A))
+                        Text(stringResource(id = R.string.subject_detail_theory_subtitle), fontSize = 12.sp, color = Color.Gray)
                     }
                 }
 
-                // Nút Tiếp Tục (Vào thẳng bài học tiếp theo)
                 Box(
                     modifier = Modifier
                         .background(Color(0xFFEEF2FF), RoundedCornerShape(50))
                         .clickable { onContinueClick() }
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
-                    Text("Tiếp tục", color = PrimaryBlue, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(id = R.string.subject_detail_btn_continue), color = PrimaryBlue, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Progress Bar
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Tiến độ hoàn thành", fontSize = 12.sp, color = Color.Gray)
+                Text(stringResource(id = R.string.subject_detail_progress_label), fontSize = 12.sp, color = Color.Gray)
                 Text("${(progress * 100).toInt()}%", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = PrimaryBlue)
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -360,7 +350,6 @@ fun PrimaryTheoryCard(progress: Float, onContinueClick: () -> Unit) {
     }
 }
 
-// Thẻ thực hành với hiệu ứng Bounce & Soft Tint Color
 @Composable
 fun BounceCard(
     modifier: Modifier = Modifier,
@@ -378,15 +367,14 @@ fun BounceCard(
 
     Card(
         modifier = modifier
-            .scale(scale) // Hiệu ứng lún xuống khi bấm
+            .scale(scale)
             .clickable(interactionSource = interactionSource, indication = LocalIndication.current, onClick = onClick),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = bgColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(1.dp, bgColor.copy(alpha = 0.5f)) // Viền mờ tệp màu nền
+        border = BorderStroke(1.dp, bgColor.copy(alpha = 0.5f))
     ) {
         if (isHorizontal) {
-            // Bố cục ngang cho thẻ "Bộ đề thi"
             Row(
                 modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -405,7 +393,6 @@ fun BounceCard(
                 Icon(Icons.Rounded.ChevronRight, contentDescription = null, tint = Color.LightGray)
             }
         } else {
-            // Bố cục dọc cho thẻ vuông (Grid)
             Column(
                 modifier = Modifier.fillMaxSize().padding(16.dp),
                 verticalArrangement = Arrangement.Center

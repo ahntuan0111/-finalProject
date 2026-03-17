@@ -1,9 +1,10 @@
 package vn.anhtuan.finalProject.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import vn.anhtuan.finalProject.dto.request.DocumentRequest;
+import vn.anhtuan.finalProject.dto.response.DocumentResponse;
 import vn.anhtuan.finalProject.entity.Document;
 import vn.anhtuan.finalProject.repository.DocumentRepository;
 
@@ -14,17 +15,16 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class DocumentService {
 
-    // Thư mục lưu file tạm thời trên server
     private final Path fileStorageLocation = Paths.get("uploads").toAbsolutePath().normalize();
+    private final DocumentRepository documentRepository;
 
-    @Autowired
-    private DocumentRepository documentRepository;
-
-    public DocumentService() {
+    public DocumentService(DocumentRepository documentRepository) {
+        this.documentRepository = documentRepository;
         try {
             Files.createDirectories(this.fileStorageLocation);
         } catch (Exception ex) {
@@ -32,31 +32,32 @@ public class DocumentService {
         }
     }
 
-    public Document uploadDocument(MultipartFile file, String title, String description,
-                                   String subjectCode, Integer grade, String examType) {
-        // 1. Chuẩn hóa tên file
+    public Document uploadDocument(MultipartFile file, String titleVi, String titleEn,
+                                   String descriptionVi, String descriptionEn,
+                                   String subjectCode, Integer grade,
+                                   String examTypeVi, String examTypeEn) {
         String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
-        // Tạo tên file ngẫu nhiên để tránh trùng lặp
         String fileName = UUID.randomUUID().toString() + "_" + originalFileName;
 
         try {
-            // 2. Lưu file vào ổ cứng (Giai đoạn 1) -> Sau này thay bằng Cloud Upload
             Path targetLocation = this.fileStorageLocation.resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-            // 3. Tạo đường dẫn truy cập (URL tương đối)
             String fileDownloadUri = "/api/documents/files/" + fileName;
 
-            // 4. Lưu thông tin vào DB
             Document doc = new Document();
-            doc.setTitle(title);
-            doc.setDescription(description);
+            doc.setTitleVi(titleVi);
+            doc.setTitleEn(titleEn);
+            doc.setDescriptionVi(descriptionVi);
+            doc.setDescriptionEn(descriptionEn);
+            doc.setExamTypeVi(examTypeVi);
+            doc.setExamTypeEn(examTypeEn);
+
             doc.setFilePath(fileDownloadUri);
             doc.setFileType(file.getContentType());
             doc.setFileSize(file.getSize());
             doc.setSubjectCode(subjectCode);
             doc.setGrade(grade);
-            doc.setExamType(examType);
 
             return documentRepository.save(doc);
 
@@ -65,24 +66,31 @@ public class DocumentService {
         }
     }
 
-    public List<Document> getDocuments(String subjectCode, Integer grade) {
-        return documentRepository.findBySubjectCodeAndGrade(subjectCode, grade);
+    public List<DocumentResponse> getDocuments(String subjectCode, Integer grade, String lang) {
+        List<Document> docs = documentRepository.findBySubjectCodeAndGrade(subjectCode, grade);
+        return docs.stream()
+                .map(doc -> DocumentResponse.fromEntity(doc, lang))
+                .collect(Collectors.toList());
     }
 
-    public List<Document> getAllDocuments() {
-        return documentRepository.findAll();
+    public List<DocumentResponse> getAllDocuments(String lang) {
+        return documentRepository.findAll().stream()
+                .map(doc -> DocumentResponse.fromEntity(doc, lang))
+                .collect(Collectors.toList());
     }
 
-    public Document updateDocument(Long id, Document updatedDocInfo) {
+    public Document updateDocument(Long id, DocumentRequest request) {
         Document existingDoc = documentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tài liệu với ID: " + id));
 
-        // Chỉ cập nhật các trường metadata, không cập nhật file vật lý qua API này
-        existingDoc.setTitle(updatedDocInfo.getTitle());
-        existingDoc.setDescription(updatedDocInfo.getDescription());
-        existingDoc.setSubjectCode(updatedDocInfo.getSubjectCode());
-        existingDoc.setGrade(updatedDocInfo.getGrade());
-        existingDoc.setExamType(updatedDocInfo.getExamType());
+        existingDoc.setTitleVi(request.getTitleVi());
+        existingDoc.setTitleEn(request.getTitleEn());
+        existingDoc.setDescriptionVi(request.getDescriptionVi());
+        existingDoc.setDescriptionEn(request.getDescriptionEn());
+        existingDoc.setSubjectCode(request.getSubjectCode());
+        existingDoc.setGrade(request.getGrade());
+        existingDoc.setExamTypeVi(request.getExamTypeVi());
+        existingDoc.setExamTypeEn(request.getExamTypeEn());
 
         return documentRepository.save(existingDoc);
     }
@@ -91,20 +99,20 @@ public class DocumentService {
         Document doc = documentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tài liệu với ID: " + id));
 
-        // 1. Xóa file vật lý trên server
         try {
-            // Lấy tên file từ filePath (VD: "/api/documents/files/tenfile.pdf" -> "tenfile.pdf")
             String[] pathParts = doc.getFilePath().split("/");
             String fileName = pathParts[pathParts.length - 1];
-
             Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
             Files.deleteIfExists(filePath);
         } catch (IOException ex) {
             System.err.println("Lỗi khi xóa file vật lý: " + ex.getMessage());
-            // Có thể chọn throw exception hoặc chỉ log lỗi và vẫn xóa trong DB
         }
 
-        // 2. Xóa bản ghi trong Database
         documentRepository.delete(doc);
+    }
+
+    public Document getDocumentById(Long id) {
+        return documentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài liệu với ID: " + id));
     }
 }

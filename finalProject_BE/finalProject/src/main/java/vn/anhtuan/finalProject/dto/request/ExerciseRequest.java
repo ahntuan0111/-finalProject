@@ -1,43 +1,29 @@
 package vn.anhtuan.finalProject.dto.request;
 
 import lombok.Data;
-import vn.anhtuan.finalProject.entity.ContentType;
 
+import vn.anhtuan.finalProject.entity.ContentType;
 import java.util.List;
 
 @Data
 public class ExerciseRequest {
-    private ContentType questionType; // Thêm trường này
-    private String questionValue;      // Đổi tên question -> questionValue
     private Long lessonId;
+    private ContentType questionType;
+    private String questionValueVi; // Đề bài Tiếng Việt
+    private String questionValueEn; // Đề bài Tiếng Anh
     private Integer orderNo;
     private List<SolutionRequest> solutions;
 
     public ExerciseRequest() {
     }
 
-    public ExerciseRequest(ContentType questionType, String questionValue, Integer orderNo, Long lessonId, List<SolutionRequest> solutions) {
-        this.questionType = questionType;
-        this.questionValue = questionValue;
-        this.orderNo = orderNo;
+    public ExerciseRequest(Long lessonId, ContentType questionType, String questionValueVi, String questionValueEn, Integer orderNo, List<SolutionRequest> solutions) {
         this.lessonId = lessonId;
-        this.solutions = solutions;
-    }
-
-    public ContentType getQuestionType() {
-        return questionType;
-    }
-
-    public void setQuestionType(ContentType questionType) {
         this.questionType = questionType;
-    }
-
-    public String getQuestionValue() {
-        return questionValue;
-    }
-
-    public void setQuestionValue(String questionValue) {
-        this.questionValue = questionValue;
+        this.questionValueVi = questionValueVi;
+        this.questionValueEn = questionValueEn;
+        this.orderNo = orderNo;
+        this.solutions = solutions;
     }
 
     public Long getLessonId() {
@@ -48,6 +34,14 @@ public class ExerciseRequest {
         this.lessonId = lessonId;
     }
 
+    public List<SolutionRequest> getSolutions() {
+        return solutions;
+    }
+
+    public void setSolutions(List<SolutionRequest> solutions) {
+        this.solutions = solutions;
+    }
+
     public Integer getOrderNo() {
         return orderNo;
     }
@@ -56,11 +50,27 @@ public class ExerciseRequest {
         this.orderNo = orderNo;
     }
 
-    public List<SolutionRequest> getSolutions() {
-        return solutions;
+    public String getQuestionValueEn() {
+        return questionValueEn;
     }
 
-    public void setSolutions(List<SolutionRequest> solutions) {
-        this.solutions = solutions;
+    public void setQuestionValueEn(String questionValueEn) {
+        this.questionValueEn = questionValueEn;
+    }
+
+    public String getQuestionValueVi() {
+        return questionValueVi;
+    }
+
+    public void setQuestionValueVi(String questionValueVi) {
+        this.questionValueVi = questionValueVi;
+    }
+
+    public ContentType getQuestionType() {
+        return questionType;
+    }
+
+    public void setQuestionType(ContentType questionType) {
+        this.questionType = questionType;
     }
 }

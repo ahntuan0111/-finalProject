@@ -28,7 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.finalproject.ui.viewmodel.UserViewModel
-
+import androidx.compose.material.icons.outlined.Language
 // Định nghĩa mã màu Light Theme
 val LightBackground = Color(0xFFFAFAFA)
 val CardBackground = Color.White
@@ -48,6 +48,8 @@ fun UserScreen(
     val currentGrade by viewModel.currentGrade.collectAsState()
 
     var showEditDialog by remember { mutableStateOf(false) }
+
+    val currentLanguage by viewModel.currentLanguage.collectAsState(initial = "vi")
 
     if (isLoading && profile == null) {
         Box(modifier = Modifier.fillMaxSize().background(LightBackground), contentAlignment = Alignment.Center) {
@@ -179,6 +181,53 @@ fun UserScreen(
                 }
                 Spacer(modifier = Modifier.height(32.dp))
             }
+
+            // ================== CÀI ĐẶT ỨNG DỤNG ==================
+            item {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text("Cài đặt ứng dụng", color = TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = CardBackground),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            // Cụm Icon và Text
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFFE6F7FF)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(Icons.Outlined.Language, contentDescription = "Language", tint = PrimaryBlue, modifier = Modifier.size(20.dp))
+                                }
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Text("Ngôn ngữ / Language", color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                            }
+
+                            // Cụm Toggle Button [ VN | EN ]
+                            LanguageToggleButton(
+                                currentLang = currentLanguage,
+                                onLanguageSelect = { langCode ->
+                                    viewModel.changeLanguage(langCode)
+                                }
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(60.dp)) // Khoảng trống cuối màn hình
+            }
         }
 
         // ================== DIALOG CHỈNH SỬA ==================
@@ -200,7 +249,50 @@ fun UserScreen(
 }
 
 // ================== CÁC COMPONENT CON ==================
+@Composable
+fun LanguageToggleButton(currentLang: String, onLanguageSelect: (String) -> Unit) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color(0xFFF0F0F0))
+            .border(1.dp, Color(0xFFD9D9D9), RoundedCornerShape(8.dp))
+            .padding(2.dp)
+    ) {
+        // Nút VN
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(6.dp))
+                .background(if (currentLang == "vi") PrimaryBlue else Color.Transparent)
+                .clickable { onLanguageSelect("vi") }
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                "VN",
+                color = if (currentLang == "vi") Color.White else TextSecondary,
+                fontWeight = FontWeight.Bold,
+                fontSize = 13.sp
+            )
+        }
 
+        // Nút EN
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(6.dp))
+                .background(if (currentLang == "en") PrimaryBlue else Color.Transparent)
+                .clickable { onLanguageSelect("en") }
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                "EN",
+                color = if (currentLang == "en") Color.White else TextSecondary,
+                fontWeight = FontWeight.Bold,
+                fontSize = 13.sp
+            )
+        }
+    }
+}
 @Composable
 fun GradeSelector(
     currentGrade: Int,

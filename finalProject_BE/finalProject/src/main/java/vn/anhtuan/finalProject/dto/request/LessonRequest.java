@@ -10,8 +10,10 @@ public class LessonRequest {
     @NotNull(message = "ID chương không được để trống")
     private Long chapterId;
 
-    @NotBlank(message = "Tiêu đề bài học không được để trống")
-    private String title;
+    @NotBlank(message = "Tiêu đề tiếng Việt không được để trống")
+    private String titleVi;
+
+    private String titleEn; // Có thể để trống nếu Admin chưa kịp dịch
 
     private String videoUrl;
     private Integer orderNo;
@@ -22,12 +24,13 @@ public class LessonRequest {
     public LessonRequest() {
     }
 
-    public LessonRequest(Long chapterId, String title, String videoUrl, List<LessonContentRequest> contents, Integer orderNo) {
+    public LessonRequest(Long chapterId, List<LessonContentRequest> contents, String videoUrl, Integer orderNo, String titleEn, String titleVi) {
         this.chapterId = chapterId;
-        this.title = title;
-        this.videoUrl = videoUrl;
         this.contents = contents;
+        this.videoUrl = videoUrl;
         this.orderNo = orderNo;
+        this.titleEn = titleEn;
+        this.titleVi = titleVi;
     }
 
     public Long getChapterId() {
@@ -38,12 +41,20 @@ public class LessonRequest {
         this.chapterId = chapterId;
     }
 
-    public String getTitle() {
-        return title;
+    public String getTitleVi() {
+        return titleVi;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setTitleVi(String titleVi) {
+        this.titleVi = titleVi;
+    }
+
+    public String getTitleEn() {
+        return titleEn;
+    }
+
+    public void setTitleEn(String titleEn) {
+        this.titleEn = titleEn;
     }
 
     public String getVideoUrl() {

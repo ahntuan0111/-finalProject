@@ -23,7 +23,8 @@ class DataStoreManager @Inject constructor(
 
     companion object {
         val GRADE_KEY = intPreferencesKey("USER_GRADE")
-        val TOKEN_KEY = stringPreferencesKey("USER_TOKEN") // 1. Thêm Key Token
+        val TOKEN_KEY = stringPreferencesKey("USER_TOKEN")
+        val LANGUAGE_KEY = stringPreferencesKey("USER_LANGUAGE") // THÊM KEY NGÔN NGỮ
     }
 
     // --- Xử lý Grade ---
@@ -35,32 +36,44 @@ class DataStoreManager @Inject constructor(
         return context.dataStore.data.map { it[GRADE_KEY] }
     }
 
-    // --- Xử lý Token (MỚI) ---
+    suspend fun getGradeSync(): Int {
+        val preferences = context.dataStore.data.first()
+        return preferences[GRADE_KEY] ?: 6 // Mặc định lớp 6
+    }
+
+    // --- Xử lý Token ---
     suspend fun saveToken(token: String) {
         context.dataStore.edit { it[TOKEN_KEY] = token }
     }
 
-    // Hàm lấy token dạng Flow (để theo dõi)
     fun getToken(): Flow<String?> {
         return context.dataStore.data.map { it[TOKEN_KEY] }
     }
 
-    // Hàm lấy token đồng bộ (dùng cho Interceptor)
     suspend fun getTokenSync(): String? {
         return context.dataStore.data.map { it[TOKEN_KEY] }.first()
     }
 
+    // --- Xử lý NGÔN NGỮ (MỚI) ---
+    suspend fun saveLanguage(langCode: String) {
+        context.dataStore.edit { it[LANGUAGE_KEY] = langCode }
+    }
+
+    fun getLanguageFlow(): Flow<String> {
+        return context.dataStore.data.map { it[LANGUAGE_KEY] ?: "vi" } // Mặc định tiếng Việt
+    }
+
+    suspend fun getLanguageSync(): String {
+        val preferences = context.dataStore.data.first()
+        return preferences[LANGUAGE_KEY] ?: "vi"
+    }
+
+    // --- Reset ---
     suspend fun clearData() {
         context.dataStore.edit { it.clear() }
     }
 
     suspend fun clearToken() {
         context.dataStore.edit { it.remove(TOKEN_KEY) }
-    }
-
-    // --- THÊM HÀM NÀY: Lấy Grade ngay lập tức (cho logic gọi API) ---
-    suspend fun getGradeSync(): Int {
-        val preferences = context.dataStore.data.first()
-        return preferences[GRADE_KEY] ?: 6 // Mặc định lớp 6 nếu chưa chọn
     }
 }

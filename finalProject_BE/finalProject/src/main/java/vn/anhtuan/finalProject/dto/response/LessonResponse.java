@@ -1,27 +1,21 @@
 package vn.anhtuan.finalProject.dto.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.util.List;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class LessonResponse {
     private Long id;
-    private String title;
-    private String content;
+    private String title; // Đã được Service chọn lọc
     private String videoUrl;
     private Integer orderNo;
     private Long chapterId;
-
-    public LessonResponse() {
-    }
-
-    public LessonResponse(Long id, String title, String content, String videoUrl, Integer orderNo, Long chapterId) {
-        this.id = id;
-        this.title = title;
-        this.content = content;
-        this.videoUrl = videoUrl;
-        this.orderNo = orderNo;
-        this.chapterId = chapterId;
-    }
+    private List<LessonContentResponse> contents;
+    private List<ExerciseResponse> exercises;
 
     public Long getId() {
         return id;
@@ -29,6 +23,22 @@ public class LessonResponse {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public List<ExerciseResponse> getExercises() {
+        return exercises;
+    }
+
+    public void setExercises(List<ExerciseResponse> exercises) {
+        this.exercises = exercises;
+    }
+
+    public List<LessonContentResponse> getContents() {
+        return contents;
+    }
+
+    public void setContents(List<LessonContentResponse> contents) {
+        this.contents = contents;
     }
 
     public Long getChapterId() {
@@ -47,12 +57,12 @@ public class LessonResponse {
         this.orderNo = orderNo;
     }
 
-    public String getContent() {
-        return content;
+    public String getVideoUrl() {
+        return videoUrl;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public void setVideoUrl(String videoUrl) {
+        this.videoUrl = videoUrl;
     }
 
     public String getTitle() {
@@ -61,13 +71,5 @@ public class LessonResponse {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public String getVideoUrl() {
-        return videoUrl;
-    }
-
-    public void setVideoUrl(String videoUrl) {
-        this.videoUrl = videoUrl;
     }
 }

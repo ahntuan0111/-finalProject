@@ -6,7 +6,8 @@ data class QuizResponse(
     val title: String,
     val chapterTitle: String,
     val quizTypeName: String,
-    val questions: List<QuestionResponse>
+    val durationMinutes: Int?,
+    val questions: List<QuestionResponse>,
 )
 
 data class QuestionResponse(

@@ -16,19 +16,16 @@ const DocumentManagement = () => {
     const [documents, setDocuments] = useState([]);
     const [loading, setLoading] = useState(false);
     
-    // --- State cho Bộ lọc (Filter) ---
     const [searchText, setSearchText] = useState('');
     const [filterSubject, setFilterSubject] = useState(null);
     const [filterGrade, setFilterGrade] = useState(null);
 
-    // --- State cho Form (Modal) ---
     const [showModal, setShowModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editId, setEditId] = useState(null);
-    const [fileList, setFileList] = useState([]); // Quản lý file của Antd Upload
+    const [fileList, setFileList] = useState([]); 
     const [form] = Form.useForm();
 
-    // Load dữ liệu khi vào trang
     useEffect(() => {
         fetchDocuments();
     }, []);
@@ -41,23 +38,21 @@ const DocumentManagement = () => {
                 setDocuments(res.data);
             }
         } catch (error) {
-            console.error("Lỗi khi tải dữ liệu:", error);
             message.error("Không thể tải dữ liệu từ server.");
         } finally {
             setLoading(false);
         }
     };
 
-    // --- Xử lý Mở Modal ---
     const handleOpenAdd = () => {
         setIsEditing(false);
         setEditId(null);
         setFileList([]);
         form.resetFields();
         form.setFieldsValue({ 
-            subjectCode: 'Toán học', 
+            subjectCode: 'Toán', 
             grade: 6, 
-            examType: 'MID_TERM' 
+            examTypeCode: 'MID_TERM' 
         });
         setShowModal(true);
     };
@@ -65,66 +60,88 @@ const DocumentManagement = () => {
     const handleOpenEdit = (doc) => {
         setIsEditing(true);
         setEditId(doc.id);
-        setFileList([]); // Sửa thì không bắt buộc upload lại file
+        setFileList([]); 
+        
+        let examCode = 'THEORY';
+        // SỬA: Tương thích ngược lấy cả examType cũ
+        const typeVi = doc.examTypeVi || doc.examType; 
+        
+        if (typeVi === 'Giữa kỳ' || typeVi === 'MID_TERM') examCode = 'MID_TERM';
+        if (typeVi === 'Cuối kỳ' || typeVi === 'FINAL') examCode = 'FINAL';
+
         form.setFieldsValue({
-            title: doc.title,
-            description: doc.description || '',
+            titleVi: doc.titleVi || doc.title, // SỬA: Tương thích ngược
+            titleEn: doc.titleEn,
+            descriptionVi: doc.descriptionVi || doc.description,
+            descriptionEn: doc.descriptionEn,
             subjectCode: doc.subjectCode,
             grade: doc.grade,
-            examType: doc.examType
+            examTypeCode: examCode
         });
         setShowModal(true);
     };
 
-    // --- Xử lý Submit Form ---
     const handleSubmit = async (values) => {
         try {
+            let examTypeVi = 'Chuyên đề / Lý thuyết';
+            let examTypeEn = 'Theory';
+            if (values.examTypeCode === 'MID_TERM') { examTypeVi = 'Giữa kỳ'; examTypeEn = 'Midterm'; }
+            if (values.examTypeCode === 'FINAL') { examTypeVi = 'Cuối kỳ'; examTypeEn = 'Final'; }
+
+            const payload = {
+                ...values,
+                examTypeVi,
+                examTypeEn
+            };
+
             if (isEditing) {
-                // UPDATE
-                await documentApi.update(editId, values);
+                await documentApi.update(editId, payload);
                 message.success("Cập nhật tài liệu thành công!");
             } else {
-                // CREATE
+                // CREATE (Gửi FormData)
                 if (fileList.length === 0) {
                     message.warning("Vui lòng kéo thả hoặc chọn file PDF!");
                     return;
                 }
-                const file = fileList[0].originFileObj;
+                
+                // SỬA LẠI: Lấy file gốc hoặc lấy chính nó nếu không có bọc ngoài
+                const fileToUpload = fileList[0].originFileObj || fileList[0];
+                
                 await documentApi.upload(
-                    file, values.title, values.description, 
-                    values.subjectCode, values.grade, values.examType
+                    fileToUpload, // Truyền biến mới vào đây
+                    values.titleVi, values.titleEn, 
+                    values.descriptionVi, values.descriptionEn, 
+                    values.subjectCode, values.grade, 
+                    examTypeVi, examTypeEn
                 );
                 message.success("Upload tài liệu thành công!");
             }
             setShowModal(false);
             fetchDocuments(); 
         } catch (error) {
-            console.error("Lỗi lưu dữ liệu:", error);
             message.error("Có lỗi xảy ra khi lưu dữ liệu.");
         }
     };
 
-    // --- Xử lý Xóa ---
     const handleDelete = async (id) => {
         try {
             await documentApi.delete(id);
             message.success("Đã xóa tài liệu thành công!");
             fetchDocuments();
         } catch (error) {
-            console.error("Lỗi xóa:", error);
             message.error("Lỗi khi xóa tài liệu.");
         }
     };
 
-    // --- Lọc Dữ liệu (Filter) ---
     const filteredDocuments = documents.filter(doc => {
-        const matchTitle = doc.title.toLowerCase().includes(searchText.toLowerCase());
+        // SỬA: Tương thích ngược cho chức năng tìm kiếm
+        const docTitle = doc.titleVi || doc.title || '';
+        const matchTitle = docTitle.toLowerCase().includes(searchText.toLowerCase());
         const matchSubject = filterSubject ? doc.subjectCode === filterSubject : true;
         const matchGrade = filterGrade ? doc.grade === filterGrade : true;
         return matchTitle && matchSubject && matchGrade;
     });
 
-    // --- Cấu hình Upload File ---
     const uploadProps = {
         onRemove: (file) => {
             setFileList((prev) => prev.filter((item) => item.uid !== file.uid));
@@ -135,15 +152,15 @@ const DocumentManagement = () => {
                 message.error('Bạn chỉ có thể upload file định dạng PDF!');
                 return Upload.LIST_IGNORE;
             }
-            setFileList([file]); // Chỉ cho phép 1 file
-            return false; // Ngăn Antd tự động upload (để submit chung với form)
+            setFileList([file]); 
+            return false; 
         },
         fileList,
         accept: "application/pdf",
         maxCount: 1
     };
 
-    // --- Cấu hình Cột Bảng ---
+    // --- CẤU HÌNH CỘT BẢNG ---
     const columns = [
         {
             title: 'ID',
@@ -152,16 +169,20 @@ const DocumentManagement = () => {
             render: (text) => <Text type="secondary">#{text}</Text>
         },
         {
-            title: 'TIÊU ĐỀ',
-            dataIndex: 'title',
-            render: (text, record) => (
-                <Space>
-                    <FilePdfOutlined style={{ color: '#ff4d4f', fontSize: '18px' }} />
-                    <a href={`http://localhost:8080${record.filePath}`} target="_blank" rel="noreferrer" style={{ color: '#1f1f1f', fontWeight: 500 }}>
-                        {text}
-                    </a>
-                </Space>
-            )
+            title: 'TIÊU ĐỀ (VN)',
+            key: 'titleVi', // Dùng key thay vì dataIndex
+            render: (_, record) => {
+                // SỬA: Lấy titleVi, nếu BE chưa cập nhật thì lấy title cũ
+                const text = record.titleVi || record.title; 
+                return (
+                    <Space>
+                        <FilePdfOutlined style={{ color: '#ff4d4f', fontSize: '18px' }} />
+                        <a href={`http://localhost:8080${record.filePath}`} target="_blank" rel="noreferrer" style={{ color: '#1f1f1f', fontWeight: 500 }}>
+                            {text || "Chưa có tên"}
+                        </a>
+                    </Space>
+                );
+            }
         },
         {
             title: 'MÔN HỌC',
@@ -176,16 +197,20 @@ const DocumentManagement = () => {
         },
         {
             title: 'LOẠI ĐỀ',
-            dataIndex: 'examType',
-            width: 130,
-            render: (type) => {
+            key: 'examTypeVi', 
+            width: 150,
+            render: (_, record) => {
+                // SỬA: Tương thích cả chữ "Giữa kỳ" và mã "MID_TERM" cũ
+                const type = record.examTypeVi || record.examType; 
+                
                 let color = 'default';
                 let label = type;
-                if (type === 'MID_TERM') { color = 'cyan'; label = 'GIỮA KỲ'; }
-                else if (type === 'FINAL') { color = 'volcano'; label = 'CUỐI KỲ'; }
-                else if (type === 'THEORY') { color = 'geekblue'; label = 'LÝ THUYẾT'; }
+
+                if (type === 'Giữa kỳ' || type === 'MID_TERM') { color = 'cyan'; label = 'GIỮA KỲ'; }
+                else if (type === 'Cuối kỳ' || type === 'FINAL') { color = 'volcano'; label = 'CUỐI KỲ'; }
+                else if (type === 'Chuyên đề / Lý thuyết' || type === 'THEORY') { color = 'geekblue'; label = 'LÝ THUYẾT'; }
                 
-                return <Tag color={color} style={{ fontWeight: 'bold', borderRadius: '4px' }}>{label}</Tag>;
+                return <Tag color={color} style={{ fontWeight: 'bold', borderRadius: '4px' }}>{label ? label.toUpperCase() : 'KHÔNG XÁC ĐỊNH'}</Tag>;
             }
         },
         {
@@ -220,12 +245,10 @@ const DocumentManagement = () => {
     return (
         <div style={{ padding: '24px', backgroundColor: '#f5f7fa', minHeight: '100vh' }}>
             
-            {/* Header & Breadcrumb */}
             <div style={{ marginBottom: '24px' }}>
                 <Breadcrumb items={[{ title: 'Trang chủ' }, { title: 'Quản lý Tài liệu' }]} style={{ fontSize: '13px' }}/>
             </div>
 
-            {/* Bọc toàn bộ bằng Card */}
             <Card 
                 title={<Title level={3} style={{ margin: 0 }}>Quản lý Tài liệu (PDF)</Title>}
                 variant="borderless"
@@ -236,7 +259,6 @@ const DocumentManagement = () => {
                     </Button>
                 }
             >
-                {/* --- Khu vực Toolbar & Filter --- */}
                 <div style={{ marginBottom: 20, padding: '16px', background: '#fafafa', borderRadius: '8px', border: '1px solid #f0f0f0' }}>
                     <Row gutter={[16, 16]} align="middle">
                         <Col xs={24} md={8}>
@@ -258,8 +280,8 @@ const DocumentManagement = () => {
                                 value={filterSubject}
                                 onChange={setFilterSubject}
                             >
-                                <Select.Option value="Toán học">Toán học</Select.Option>
-                                <Select.Option value="Khoa học Tự nhiên">Khoa học Tự nhiên</Select.Option>
+                                <Select.Option value="Toán">Toán học</Select.Option>
+                                <Select.Option value="Khoa học tự nhiên">Khoa học Tự nhiên</Select.Option>
                             </Select>
                         </Col>
                         <Col xs={12} md={5}>
@@ -271,7 +293,7 @@ const DocumentManagement = () => {
                                 value={filterGrade}
                                 onChange={setFilterGrade}
                             >
-                                {[6, 7, 8, 9, 10, 11, 12].map(g => (
+                                {[6, 7, 8, 9].map(g => (
                                     <Select.Option key={g} value={g}>Lớp {g}</Select.Option>
                                 ))}
                             </Select>
@@ -282,7 +304,6 @@ const DocumentManagement = () => {
                     </Row>
                 </div>
 
-                {/* --- Bảng Dữ liệu --- */}
                 <Table 
                     columns={columns} 
                     dataSource={filteredDocuments} 
@@ -293,7 +314,6 @@ const DocumentManagement = () => {
                 />
             </Card>
 
-            {/* --- Modal Thêm / Sửa Tài liệu --- */}
             <Modal
                 title={<Text strong style={{ fontSize: '18px' }}>{isEditing ? "Cập nhật tài liệu" : "Thêm tài liệu mới"}</Text>}
                 open={showModal}
@@ -301,9 +321,9 @@ const DocumentManagement = () => {
                 onOk={() => form.submit()}
                 okText={isEditing ? "Lưu thay đổi" : "Tải lên"}
                 cancelText="Hủy bỏ"
-                width={600}
+                width={800}
                 centered
-                destroyOnClose
+                destroyOnHidden
             >
                 <Form 
                     form={form} 
@@ -311,59 +331,65 @@ const DocumentManagement = () => {
                     onFinish={handleSubmit}
                     style={{ marginTop: 24 }}
                 >
-                    <Form.Item 
-                        name="title" 
-                        label={<Text strong>Tên tài liệu</Text>} 
-                        rules={[{ required: true, message: 'Vui lòng nhập tên tài liệu!' }]}
-                    >
-                        <Input size="large" placeholder="VD: Đề thi thử giữa kỳ 1 Toán 6" />
-                    </Form.Item>
-
                     <Row gutter={16}>
                         <Col span={12}>
                             <Form.Item 
-                                name="subjectCode" 
-                                label={<Text strong>Môn học</Text>} 
-                                rules={[{ required: true }]}
+                                name="titleVi" 
+                                label={<Text strong>Tên tài liệu (Tiếng Việt) <span style={{color:'red'}}>*</span></Text>} 
+                                rules={[{ required: true, message: 'Vui lòng nhập tên tài liệu!' }]}
                             >
-                                <Select size="large" placeholder="Chọn môn học">
-                                    <Select.Option value="Toán học">Toán học</Select.Option>
-                                    <Select.Option value="Khoa học Tự nhiên">Khoa học Tự nhiên</Select.Option>
-                                </Select>
+                                <Input size="large" placeholder="VD: Đề thi thử giữa kỳ 1 Toán 6" />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
-                            <Form.Item 
-                                name="grade" 
-                                label={<Text strong>Khối lớp</Text>} 
-                                rules={[{ required: true }]}
-                            >
+                            <Form.Item name="titleEn" label={<Text strong>Tên tài liệu (English)</Text>} >
+                                <Input size="large" placeholder="Example: Midterm Mock Test" />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    <Row gutter={16}>
+                        <Col span={8}>
+                            <Form.Item name="subjectCode" label={<Text strong>Môn học <span style={{color:'red'}}>*</span></Text>} rules={[{ required: true }]}>
+                                <Select size="large" placeholder="Chọn môn học">
+                                    <Select.Option value="Toán">Toán học</Select.Option>
+                                    <Select.Option value="Khoa học tự nhiên">Khoa học Tự nhiên</Select.Option>
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                            <Form.Item name="grade" label={<Text strong>Khối lớp <span style={{color:'red'}}>*</span></Text>} rules={[{ required: true }]}>
                                 <Select size="large" placeholder="Chọn khối">
-                                    {[6, 7, 8, 9, 10, 11, 12].map(g => (
+                                    {[6, 7, 8, 9].map(g => (
                                         <Select.Option key={g} value={g}>Lớp {g}</Select.Option>
                                     ))}
                                 </Select>
                             </Form.Item>
                         </Col>
+                        <Col span={8}>
+                            <Form.Item name="examTypeCode" label={<Text strong>Loại đề <span style={{color:'red'}}>*</span></Text>} rules={[{ required: true }]}>
+                                <Select size="large" placeholder="Chọn loại đề">
+                                    <Select.Option value="MID_TERM">Giữa kỳ</Select.Option>
+                                    <Select.Option value="FINAL">Cuối kỳ</Select.Option>
+                                    <Select.Option value="THEORY">Chuyên đề / Lý thuyết</Select.Option>
+                                </Select>
+                            </Form.Item>
+                        </Col>
                     </Row>
 
-                    <Form.Item 
-                        name="examType" 
-                        label={<Text strong>Loại đề</Text>} 
-                        rules={[{ required: true }]}
-                    >
-                        <Select size="large" placeholder="Chọn loại đề">
-                            <Select.Option value="MID_TERM">Giữa kỳ</Select.Option>
-                            <Select.Option value="FINAL">Cuối kỳ</Select.Option>
-                            <Select.Option value="THEORY">Chuyên đề / Lý thuyết</Select.Option>
-                        </Select>
-                    </Form.Item>
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item name="descriptionVi" label={<Text strong>Mô tả (Tiếng Việt)</Text>}>
+                                <Input.TextArea rows={3} placeholder="Nhập ghi chú ngắn về tài liệu này..." />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item name="descriptionEn" label={<Text strong>Mô tả (English)</Text>}>
+                                <Input.TextArea rows={3} placeholder="Enter a short description..." />
+                            </Form.Item>
+                        </Col>
+                    </Row>
 
-                    <Form.Item name="description" label={<Text strong>Mô tả (Không bắt buộc)</Text>}>
-                        <Input.TextArea rows={2} placeholder="Nhập ghi chú ngắn về tài liệu này..." />
-                    </Form.Item>
-
-                    {/* Chỉ bắt buộc upload nếu là Thêm mới. Nếu Sửa thì hiện thông báo */}
                     {!isEditing ? (
                         <Form.Item label={<Text strong>File tài liệu</Text>} required>
                             <Dragger {...uploadProps}>
@@ -379,13 +405,12 @@ const DocumentManagement = () => {
                     ) : (
                         <div style={{ padding: '12px', background: '#e6f4ff', borderRadius: '6px', border: '1px solid #91caff' }}>
                             <Text type="secondary">
-                                Đang ở chế độ chỉnh sửa thông tin. Bạn không cần tải lại file trừ khi muốn thay thế file hiện tại. (Tính năng cập nhật file đang phát triển).
+                                Đang ở chế độ chỉnh sửa thông tin. Để bảo vệ dữ liệu, hệ thống tạm khóa tính năng cập nhật file PDF đính kèm.
                             </Text>
                         </div>
                     )}
                 </Form>
             </Modal>
-
         </div>
     );
 };

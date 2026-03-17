@@ -9,9 +9,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface LessonRepository extends JpaRepository<Lesson, Long> {
+
     List<Lesson> findByChapterIdOrderByOrderNoAsc(Long chapterId);
 
-    // Trong LessonRepository.java thêm dòng này để đếm tổng số bài học của 1 môn:
     int countByChapter_Subject_Id(Integer subjectId);
 
     // Tìm các bài học CHƯA HOÀN THÀNH của 1 user theo môn và khối, sắp xếp theo thứ tự
@@ -34,8 +34,9 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
 
     List<Lesson> findTop5ByOrderByCreatedAtDesc();
 
-    // Query đếm số bài học theo từng Môn học (Cho biểu đồ Donut)
-    // Giả định Lesson liên kết với Chapter, Chapter liên kết với Subject
-    @Query("SELECT s.name, COUNT(l.id) FROM Lesson l JOIN l.chapter c JOIN c.subject s GROUP BY s.name")
+    // ======================================================
+    // SỬA LỖI TẠI ĐÂY: Đổi s.name thành s.nameVi
+    // ======================================================
+    @Query("SELECT s.nameVi, COUNT(l.id) FROM Lesson l JOIN l.chapter c JOIN c.subject s GROUP BY s.nameVi")
     List<Object[]> countLessonsGroupedBySubject();
 }

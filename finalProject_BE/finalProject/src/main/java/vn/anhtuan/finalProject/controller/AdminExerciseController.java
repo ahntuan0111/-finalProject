@@ -5,10 +5,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.anhtuan.finalProject.dto.request.ExerciseRequest;
 import vn.anhtuan.finalProject.dto.response.ApiResponse;
+import vn.anhtuan.finalProject.dto.response.admin.ExerciseAdminResponse;
 import vn.anhtuan.finalProject.entity.Exercise;
 import vn.anhtuan.finalProject.service.ExerciseService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/admin/exercises")
@@ -19,7 +21,9 @@ public class AdminExerciseController {
     // Lấy danh sách bài tập của một bài học
     @GetMapping("/by-lesson/{lessonId}")
     public ResponseEntity<?> getExercisesByLesson(@PathVariable Long lessonId) {
-        List<Exercise> exercises = exerciseService.getExercisesByLesson(lessonId);
+        List<ExerciseAdminResponse> exercises = exerciseService.getExercisesByLesson(lessonId).stream()
+                .map(ExerciseAdminResponse::fromEntity)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(ApiResponse.success(exercises, "Lấy danh sách thành công"));
     }
 
@@ -27,21 +31,21 @@ public class AdminExerciseController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getExerciseDetail(@PathVariable Long id) {
         Exercise exercise = exerciseService.getExerciseById(id);
-        return ResponseEntity.ok(ApiResponse.success(exercise, "Lấy chi tiết thành công"));
+        return ResponseEntity.ok(ApiResponse.success(ExerciseAdminResponse.fromEntity(exercise), "Lấy chi tiết thành công"));
     }
 
     // Tạo mới
     @PostMapping
     public ResponseEntity<?> createExercise(@RequestBody ExerciseRequest request) {
         Exercise newExercise = exerciseService.createExercise(request);
-        return ResponseEntity.ok(ApiResponse.success(newExercise, "Tạo bài tập thành công"));
+        return ResponseEntity.ok(ApiResponse.success(ExerciseAdminResponse.fromEntity(newExercise), "Tạo bài tập thành công"));
     }
 
     // Cập nhật
     @PutMapping("/{id}")
     public ResponseEntity<?> updateExercise(@PathVariable Long id, @RequestBody ExerciseRequest request) {
         Exercise updatedExercise = exerciseService.updateExercise(id, request);
-        return ResponseEntity.ok(ApiResponse.success(updatedExercise, "Cập nhật thành công"));
+        return ResponseEntity.ok(ApiResponse.success(ExerciseAdminResponse.fromEntity(updatedExercise), "Cập nhật thành công"));
     }
 
     // Xóa

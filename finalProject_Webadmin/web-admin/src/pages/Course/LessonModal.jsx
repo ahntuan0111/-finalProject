@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, InputNumber, Button, Space, Select, Upload, message, Image, Collapse, Typography, Divider } from 'antd';
-// ĐÃ THÊM PlayCircleOutlined VÀO ĐÂY
+import { Modal, Form, Input, InputNumber, Button, Space, Select, Upload, message, Image, Collapse, Typography, Divider, Row, Col } from 'antd';
 import { MinusCircleOutlined, PlusOutlined, UploadOutlined, FileTextOutlined, PictureOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import MathEditor from '../../components/editor/MathEditor';
 import uploadApi from '../../api/uploadApi';
@@ -21,36 +20,43 @@ const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrde
   useEffect(() => {
     if (open) {
       if (initialValues) {
+        // --- ĐỔ DỮ LIỆU TỪ BE VÀO FORM SỬA (KÈM BẢO VỆ DỮ LIỆU NULL) ---
+        const safeContents = initialValues.contents || [];
+        
         form.setFieldsValue({
-          title: initialValues.title,
-          videoUrl: initialValues.videoUrl,
-          orderNo: initialValues.orderNo,
-          contents: initialValues.contents.map(c => ({
+          titleVi: initialValues.titleVi || '',
+          titleEn: initialValues.titleEn || '',
+          videoUrl: initialValues.videoUrl || '',
+          orderNo: initialValues.orderNo || 1,
+          contents: safeContents.map(c => ({
             type: c.contentType === 'IMAGE' ? 'IMAGE' : 'TEXT',
-            value: c.contentValue,
-            order: c.contentOrder
+            valueVi: c.contentValueVi || '',
+            valueEn: c.contentValueEn || '',
+            order: c.contentOrder || 1
           }))
         });
-        const keys = initialValues.contents.map((_, i) => i.toString());
+        const keys = safeContents.map((_, i) => i.toString());
         setActiveKey(keys);
       } else {
+        // --- RESET FORM KHI TẠO MỚI ---
         form.resetFields();
         form.setFieldsValue({
             orderNo: nextOrderNo || 1, 
-            contents: [{ type: 'TEXT', value: '', order: 1 }] 
+            contents: [{ type: 'TEXT', valueVi: '', valueEn: '', order: 1 }] 
         });
         setActiveKey(['0']);
       }
     }
   }, [initialValues, open, form, nextOrderNo]);
 
-  const customRequest = async ({ file, onSuccess, onError }, add, name) => {
+  const customRequest = async ({ file, onSuccess, onError }, add, name, langType) => {
     try {
       const res = await uploadApi.uploadImage(file);
       if (res.success) {
         onSuccess("ok");
         const contents = form.getFieldValue('contents');
-        contents[name].value = res.data;
+        // Lưu URL ảnh vào trường valueVi hoặc valueEn tương ứng
+        contents[name][langType] = res.data;
         form.setFieldsValue({ contents });
         message.success("Upload ảnh thành công!");
       }
@@ -62,10 +68,12 @@ const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrde
 
   const handleOk = () => {
     form.validateFields().then((values) => {
-      const processedContents = values.contents.map((c, idx) => ({
+      // Đánh lại số thứ tự (order) cho mảng contents trước khi gửi
+      const processedContents = (values.contents || []).map((c, idx) => ({
           ...c,
           order: idx + 1
       }));
+      // Gửi payload chứa ...Vi và ...En lên hàm cha
       onSubmit({ ...values, contents: processedContents });
     });
   };
@@ -81,7 +89,7 @@ const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrde
       onOk={handleOk}
       onCancel={onClose}
       confirmLoading={loading}
-      width={900}
+      width={1000}
       maskClosable={false}
       style={{ top: 20 }}
       okText="Lưu Bài học"
@@ -89,25 +97,37 @@ const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrde
     >
       <Form form={form} layout="vertical" style={{ marginTop: '20px' }}>
         
-        <div style={{ display: 'flex', gap: 16 }}>
-            <Form.Item
-                name="title"
-                label={<Text strong>Tên bài học <span style={{color:'red'}}>*</span></Text>}
-                style={{ flex: 1 }}
-                rules={[{ required: true, message: 'Vui lòng nhập tên bài học' }]}
-            >
-                <Input size="large" placeholder="Ví dụ: Bài 1: Số nguyên tố" />
-            </Form.Item>
+        {/* --- DÒNG 1: TÊN BÀI HỌC VÀ THỨ TỰ --- */}
+        <Row gutter={16}>
+            <Col span={10}>
+                <Form.Item
+                    name="titleVi"
+                    label={<Text strong>Tên bài học (Tiếng Việt) <span style={{color:'red'}}>*</span></Text>}
+                    rules={[{ required: true, message: 'Vui lòng nhập tên tiếng Việt' }]}
+                >
+                    <Input size="large" placeholder="Ví dụ: Bài 1: Số nguyên tố" />
+                </Form.Item>
+            </Col>
+            
+            <Col span={10}>
+                <Form.Item
+                    name="titleEn"
+                    label={<Text strong>Tên bài học (English)</Text>}
+                >
+                    <Input size="large" placeholder="Example: Lesson 1: Prime Numbers" />
+                </Form.Item>
+            </Col>
 
-            <Form.Item
-                name="orderNo"
-                label={<Text strong>Thứ tự <span style={{color:'red'}}>*</span></Text>}
-                style={{ width: 120 }}
-                rules={[{ required: true }]}
-            >
-                <InputNumber size="large" min={1} style={{ width: '100%' }} />
-            </Form.Item>
-        </div>
+            <Col span={4}>
+                <Form.Item
+                    name="orderNo"
+                    label={<Text strong>Thứ tự <span style={{color:'red'}}>*</span></Text>}
+                    rules={[{ required: true }]}
+                >
+                    <InputNumber size="large" min={1} style={{ width: '100%' }} />
+                </Form.Item>
+            </Col>
+        </Row>
 
         <Form.Item name="videoUrl" label={<Text strong>Link Video (Youtube)</Text>}>
             <Input size="large" placeholder="https://youtube.com/..." prefix={<PlayCircleOutlined style={{color: '#bfbfbf'}}/>} />
@@ -121,7 +141,7 @@ const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrde
         
         <Form.List name="contents">
           {(fields, { add, remove }) => (
-            <div style={{ maxHeight: '50vh', overflowY: 'auto', paddingRight: 8 }}>
+            <div style={{ maxHeight: '55vh', overflowY: 'auto', paddingRight: 8 }}>
               
               <Collapse 
                 activeKey={activeKey} 
@@ -153,77 +173,126 @@ const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrde
                       </Button>
                     }
                   >
-                    <Space style={{ display: 'flex', marginBottom: 12 }} align="baseline">
-                      <Form.Item
+                    <Form.Item
                         {...restField}
                         name={[name, 'type']}
                         label="Loại khối"
                         rules={[{ required: true }]}
-                        style={{ width: 200, margin: 0 }}
-                      >
+                        style={{ width: 250, marginBottom: 16 }}
+                    >
                         <Select onChange={() => {
+                            // Khi đổi loại khối (TEXT <-> IMAGE), reset lại cả 2 cột giá trị
                             const contents = form.getFieldValue('contents');
-                            contents[name].value = '';
+                            contents[name].valueVi = '';
+                            contents[name].valueEn = '';
                             form.setFieldsValue({ contents });
                         }}>
                           <Select.Option value="TEXT">📝 Văn bản & Toán</Select.Option>
                           <Select.Option value="IMAGE">🖼️ Hình ảnh</Select.Option>
                         </Select>
-                      </Form.Item>
-                    </Space>
+                    </Form.Item>
 
                     <Form.Item
                       noStyle
                       shouldUpdate={(prev, curr) => 
                           prev.contents?.[name]?.type !== curr.contents?.[name]?.type ||
-                          prev.contents?.[name]?.value !== curr.contents?.[name]?.value
+                          prev.contents?.[name]?.valueVi !== curr.contents?.[name]?.valueVi ||
+                          prev.contents?.[name]?.valueEn !== curr.contents?.[name]?.valueEn
                       }
                     >
                       {({ getFieldValue }) => {
                           const type = getFieldValue(['contents', name, 'type']);
-                          const value = getFieldValue(['contents', name, 'value']);
+                          const valueVi = getFieldValue(['contents', name, 'valueVi']);
+                          const valueEn = getFieldValue(['contents', name, 'valueEn']);
 
+                          // NẾU LÀ HÌNH ẢNH (IMAGE)
                           if (type === 'IMAGE') {
                               return (
-                                  <Form.Item
-                                      {...restField}
-                                      name={[name, 'value']}
-                                      rules={[{ required: true, message: 'Vui lòng upload ảnh' }]}
-                                      style={{ margin: 0 }}
-                                  >
-                                      <div style={{ border: '1px dashed #d9d9d9', padding: 20, textAlign: 'center', borderRadius: 6, background: '#fafafa' }}>
-                                          {value ? (
-                                              <div>
-                                                  <Image src={getFullImageUrl(value)} height={150} style={{ objectFit: 'contain', borderRadius: 4 }} />
-                                                  <div style={{ marginTop: 12 }}>
-                                                      <Button danger onClick={() => {
-                                                          const contents = form.getFieldValue('contents');
-                                                          contents[name].value = '';
-                                                          form.setFieldsValue({ contents });
-                                                      }}>Gỡ ảnh</Button>
-                                                  </div>
-                                              </div>
-                                          ) : (
-                                              <Upload customRequest={(options) => customRequest(options, add, name)} showUploadList={false} accept="image/*">
-                                                  <Button icon={<UploadOutlined />}>Tải ảnh lên (Max 2MB)</Button>
-                                              </Upload>
-                                          )}
-                                      </div>
-                                  </Form.Item>
+                                <Row gutter={16}>
+                                    {/* CỘT TIẾNG VIỆT */}
+                                    <Col span={12}>
+                                        <Text strong style={{ display: 'block', marginBottom: 8 }}>Ảnh (Tiếng Việt)</Text>
+                                        <Form.Item
+                                            {...restField}
+                                            name={[name, 'valueVi']}
+                                            rules={[{ required: true, message: 'Vui lòng upload ảnh tiếng Việt' }]}
+                                        >
+                                            <div style={{ border: '1px dashed #d9d9d9', padding: 20, textAlign: 'center', borderRadius: 6, background: '#fafafa' }}>
+                                                {valueVi ? (
+                                                    <div>
+                                                        <Image src={getFullImageUrl(valueVi)} height={150} style={{ objectFit: 'contain', borderRadius: 4 }} />
+                                                        <div style={{ marginTop: 12 }}>
+                                                            <Button danger onClick={() => {
+                                                                const contents = form.getFieldValue('contents');
+                                                                contents[name].valueVi = '';
+                                                                form.setFieldsValue({ contents });
+                                                            }}>Gỡ ảnh VN</Button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <Upload customRequest={(options) => customRequest(options, add, name, 'valueVi')} showUploadList={false} accept="image/*">
+                                                        <Button icon={<UploadOutlined />}>Tải ảnh lên (VN)</Button>
+                                                    </Upload>
+                                                )}
+                                            </div>
+                                        </Form.Item>
+                                    </Col>
+
+                                    {/* CỘT TIẾNG ANH */}
+                                    <Col span={12}>
+                                        <Text strong style={{ display: 'block', marginBottom: 8 }}>Ảnh (English) - Tùy chọn</Text>
+                                        <Form.Item
+                                            {...restField}
+                                            name={[name, 'valueEn']}
+                                        >
+                                            <div style={{ border: '1px dashed #d9d9d9', padding: 20, textAlign: 'center', borderRadius: 6, background: '#fafafa' }}>
+                                                {valueEn ? (
+                                                    <div>
+                                                        <Image src={getFullImageUrl(valueEn)} height={150} style={{ objectFit: 'contain', borderRadius: 4 }} />
+                                                        <div style={{ marginTop: 12 }}>
+                                                            <Button danger onClick={() => {
+                                                                const contents = form.getFieldValue('contents');
+                                                                contents[name].valueEn = '';
+                                                                form.setFieldsValue({ contents });
+                                                            }}>Gỡ ảnh EN</Button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <Upload customRequest={(options) => customRequest(options, add, name, 'valueEn')} showUploadList={false} accept="image/*">
+                                                        <Button icon={<UploadOutlined />}>Tải ảnh lên (EN)</Button>
+                                                    </Upload>
+                                                )}
+                                            </div>
+                                        </Form.Item>
+                                    </Col>
+                                </Row>
                               );
                           }
 
+                          // NẾU LÀ VĂN BẢN (TEXT)
                           return (
-                              <Form.Item
-                                  {...restField}
-                                  name={[name, 'value']}
-                                  rules={[{ required: true, message: 'Nhập nội dung' }]}
-                                  style={{ margin: 0 }}
-                              >
-                                  <MathEditor 
-                                      placeholder="Gõ nội dung bài học. Bấm 'Chèn công thức Toán' để thêm LaTeX..." 
-                                  />
-                              </Form.Item>
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Text strong style={{ display: 'block', marginBottom: 8 }}>Nội dung (Tiếng Việt)</Text>
+                                    <Form.Item
+                                        {...restField}
+                                        name={[name, 'valueVi']}
+                                        rules={[{ required: true, message: 'Nhập nội dung Tiếng Việt' }]}
+                                    >
+                                        <MathEditor placeholder="Gõ nội dung tiếng Việt..." />
+                                    </Form.Item>
+                                </Col>
+
+                                <Col span={12}>
+                                    <Text strong style={{ display: 'block', marginBottom: 8 }}>Nội dung (English) - Tùy chọn</Text>
+                                    <Form.Item
+                                        {...restField}
+                                        name={[name, 'valueEn']}
+                                    >
+                                        <MathEditor placeholder="Type English content here..." />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
                           );
                       }}
                     </Form.Item>
@@ -236,7 +305,7 @@ const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrde
                     type="dashed" 
                     onClick={() => {
                         const newIndex = fields.length.toString();
-                        add({ type: 'TEXT', value: '', order: fields.length + 1 });
+                        add({ type: 'TEXT', valueVi: '', valueEn: '', order: fields.length + 1 });
                         setActiveKey([...activeKey, newIndex]); 
                     }} 
                     block 

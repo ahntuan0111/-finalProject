@@ -1,5 +1,6 @@
 package com.example.finalproject.ui.viewmodel
 
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,6 +8,7 @@ import com.example.finalproject.data.remote.model.UserProfileResponse
 import com.example.finalproject.data.remote.model.UserProfileUpdateRequest
 import com.example.finalproject.domain.repository.UserRepository
 import com.example.finalproject.utils.DataStoreManager
+import androidx.core.os.LocaleListCompat
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -36,9 +38,16 @@ class UserViewModel @Inject constructor(
             initialValue = 6
         )
 
+
     init {
         fetchProfile()
     }
+
+    val currentLanguage = dataStoreManager.getLanguageFlow().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = "vi"
+    )
 
     fun fetchProfile() {
         viewModelScope.launch {
@@ -72,6 +81,17 @@ class UserViewModel @Inject constructor(
     fun saveGrade(newGrade: Int) {
         viewModelScope.launch {
             dataStoreManager.saveGrade(newGrade)
+        }
+    }
+
+    fun changeLanguage(langCode: String) {
+        viewModelScope.launch {
+            // 1. Lưu cấu hình vào DataStore
+            dataStoreManager.saveLanguage(langCode)
+
+            // 2. Ép Android đổi ngôn ngữ UI (Cần Android 13+ hoặc thư viện AppCompat)
+            val appLocale = LocaleListCompat.forLanguageTags(langCode)
+            AppCompatDelegate.setApplicationLocales(appLocale)
         }
     }
 }

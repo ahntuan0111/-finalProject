@@ -6,7 +6,8 @@ import lombok.Data;
 public class ChoiceRequest {
     private Long id;
     private String contentType; // THÊM
-    private String contentValue; // ĐỔI TÊN
+    private String contentValueVi;
+    private String contentValueEn; // ĐỔI TÊN
     private Boolean correct;
 
     public Long getId() {
@@ -33,11 +34,19 @@ public class ChoiceRequest {
         this.correct = correct;
     }
 
-    public String getContentValue() {
-        return contentValue;
+    public String getContentValueVi() {
+        return contentValueVi;
     }
 
-    public void setContentValue(String contentValue) {
-        this.contentValue = contentValue;
+    public void setContentValueVi(String contentValueVi) {
+        this.contentValueVi = contentValueVi;
+    }
+
+    public String getContentValueEn() {
+        return contentValueEn;
+    }
+
+    public void setContentValueEn(String contentValueEn) {
+        this.contentValueEn = contentValueEn;
     }
 }

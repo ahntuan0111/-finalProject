@@ -21,8 +21,11 @@ public class ExerciseSolution {
     @Column(name = "solution_type", nullable = false)
     private ContentType contentType;
 
-    @Column(name = "solution_value", nullable = false, columnDefinition = "TEXT")
-    private String solutionValue; // HTML/LaTeX hoặc URL Ảnh
+    @Column(name = "solution_value_vi", nullable = false, columnDefinition = "TEXT")
+    private String solutionValueVi;
+
+    @Column(name = "solution_value_en", columnDefinition = "TEXT")
+    private String solutionValueEn;// HTML/LaTeX hoặc URL Ảnh
 
     @Column(name = "solution_order", nullable = false)
     private Integer solutionOrder;
@@ -30,12 +33,13 @@ public class ExerciseSolution {
     public ExerciseSolution() {
     }
 
-    public ExerciseSolution(Long id, Exercise exercise, ContentType contentType, String solutionValue, Integer solutionOrder) {
+    public ExerciseSolution(Long id, Integer solutionOrder, String solutionValueEn, String solutionValueVi, ContentType contentType, Exercise exercise) {
         this.id = id;
-        this.exercise = exercise;
-        this.contentType = contentType;
-        this.solutionValue = solutionValue;
         this.solutionOrder = solutionOrder;
+        this.solutionValueEn = solutionValueEn;
+        this.solutionValueVi = solutionValueVi;
+        this.contentType = contentType;
+        this.exercise = exercise;
     }
 
     public Long getId() {
@@ -62,12 +66,20 @@ public class ExerciseSolution {
         this.contentType = contentType;
     }
 
-    public String getSolutionValue() {
-        return solutionValue;
+    public String getSolutionValueVi() {
+        return solutionValueVi;
     }
 
-    public void setSolutionValue(String solutionValue) {
-        this.solutionValue = solutionValue;
+    public void setSolutionValueVi(String solutionValueVi) {
+        this.solutionValueVi = solutionValueVi;
+    }
+
+    public String getSolutionValueEn() {
+        return solutionValueEn;
+    }
+
+    public void setSolutionValueEn(String solutionValueEn) {
+        this.solutionValueEn = solutionValueEn;
     }
 
     public Integer getSolutionOrder() {

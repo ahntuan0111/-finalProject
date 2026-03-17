@@ -1,4 +1,4 @@
-package com.example.finalproject.ui.screens.class_selection
+package com.example.finalproject.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

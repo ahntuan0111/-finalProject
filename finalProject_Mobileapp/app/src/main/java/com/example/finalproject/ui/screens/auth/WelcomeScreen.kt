@@ -1,8 +1,9 @@
 package com.example.finalproject.ui.screens.auth
 
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image // Import Image thay vì Icon
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
@@ -15,43 +16,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource // Quan trọng: Để load ảnh từ drawable
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.finalproject.R // Import R để truy cập tài nguyên
+import com.example.finalproject.R
 import com.example.finalproject.ui.components.PrimaryButton
 import com.example.finalproject.ui.theme.InactiveGray
 import com.example.finalproject.ui.theme.PrimaryBlue
 import kotlinx.coroutines.launch
 
-// 1. Sửa Data Class: Đổi từ ImageVector -> Int (Resource ID)
 data class OnboardingPage(
-    val title: String,
-    val desc: String,
-    @DrawableRes val imageRes: Int // @DrawableRes giúp gợi ý chỉ điền ID ảnh
+    @StringRes val titleRes: Int,
+    @StringRes val descRes: Int,
+    @DrawableRes val imageRes: Int
 )
 
-// 2. Cập nhật danh sách Pages với hình ảnh trong res/drawable
-// Giả sử bạn đã copy 3 ảnh tên là: ic_study, ic_chart, ic_community vào drawable
 val pages = listOf(
-    OnboardingPage(
-        "Học tập mọi lúc",
-        "Truy cập bài giảng và làm bài tập bất cứ đâu, bất cứ khi nào.",
-        R.drawable.book // Thay tên file ảnh của bạn vào đây
-    ),
-    OnboardingPage(
-        "Theo dõi tiến độ",
-        "Biểu đồ trực quan giúp bạn nắm bắt kết quả học tập từng ngày.",
-        R.drawable.trending_up // Thay tên file ảnh của bạn vào đây
-    ),
-    OnboardingPage(
-        "Trao đổi dễ dàng",
-        "Kết nối với giáo viên và bạn bè để giải đáp thắc mắc.",
-        R.drawable.school // Thay tên file ảnh của bạn vào đây
-    )
+    OnboardingPage(R.string.welcome_page1_title, R.string.welcome_page1_desc, R.drawable.book),
+    OnboardingPage(R.string.welcome_page2_title, R.string.welcome_page2_desc, R.drawable.trending_up),
+    OnboardingPage(R.string.welcome_page3_title, R.string.welcome_page3_desc, R.drawable.school)
 )
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -67,39 +54,35 @@ fun WelcomeScreen(navController: NavController) {
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Nút Bỏ qua
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             TextButton(onClick = { navController.navigate("auth_selection") }) {
-                Text("Bỏ qua", color = InactiveGray)
+                Text(stringResource(id = R.string.welcome_skip), color = InactiveGray)
             }
         }
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // Pager Content
         HorizontalPager(state = pagerState) { page ->
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-
-                // 3. Thay thế Icon bằng Image
                 Image(
-                    painter = painterResource(id = pages[page].imageRes), // Load ảnh từ ID
+                    painter = painterResource(id = pages[page].imageRes),
                     contentDescription = null,
                     modifier = Modifier
-                        .size(250.dp) // Tăng kích thước lên chút vì ảnh minh họa thường to
+                        .size(250.dp)
                         .padding(16.dp),
-                    contentScale = ContentScale.Fit // Giữ tỷ lệ ảnh không bị méo
+                    contentScale = ContentScale.Fit
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
                 Text(
-                    text = pages[page].title,
+                    text = stringResource(id = pages[page].titleRes),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = PrimaryBlue
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = pages[page].desc,
+                    text = stringResource(id = pages[page].descRes),
                     textAlign = TextAlign.Center,
                     color = InactiveGray,
                     fontSize = 16.sp
@@ -109,7 +92,6 @@ fun WelcomeScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // Indicators
         Row(
             modifier = Modifier
                 .height(50.dp)
@@ -130,9 +112,8 @@ fun WelcomeScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Button
         PrimaryButton(
-            text = if (pagerState.currentPage == 2) "Bắt đầu ngay" else "Tiếp tục",
+            text = if (pagerState.currentPage == 2) stringResource(id = R.string.welcome_btn_start) else stringResource(id = R.string.welcome_btn_next),
             onClick = {
                 if (pagerState.currentPage < 2) {
                     scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }

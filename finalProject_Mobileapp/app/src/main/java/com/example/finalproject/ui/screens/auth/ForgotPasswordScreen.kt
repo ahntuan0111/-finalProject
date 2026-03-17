@@ -7,15 +7,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.finalproject.R
 import com.example.finalproject.ui.components.CustomTextField
 import com.example.finalproject.ui.components.PrimaryButton
 import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.theme.TextGray
+import com.example.finalproject.ui.viewmodel.AuthState
+import com.example.finalproject.ui.viewmodel.AuthViewModel
 
 @Composable
 fun ForgotPasswordScreen(
@@ -28,9 +32,8 @@ fun ForgotPasswordScreen(
 
     LaunchedEffect(state) {
         if (state is AuthState.Success) {
-            Toast.makeText(context, "Đã gửi mã OTP! Kiểm tra email.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.getString(R.string.forgot_toast_otp_sent), Toast.LENGTH_LONG).show()
             viewModel.resetForgotStates()
-            // Chuyển sang màn nhập OTP, truyền theo email
             navController.navigate("reset_password/$email")
         } else if (state is AuthState.Error) {
             Toast.makeText(context, (state as AuthState.Error).message, Toast.LENGTH_SHORT).show()
@@ -44,13 +47,13 @@ fun ForgotPasswordScreen(
         Spacer(modifier = Modifier.height(60.dp))
 
         Text(
-            text = "Quên mật khẩu",
+            text = stringResource(id = R.string.forgot_title),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = PrimaryBlue
         )
         Text(
-            text = "Nhập email đã đăng ký để nhận mã OTP xác thực.",
+            text = stringResource(id = R.string.forgot_subtitle),
             color = TextGray,
             fontSize = 14.sp,
             modifier = Modifier.padding(top = 8.dp, bottom = 40.dp)
@@ -59,16 +62,16 @@ fun ForgotPasswordScreen(
         CustomTextField(
             value = email,
             onValueChange = { email = it },
-            label = "Email đăng ký"
+            label = stringResource(id = R.string.forgot_email_hint)
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
         PrimaryButton(
-            text = "Gửi mã OTP",
+            text = stringResource(id = R.string.forgot_btn_send_otp),
             onClick = {
                 if (email.isNotBlank()) viewModel.forgotPassword(email)
-                else Toast.makeText(context, "Vui lòng nhập email", Toast.LENGTH_SHORT).show()
+                else Toast.makeText(context, context.getString(R.string.forgot_toast_empty_email), Toast.LENGTH_SHORT).show()
             },
             isLoading = state is AuthState.Loading
         )
@@ -76,7 +79,7 @@ fun ForgotPasswordScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         TextButton(onClick = { navController.popBackStack() }) {
-            Text("Quay lại Đăng nhập", color = TextGray)
+            Text(stringResource(id = R.string.forgot_back_to_login), color = TextGray)
         }
     }
 }

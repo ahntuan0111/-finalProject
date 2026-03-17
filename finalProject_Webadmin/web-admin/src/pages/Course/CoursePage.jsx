@@ -23,9 +23,10 @@ const CoursePage = () => {
   const [editingLesson, setEditingLesson] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Chapter Modal State (MỚI THÊM)
+  // Chapter Modal State (SỬA: Tách thành 2 state Vi và En)
   const [isChapterModalOpen, setIsChapterModalOpen] = useState(false);
-  const [newChapterTitle, setNewChapterTitle] = useState("");
+  const [newChapterTitleVi, setNewChapterTitleVi] = useState("");
+  const [newChapterTitleEn, setNewChapterTitleEn] = useState("");
 
   // Hover state cho nút Xóa chương
   const [hoveredChapterId, setHoveredChapterId] = useState(null);
@@ -82,24 +83,25 @@ const CoursePage = () => {
   };
 
   // --- HANDLERS CHO CHAPTER ---
-  
-  // Mở modal thêm chương thay vì dùng window.prompt
   const showAddChapterModal = () => {
-    setNewChapterTitle(""); // Xóa text cũ nếu có
+    // Reset cả 2 trường khi mở form
+    setNewChapterTitleVi(""); 
+    setNewChapterTitleEn("");
     setIsChapterModalOpen(true);
   };
 
-  // Xử lý khi bấm nút "Lưu" trong Modal Chapter
   const handleChapterSubmit = async () => {
-    if (!newChapterTitle.trim()) {
-        message.warning("Vui lòng nhập tên chương!");
+    if (!newChapterTitleVi.trim()) {
+        message.warning("Vui lòng nhập tên chương (Tiếng Việt)!");
         return;
     }
     
     try {
+      // Gửi cả titleVi và titleEn lên BE
       await courseApi.createChapter({
         subjectId: selectedSubjectId,
-        title: newChapterTitle,
+        titleVi: newChapterTitleVi,
+        titleEn: newChapterTitleEn, 
         orderNo: chapters.length + 1
       });
       message.success("Tạo chương thành công");
@@ -139,7 +141,8 @@ const CoursePage = () => {
     try {
       const payload = {
         chapterId: selectedChapterId,
-        title: values.title,
+        titleVi: values.titleVi,
+        titleEn: values.titleEn,
         videoUrl: values.videoUrl,
         orderNo: values.orderNo,
         contents: values.contents
@@ -161,18 +164,8 @@ const CoursePage = () => {
     }
   };
 
-  const handleDeleteLesson = async (id) => {
-    try {
-      await courseApi.deleteLesson(id);
-      message.success("Xóa bài học thành công");
-      fetchLessons(selectedChapterId);
-    } catch (error) {
-      message.error("Lỗi xóa bài học");
-    }
-  };
-
   const filteredLessons = lessons.filter(l => 
-    l.title.toLowerCase().includes(searchText.toLowerCase())
+    (l.titleVi || "").toLowerCase().includes(searchText.toLowerCase())
   );
 
   const lessonColumns = [
@@ -184,8 +177,8 @@ const CoursePage = () => {
     },
     { 
       title: 'TÊN BÀI HỌC', 
-      dataIndex: 'title', 
-      render: (text) => <Text strong style={{ color: '#1890ff' }}>{text}</Text> 
+      dataIndex: 'titleVi',
+      render: (text) => <Text strong style={{ color: '#1890ff' }}>{text || "Chưa có tên"}</Text> 
     },
     { 
         title: 'VIDEO', 
@@ -223,7 +216,7 @@ const CoursePage = () => {
           {subjects.length > 0 && (
             <Segmented 
               size="large"
-              options={subjects.map(s => ({ label: s.name, value: s.id }))}
+              options={subjects.map(s => ({ label: s.nameVi || s.name, value: s.id }))}
               value={selectedSubjectId}
               onChange={setSelectedSubjectId}
               style={{ padding: '4px', background: '#fff', border: '1px solid #e8e8e8', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}
@@ -244,7 +237,6 @@ const CoursePage = () => {
                 <UnorderedListOutlined style={{ color: '#1890ff' }} />
                 <Text strong style={{ fontSize: '16px' }}>Danh sách Chương</Text>
               </Space>
-              {/* Đã sửa onClick gọi hàm showAddChapterModal */}
               <Button type="link" size="small" icon={<PlusOutlined />} onClick={showAddChapterModal}>Thêm Chương</Button>
             </div>
             
@@ -271,7 +263,7 @@ const CoursePage = () => {
                       <Space>
                         <Text type="secondary" style={{ fontSize: '12px', fontWeight: 'bold' }}>{String(index + 1).padStart(2, '0')}</Text>
                         <Text strong={isActive} style={{ color: isActive ? '#1890ff' : '#333', marginLeft: '8px' }}>
-                          {chapter.title}
+                          {chapter.titleVi}
                         </Text>
                       </Space>
                       
@@ -305,7 +297,7 @@ const CoursePage = () => {
                             <div>
                                 <Title level={4} style={{ margin: 0 }}>Bài học trong chương</Title>
                                 <Text type="secondary">
-                                    Chương: {chapters.find(c => c.id === selectedChapterId)?.title}
+                                    Chương: {chapters.find(c => c.id === selectedChapterId)?.titleVi}
                                 </Text>
                             </div>
                             <Space>
@@ -340,7 +332,6 @@ const CoursePage = () => {
         </Col>
       </Row>
 
-      {/* --- MODAL THÊM BÀI HỌC --- */}
       <LessonModal
         open={isLessonModalOpen}
         onClose={() => setIsLessonModalOpen(false)}
@@ -350,7 +341,6 @@ const CoursePage = () => {
         nextOrderNo={nextLessonOrder}
       />
 
-      {/* --- MODAL THÊM CHƯƠNG MỚI (THAY THẾ PROMPT) --- */}
       <Modal
         title="Thêm Chương mới"
         open={isChapterModalOpen}
@@ -358,19 +348,30 @@ const CoursePage = () => {
         onCancel={() => setIsChapterModalOpen(false)}
         okText="Lưu Chương"
         cancelText="Hủy"
-        width={400}
-        destroyOnClose // Reset lại data khi đóng
+        width={450} // Nới rộng thêm một chút cho 2 ô input
+        destroyOnHidden
       >
-        <div style={{ marginTop: 16, marginBottom: 8 }}>
-            <Text strong>Tên chương <span style={{color:'red'}}>*</span></Text>
+        <div style={{ marginTop: 16, marginBottom: 16 }}>
+            <Text strong>Tên chương (Tiếng Việt) <span style={{color:'red'}}>*</span></Text>
             <Input 
                 style={{ marginTop: 8 }}
                 size="large"
                 placeholder="Ví dụ: Chương 1: Động học chất điểm" 
-                value={newChapterTitle}
-                onChange={(e) => setNewChapterTitle(e.target.value)}
-                onPressEnter={handleChapterSubmit} // Hỗ trợ nhấn Enter để lưu
-                autoFocus // Tự động focus vào ô input khi mở Modal
+                value={newChapterTitleVi}
+                onChange={(e) => setNewChapterTitleVi(e.target.value)}
+                autoFocus 
+            />
+        </div>
+
+        <div style={{ marginBottom: 8 }}>
+            <Text strong>Tên chương (English)</Text>
+            <Input 
+                style={{ marginTop: 8 }}
+                size="large"
+                placeholder="Example: Chapter 1: Kinematics" 
+                value={newChapterTitleEn}
+                onChange={(e) => setNewChapterTitleEn(e.target.value)}
+                onPressEnter={handleChapterSubmit} // Hỗ trợ nhấn Enter ở ô thứ 2 để lưu
             />
         </div>
       </Modal>

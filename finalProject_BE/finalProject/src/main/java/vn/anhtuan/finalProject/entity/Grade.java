@@ -16,8 +16,11 @@ public class Grade {
     // Lưu ý: Trong SQL id là TINYINT, Java dùng Integer là an toàn nhất
     private Integer id;
 
-    @Column(nullable = false, length = 20)
-    private String name; // Ví dụ: "Khối 6"
+    @Column(name = "name_vi", nullable = false, length = 20)
+    private String nameVi;
+
+    @Column(name = "name_en", length = 20)
+    private String nameEn;
 
     @Column(nullable = false, length = 10, unique = true)
     private String code; // Ví dụ: "K6"
@@ -30,19 +33,27 @@ public class Grade {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getCode() {
         return code;
     }
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getNameEn() {
+        return nameEn;
+    }
+
+    public void setNameEn(String nameEn) {
+        this.nameEn = nameEn;
+    }
+
+    public String getNameVi() {
+        return nameVi;
+    }
+
+    public void setNameVi(String nameVi) {
+        this.nameVi = nameVi;
     }
 }

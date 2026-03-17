@@ -1,5 +1,6 @@
 package com.example.finalproject.ui.screens.quizes
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -14,14 +15,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.finalproject.R
 import com.example.finalproject.ui.components.MathWebView
 import com.example.finalproject.ui.viewmodel.QuizViewModel
-import kotlinx.coroutines.delay // Import thêm nếu cần
+import kotlinx.coroutines.delay
 
+@SuppressLint("DefaultLocale")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuizTakingScreen(navController: NavController, viewModel: QuizViewModel) {
@@ -29,7 +33,7 @@ fun QuizTakingScreen(navController: NavController, viewModel: QuizViewModel) {
 
     if (quiz == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Lỗi dữ liệu bài thi")
+            Text(stringResource(id = R.string.quiz_taking_error_data))
         }
         return
     }
@@ -42,38 +46,75 @@ fun QuizTakingScreen(navController: NavController, viewModel: QuizViewModel) {
     val isLastQuestion = currentIndex == totalQuestions - 1
     val isAllAnswered = viewModel.isAllAnswered()
 
-    // Lắng nghe trạng thái nộp bài từ ViewModel
     val submitSuccess by viewModel.submitSuccess
     val isSubmitting by viewModel.isSubmitting
 
-    // =========================================================================
-    // XỬ LÝ ĐIỀU HƯỚNG SAU KHI NỘP BÀI THÀNH CÔNG
-    // =========================================================================
+    val timeLeft by viewModel.timeLeft
+    val minutes = timeLeft / 60
+    val seconds = timeLeft % 60
+    val timeString = String.format("%02d:%02d", minutes, seconds)
+
+    val timerColor = if (timeLeft <= 60) Color.Red else Color.Black
+
+    var showTimeUpDialog by remember { mutableStateOf(false) }
+    LaunchedEffect(timeLeft) {
+        if (timeLeft == 0 && !isSubmitting) {
+            showTimeUpDialog = true
+        }
+    }
+
     LaunchedEffect(submitSuccess) {
         if (submitSuccess == true) {
-            // Nộp thành công -> Xóa trạng thái và chuyển trang
             viewModel.resetSubmitState()
             navController.navigate("quiz_result") {
-                // Xóa màn hình làm bài khỏi ngăn xếp (ngăn user bấm back quay lại)
                 popUpTo("quiz_taking") { inclusive = true }
             }
         } else if (submitSuccess == false) {
-            // Nếu có lỗi (có thể hiển thị Snackbar/Toast ở đây)
             viewModel.resetSubmitState()
         }
+    }
+
+    if (showTimeUpDialog) {
+        AlertDialog(
+            onDismissRequest = { },
+            title = { Text(stringResource(id = R.string.quiz_taking_time_up_title), fontWeight = FontWeight.Bold, color = Color.Red) },
+            text = { Text(stringResource(id = R.string.quiz_taking_time_up_msg)) },
+            confirmButton = {}
+        )
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(quiz.title, fontSize = 18.sp, fontWeight = FontWeight.Bold) },
+                actions = {
+                    Surface(
+                        color = if (timeLeft <= 60) Color(0xFFFFE5E5) else Color(0xFFE6F7FF),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.padding(end = 16.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Text("⏳", fontSize = 14.sp)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = timeString,
+                                color = timerColor,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF0F2F5))
             )
         },
         bottomBar = {
             Column(modifier = Modifier.background(Color.White).padding(16.dp)) {
 
-                if (isLastQuestion && !isAllAnswered) {
+                if (isLastQuestion && !isAllAnswered && timeLeft > 0) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                         horizontalArrangement = Arrangement.Center,
@@ -81,7 +122,7 @@ fun QuizTakingScreen(navController: NavController, viewModel: QuizViewModel) {
                     ) {
                         Icon(Icons.Default.Warning, contentDescription = null, tint = Color(0xFFFAAD14), modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Bạn chưa trả lời hết các câu hỏi!", color = Color(0xFFFAAD14), fontSize = 12.sp)
+                        Text(stringResource(id = R.string.quiz_taking_warning_unanswered), color = Color(0xFFFAAD14), fontSize = 12.sp)
                     }
                 }
 
@@ -91,44 +132,40 @@ fun QuizTakingScreen(navController: NavController, viewModel: QuizViewModel) {
                 ) {
                     OutlinedButton(
                         onClick = { if (!isFirstQuestion) currentIndex-- },
-                        enabled = !isFirstQuestion && !isSubmitting, // Khóa nút khi đang nộp bài
+                        enabled = !isFirstQuestion && !isSubmitting && timeLeft > 0,
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(Icons.Default.ArrowBack, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Câu trước")
+                        Text(stringResource(id = R.string.quiz_taking_btn_prev))
                     }
 
                     Spacer(modifier = Modifier.width(16.dp))
 
                     if (isLastQuestion) {
                         Button(
-                            // =========================================================
-                            // ĐÃ SỬA CHỖ NÀY: GỌI API THAY VÌ CHUYỂN TRANG NGAY LẬP TỨC
-                            // =========================================================
                             onClick = { viewModel.submitQuizResult() },
-                            enabled = isAllAnswered && !isSubmitting,
+                            enabled = isAllAnswered && !isSubmitting && timeLeft > 0,
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF52C41A))
                         ) {
                             if (isSubmitting) {
-                                // Hiển thị vòng xoay loading khi đang gọi API
                                 CircularProgressIndicator(
                                     color = Color.White,
                                     modifier = Modifier.size(20.dp),
                                     strokeWidth = 2.dp
                                 )
                             } else {
-                                Text("Nộp bài")
+                                Text(stringResource(id = R.string.quiz_taking_btn_submit))
                             }
                         }
                     } else {
                         Button(
                             onClick = { currentIndex++ },
-                            enabled = !isSubmitting, // Khóa nút khi đang nộp bài
+                            enabled = !isSubmitting && timeLeft > 0,
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("Câu tiếp")
+                            Text(stringResource(id = R.string.quiz_taking_btn_next))
                             Spacer(modifier = Modifier.width(4.dp))
                             Icon(Icons.Default.ArrowForward, contentDescription = null, modifier = Modifier.size(18.dp))
                         }
@@ -150,13 +187,13 @@ fun QuizTakingScreen(navController: NavController, viewModel: QuizViewModel) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Câu ${currentIndex + 1} / $totalQuestions",
+                    text = stringResource(id = R.string.quiz_taking_question_count, currentIndex + 1, totalQuestions),
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = "Đã trả lời: ${viewModel.userAnswers.size}/$totalQuestions",
+                    text = stringResource(id = R.string.quiz_taking_answered_count, viewModel.userAnswers.size, totalQuestions),
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
@@ -191,7 +228,7 @@ fun QuizTakingScreen(navController: NavController, viewModel: QuizViewModel) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text("Chọn đáp án:", fontWeight = FontWeight.Bold, color = Color.Gray)
+            Text(stringResource(id = R.string.quiz_taking_select_answer), fontWeight = FontWeight.Bold, color = Color.Gray)
             Spacer(modifier = Modifier.height(8.dp))
 
             currentQuestion.choices.forEach { choice ->
@@ -201,7 +238,7 @@ fun QuizTakingScreen(navController: NavController, viewModel: QuizViewModel) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 6.dp)
-                        .clickable(enabled = !isSubmitting) { // Không cho click khi đang nộp bài
+                        .clickable(enabled = !isSubmitting && timeLeft > 0) {
                             viewModel.selectAnswer(currentQuestion.id, choice.id)
                         },
                     border = androidx.compose.foundation.BorderStroke(
@@ -219,7 +256,7 @@ fun QuizTakingScreen(navController: NavController, viewModel: QuizViewModel) {
                         RadioButton(
                             selected = isSelected,
                             onClick = {
-                                if(!isSubmitting) viewModel.selectAnswer(currentQuestion.id, choice.id)
+                                if(!isSubmitting && timeLeft > 0) viewModel.selectAnswer(currentQuestion.id, choice.id)
                             },
                             colors = RadioButtonDefaults.colors(selectedColor = MaterialTheme.colorScheme.primary)
                         )

@@ -22,8 +22,11 @@ public class QuestionContent {
     @Column(name = "content_type", nullable = false)
     private ContentType contentType;
 
-    @Column(name = "content_value", columnDefinition = "TEXT", nullable = false)
-    private String contentValue;
+    @Column(name = "content_value_vi", nullable = false, columnDefinition = "TEXT")
+    private String contentValueVi;
+
+    @Column(name = "content_value_en", columnDefinition = "TEXT")
+    private String contentValueEn;
 
     // THÊM: Thứ tự hiển thị nội dung
     @Column(name = "content_order", nullable = false)
@@ -61,11 +64,19 @@ public class QuestionContent {
         this.contentOrder = contentOrder;
     }
 
-    public String getContentValue() {
-        return contentValue;
+    public String getContentValueVi() {
+        return contentValueVi;
     }
 
-    public void setContentValue(String contentValue) {
-        this.contentValue = contentValue;
+    public void setContentValueVi(String contentValueVi) {
+        this.contentValueVi = contentValueVi;
+    }
+
+    public String getContentValueEn() {
+        return contentValueEn;
+    }
+
+    public void setContentValueEn(String contentValueEn) {
+        this.contentValueEn = contentValueEn;
     }
 }

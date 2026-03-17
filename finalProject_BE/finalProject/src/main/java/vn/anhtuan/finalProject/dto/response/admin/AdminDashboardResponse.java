@@ -1,4 +1,4 @@
-package vn.anhtuan.finalProject.dto.response;
+package vn.anhtuan.finalProject.dto.response.admin;
 
 import lombok.Data;
 import java.util.List;

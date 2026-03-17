@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -26,6 +27,8 @@ import com.example.finalproject.ui.components.CustomTextField
 import com.example.finalproject.ui.components.PrimaryButton
 import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.theme.TextGray
+import com.example.finalproject.ui.viewmodel.AuthState
+import com.example.finalproject.ui.viewmodel.AuthViewModel
 
 @Composable
 fun LoginScreen(navController: NavController, viewModel: AuthViewModel = hiltViewModel()) {
@@ -35,28 +38,21 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel = hiltVie
     val state by viewModel.loginState.collectAsState()
     val context = LocalContext.current
 
-    // --- LOGIC XỬ LÝ TRẠNG THÁI ---
     LaunchedEffect(state) {
         when (state) {
             is AuthState.LoginSuccess -> {
                 val hasGrade = (state as AuthState.LoginSuccess).hasGrade
-                Toast.makeText(context, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.login_toast_success), Toast.LENGTH_SHORT).show()
 
                 if (hasGrade) {
-                    // Đã có lớp -> Vào Home
-                    navController.navigate("home") {
-                        popUpTo("welcome") { inclusive = true }
-                    }
+                    navController.navigate("home") { popUpTo("welcome") { inclusive = true } }
                 } else {
-                    // Chưa có lớp -> Vào chọn lớp
-                    navController.navigate("class_selection") {
-                        popUpTo("welcome") { inclusive = true }
-                    }
+                    navController.navigate("class_selection") { popUpTo("welcome") { inclusive = true } }
                 }
             }
             is AuthState.Error -> {
                 Toast.makeText(context, (state as AuthState.Error).message, Toast.LENGTH_SHORT).show()
-                viewModel.resetState() // Reset để tránh Toast hiện lại khi xoay màn hình
+                viewModel.resetState()
             }
             else -> {}
         }
@@ -72,14 +68,14 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel = hiltVie
         Spacer(modifier = Modifier.height(40.dp))
 
         Text(
-            text = "Login",
+            text = stringResource(id = R.string.login_title),
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
             color = PrimaryBlue,
             modifier = Modifier.align(Alignment.Start)
         )
         Text(
-            text = "Login to your account",
+            text = stringResource(id = R.string.login_subtitle),
             fontSize = 16.sp,
             color = TextGray,
             modifier = Modifier.align(Alignment.Start).padding(top = 8.dp)
@@ -90,33 +86,31 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel = hiltVie
         CustomTextField(
             value = username,
             onValueChange = { username = it },
-            label = "Username",
+            label = stringResource(id = R.string.login_username_hint),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
         )
 
         CustomTextField(
             value = password,
             onValueChange = { password = it },
-            label = "Password",
+            label = stringResource(id = R.string.login_password_hint),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done)
         )
 
         Text(
-            text = "Forgot Password?",
+            text = stringResource(id = R.string.login_forgot_password),
             color = PrimaryBlue,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .align(Alignment.End)
                 .padding(top = 8.dp, bottom = 24.dp)
-                .clickable {
-                    navController.navigate("forgot_password")
-                }
+                .clickable { navController.navigate("forgot_password") }
         )
 
         PrimaryButton(
-            text = "Login",
+            text = stringResource(id = R.string.login_title),
             onClick = { viewModel.login(username, password) },
             isLoading = state is AuthState.Loading
         )
@@ -127,25 +121,21 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel = hiltVie
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            Text(text = "Don't have an account? ", color = TextGray)
+            Text(text = stringResource(id = R.string.login_no_account), color = TextGray)
             Text(
-                text = "Sign up",
+                text = stringResource(id = R.string.login_btn_signup),
                 color = PrimaryBlue,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.clickable {
-                    navController.navigate("register")
-                }
+                modifier = Modifier.clickable { navController.navigate("register") }
             )
         }
 
         Spacer(modifier = Modifier.weight(1f))
 
         Image(
-            painter = painterResource(id = R.drawable.study_time), // Đảm bảo bạn có ảnh này
+            painter = painterResource(id = R.drawable.study_time),
             contentDescription = "Login Illustration",
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
+            modifier = Modifier.fillMaxWidth().height(200.dp)
         )
     }
 }

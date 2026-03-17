@@ -20,8 +20,11 @@ public class Question {
     private Quiz quiz;
 
     // Đã bỏ nullable = false
-    @Column(columnDefinition = "TEXT")
-    private String explanation;
+    @Column(name = "explanation_vi", columnDefinition = "TEXT")
+    private String explanationVi;
+
+    @Column(name = "explanation_en", columnDefinition = "TEXT")
+    private String explanationEn;
 
     // THÊM: Thứ tự câu hỏi
     @Column(name = "order_no", nullable = false)
@@ -75,12 +78,20 @@ public class Question {
         this.orderNo = orderNo;
     }
 
-    public String getExplanation() {
-        return explanation;
+    public String getExplanationVi() {
+        return explanationVi;
     }
 
-    public void setExplanation(String explanation) {
-        this.explanation = explanation;
+    public void setExplanationVi(String explanationVi) {
+        this.explanationVi = explanationVi;
+    }
+
+    public String getExplanationEn() {
+        return explanationEn;
+    }
+
+    public void setExplanationEn(String explanationEn) {
+        this.explanationEn = explanationEn;
     }
 
     public Quiz getQuiz() {

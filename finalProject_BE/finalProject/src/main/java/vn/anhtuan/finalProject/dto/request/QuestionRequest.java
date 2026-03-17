@@ -6,7 +6,8 @@ import java.util.List;
 @Data
 public class QuestionRequest {
     private Long id;
-    private String explanation;
+    private String explanationVi;
+    private String explanationEn;
     private Integer orderNo; // THÊM
     private List<QuestionContentRequest> contents;
     private List<ChoiceRequest> choices;
@@ -19,12 +20,20 @@ public class QuestionRequest {
         this.id = id;
     }
 
-    public String getExplanation() {
-        return explanation;
+    public String getExplanationVi() {
+        return explanationVi;
     }
 
-    public void setExplanation(String explanation) {
-        this.explanation = explanation;
+    public void setExplanationVi(String explanationVi) {
+        this.explanationVi = explanationVi;
+    }
+
+    public String getExplanationEn() {
+        return explanationEn;
+    }
+
+    public void setExplanationEn(String explanationEn) {
+        this.explanationEn = explanationEn;
     }
 
     public Integer getOrderNo() {

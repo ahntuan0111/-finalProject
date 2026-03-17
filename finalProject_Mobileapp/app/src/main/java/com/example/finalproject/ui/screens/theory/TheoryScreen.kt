@@ -18,12 +18,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.finalproject.R
 import com.example.finalproject.data.remote.model.ChapterDto
 import com.example.finalproject.data.remote.model.LessonDto
 import com.example.finalproject.di.TheoryMode
@@ -49,11 +51,14 @@ fun TheoryScreen(
     val chapters by viewModel.chapters.collectAsState()
     val expandedIds by viewModel.expandedChapterIds.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-
-    // ĐÃ SỬA: Gọi currentGrade thay vì userGrade
     val grade by userViewModel.currentGrade.collectAsState()
 
-    val screenTitlePrefix = if (mode == TheoryMode.EXERCISE) "Giải bài tập" else "Lý thuyết"
+    // Chuyển "Giải bài tập" hoặc "Lý thuyết" thành đa ngôn ngữ
+    val screenTitlePrefix = if (mode == TheoryMode.EXERCISE) {
+        stringResource(id = R.string.theory_screen_title_exercise)
+    } else {
+        stringResource(id = R.string.theory_screen_title_theory)
+    }
 
     LaunchedEffect(subjectCode) {
         viewModel.fetchChapters(subjectCode)
@@ -64,8 +69,11 @@ fun TheoryScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        // ĐÃ SỬA: Grade giờ là Int, hiển thị thẳng luôn
-                        text = "$screenTitlePrefix - $subjectName (Lớp $grade)",
+                        // Tiêu đề động đa ngôn ngữ
+                        text = stringResource(
+                            id = R.string.theory_screen_top_bar_title,
+                            screenTitlePrefix, subjectName, grade
+                        ),
                         color = Color.Black,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
@@ -75,7 +83,11 @@ fun TheoryScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = stringResource(id = R.string.common_back),
+                            tint = Color.Black
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -107,12 +119,9 @@ fun TheoryScreen(
                             isExpanded = expandedIds.contains(chapter.id),
                             onToggle = { viewModel.toggleChapter(chapter.id) },
                             onLessonClick = { lesson ->
-                                // --- SỬA Ở ĐÂY: Thêm logic điều hướng thực tế ---
                                 if (mode == TheoryMode.EXERCISE) {
-                                    // Chuyển sang màn hình Giải bài tập
                                     navController.navigate(AppRoutes.createExerciseDetailRoute(lesson.id))
                                 } else {
-                                    // Chuyển sang màn hình Lý thuyết
                                     navController.navigate(AppRoutes.createLessonDetailRoute(lesson.id))
                                 }
                             },
@@ -125,7 +134,6 @@ fun TheoryScreen(
     }
 }
 
-// ... (Giữ nguyên phần ChapterItem và LessonItem bên dưới không thay đổi)
 @Composable
 fun ChapterItem(
     chapter: ChapterDto,
@@ -174,7 +182,7 @@ fun ChapterItem(
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Text(
-                    text = chapter.title,
+                    text = chapter.title ?: "Chương (Chưa có tên)", // BỔ SUNG ?:
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black,
@@ -183,7 +191,7 @@ fun ChapterItem(
 
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowDown,
-                    contentDescription = "Expand",
+                    contentDescription = stringResource(id = R.string.theory_screen_desc_expand),
                     tint = Color.Gray,
                     modifier = Modifier.rotate(rotationState)
                 )
@@ -193,7 +201,7 @@ fun ChapterItem(
                 Column(modifier = Modifier.padding(bottom = 8.dp)) {
                     if (chapter.lessons.isNullOrEmpty()) {
                         Text(
-                            text = "Chưa có nội dung.",
+                            text = stringResource(id = R.string.theory_screen_no_content),
                             modifier = Modifier.padding(start = 72.dp, bottom = 16.dp),
                             color = Color.Gray,
                             fontSize = 14.sp
@@ -234,7 +242,7 @@ fun LessonItem(lesson: LessonDto, onClick: () -> Unit, mode: String) {
         Spacer(modifier = Modifier.width(16.dp))
 
         Text(
-            text = lesson.title,
+            text = lesson.title ?: "Bài học (Chưa có tên)", // BỔ SUNG ?:
             fontSize = 14.sp,
             color = Color.Black.copy(alpha = 0.8f),
             modifier = Modifier.weight(1f)
@@ -243,14 +251,14 @@ fun LessonItem(lesson: LessonDto, onClick: () -> Unit, mode: String) {
         if (lesson.isCompleted) {
             Icon(
                 imageVector = Icons.Default.CheckCircle,
-                contentDescription = "Completed",
+                contentDescription = stringResource(id = R.string.theory_screen_desc_completed),
                 tint = SuccessGreen,
                 modifier = Modifier.size(20.dp)
             )
         } else {
             Icon(
                 imageVector = Icons.Default.ChevronRight,
-                contentDescription = "Go",
+                contentDescription = stringResource(id = R.string.theory_screen_desc_go),
                 tint = Color.Gray,
                 modifier = Modifier.size(20.dp)
             )

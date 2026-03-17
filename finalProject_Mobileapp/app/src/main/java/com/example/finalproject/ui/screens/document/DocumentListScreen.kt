@@ -9,7 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Description // Icon document
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,14 +18,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.finalproject.R
 import com.example.finalproject.data.remote.model.DocumentDto
-import com.example.finalproject.ui.navigation.AppRoutes
 import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.viewmodel.DocumentViewModel
 import java.net.URLEncoder
@@ -47,13 +48,18 @@ fun DocumentListScreen(
         viewModel.fetchDocuments(subjectCode, grade)
     }
 
+    // Lấy trước các chuỗi để dùng trong hàm onClick (vì onClick không phải môi trường Composable trực tiếp)
+    val errorEmptyUrlStr = stringResource(id = R.string.doc_list_error_empty_url)
+    val errorEncodeStr = stringResource(id = R.string.doc_list_error_encode)
+    val fallbackTitleStr = stringResource(id = R.string.doc_list_fallback_title)
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Tài liệu ôn tập", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(id = R.string.doc_list_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(id = R.string.common_back))
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
@@ -61,14 +67,16 @@ fun DocumentListScreen(
         },
         containerColor = Color(0xFFF5F5F5)
     ) { innerPadding ->
-        Box(modifier = Modifier
-            .padding(innerPadding)
-            .fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+        ) {
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = PrimaryBlue)
             } else if (documents.isEmpty()) {
                 Text(
-                    text = "Chưa có tài liệu nào.",
+                    text = stringResource(id = R.string.doc_list_empty),
                     modifier = Modifier.align(Alignment.Center),
                     color = Color.Gray
                 )
@@ -79,29 +87,21 @@ fun DocumentListScreen(
                 ) {
                     items(documents) { doc ->
                         DocumentItemCard(doc) {
-// 1. Gán giá trị mặc định để chống NullPointerException (Safe-call)
                             val safeUrl = doc.filePath ?: ""
-                            val safeTitle = doc.title ?: "Tai_lieu"
+                            val safeTitle = doc.title ?: fallbackTitleStr
 
-                            // 2. Bắt lỗi: Nếu đường dẫn file bị rỗng/null từ Backend thì không cho chuyển trang
                             if (safeUrl.isEmpty()) {
-                                Toast.makeText(
-                                    context,
-                                    "Tài liệu này chưa có đường dẫn file!",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                return@DocumentItemCard // Dừng lại, không chạy tiếp
+                                Toast.makeText(context, errorEmptyUrlStr, Toast.LENGTH_SHORT).show()
+                                return@DocumentItemCard
                             }
 
-                            // 3. Encode an toàn
                             try {
                                 val encodedUrl = URLEncoder.encode(safeUrl, StandardCharsets.UTF_8.toString())
                                 val encodedTitle = URLEncoder.encode(safeTitle, StandardCharsets.UTF_8.toString())
 
-                                // 4. Điều hướng
                                 navController.navigate("pdf_viewer/$encodedUrl/$encodedTitle")
                             } catch (e: Exception) {
-                                Toast.makeText(context, "Lỗi đọc đường dẫn!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, errorEncodeStr, Toast.LENGTH_SHORT).show()
                             }
                         }
                     }
@@ -124,28 +124,26 @@ fun DocumentItemCard(document: DocumentDto, onClick: () -> Unit) {
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon PDF nổi bật
             Box(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFFFFEBEE)), // Màu đỏ nhạt đặc trưng PDF
+                    .background(Color(0xFFFFEBEE)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Description,
                     contentDescription = null,
-                    tint = Color(0xFFD32F2F), // Màu đỏ đậm
+                    tint = Color(0xFFD32F2F),
                     modifier = Modifier.size(28.dp)
                 )
             }
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Thông tin chi tiết
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = document.title,
+                    text = document.title ?: "",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     maxLines = 2,
@@ -161,7 +159,6 @@ fun DocumentItemCard(document: DocumentDto, onClick: () -> Unit) {
                     )
                 }
                 Spacer(modifier = Modifier.height(4.dp))
-                // Dòng thông tin phụ: Dung lượng • Ngày
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = document.getFormattedSize(),
@@ -170,14 +167,14 @@ fun DocumentItemCard(document: DocumentDto, onClick: () -> Unit) {
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = " • ${document.getFormattedDate()}",
+                        // Chuỗi động: "<size> • <date>"
+                        text = stringResource(id = R.string.doc_list_item_meta, "", document.getFormattedDate()),
                         fontSize = 12.sp,
                         color = Color.Gray
                     )
                 }
             }
 
-            // Icon Action (mũi tên hoặc download)
             Icon(
                 imageVector = Icons.Default.Download,
                 contentDescription = null,

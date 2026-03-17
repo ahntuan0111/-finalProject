@@ -11,9 +11,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.finalproject.R
 import com.example.finalproject.ui.viewmodel.QuizViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,11 +26,9 @@ fun QuizListScreen(
     subjectCode: String,
     grade: Int
 ) {
-    // Quan sát State từ ViewModel
     val quizList by viewModel.quizList.collectAsState()
     val isLoading by viewModel.isLoading
 
-    // Gọi API tự động khi màn hình mở lên
     LaunchedEffect(subjectCode, grade) {
         viewModel.fetchQuizzes(subjectCode, grade)
     }
@@ -36,10 +36,10 @@ fun QuizListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Bài Kiểm Tra - Khối $grade") },
+                title = { Text(stringResource(id = R.string.quiz_list_title, grade)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(id = R.string.common_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF0F2F5))
@@ -53,7 +53,7 @@ fun QuizListScreen(
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else if (quizList.isEmpty()) {
                 Text(
-                    text = "Chưa có bài kiểm tra nào cho môn học này.",
+                    text = stringResource(id = R.string.quiz_list_empty),
                     modifier = Modifier.align(Alignment.Center),
                     color = Color.Gray
                 )
@@ -82,14 +82,25 @@ fun QuizListScreen(
                                     fontWeight = FontWeight.Bold
                                 )
                                 Spacer(modifier = Modifier.height(6.dp))
-                                Text(text = "Chương: ${quiz.chapterTitle}", style = MaterialTheme.typography.bodyMedium)
+                                Text(
+                                    text = stringResource(id = R.string.quiz_list_chapter, quiz.chapterTitle),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text(text = "Loại: ${quiz.quizTypeName}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                                    Text(text = "${quiz.questions.size} câu hỏi", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        text = stringResource(id = R.string.quiz_list_type, quiz.quizTypeName),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color.Gray
+                                    )
+                                    Text(
+                                        text = stringResource(id = R.string.quiz_list_question_count, quiz.questions.size),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontWeight = FontWeight.Bold
+                                    )
                                 }
                             }
                         }

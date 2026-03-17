@@ -21,9 +21,8 @@ public class AdminContentServiceImpl {
     @Autowired private LessonRepository lessonRepository;
 
     // ========================================================================
-    // 1. QUẢN LÝ SUBJECT (READ ONLY)
+    // 1. QUẢN LÝ SUBJECT
     // ========================================================================
-
     public List<Subject> getAllSubjects() {
         return subjectRepository.findAll();
     }
@@ -34,42 +33,38 @@ public class AdminContentServiceImpl {
     }
 
     // ========================================================================
-    // 2. QUẢN LÝ CHAPTER (CRUD)
+    // 2. QUẢN LÝ CHAPTER
     // ========================================================================
-
-    // CREATE
     public Chapter createChapter(ChapterRequest request) {
         Subject subject = subjectRepository.findById(request.getSubjectId())
                 .orElseThrow(() -> new ResourceNotFoundException("Môn học không tồn tại"));
 
         Chapter chapter = new Chapter();
-        chapter.setTitle(request.getTitle());
+        chapter.setTitleVi(request.getTitleVi());
+        chapter.setTitleEn(request.getTitleEn());
         chapter.setOrderNo(request.getOrderNo());
         chapter.setSubject(subject);
 
         return chapterRepository.save(chapter);
     }
 
-    // READ (GET LIST)
     public List<Chapter> getChaptersBySubject(Integer subjectId) {
         return chapterRepository.findBySubjectIdOrderByOrderNoAsc(subjectId);
     }
 
-    // READ (GET DETAIL) - Thêm mới
     public Chapter getChapterById(Long id) {
         return chapterRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Chương không tồn tại với ID: " + id));
     }
 
-    // UPDATE
     public Chapter updateChapter(Long chapterId, ChapterRequest request) {
         Chapter chapter = chapterRepository.findById(chapterId)
                 .orElseThrow(() -> new ResourceNotFoundException("Chương không tồn tại với ID: " + chapterId));
 
-        chapter.setTitle(request.getTitle());
+        chapter.setTitleVi(request.getTitleVi());
+        chapter.setTitleEn(request.getTitleEn());
         chapter.setOrderNo(request.getOrderNo());
 
-        // Nếu admin muốn chuyển chương sang môn học khác
         if (!chapter.getSubject().getId().equals(request.getSubjectId())) {
             Subject newSubject = subjectRepository.findById(request.getSubjectId())
                     .orElseThrow(() -> new ResourceNotFoundException("Môn học mới không tồn tại"));
@@ -79,7 +74,6 @@ public class AdminContentServiceImpl {
         return chapterRepository.save(chapter);
     }
 
-    // DELETE
     public void deleteChapter(Long chapterId) {
         if (!chapterRepository.existsById(chapterId)) {
             throw new ResourceNotFoundException("Chương không tồn tại để xóa");
@@ -88,28 +82,27 @@ public class AdminContentServiceImpl {
     }
 
     // ========================================================================
-    // 3. QUẢN LÝ LESSON (CRUD - XỬ LÝ LATEX)
+    // 3. QUẢN LÝ LESSON
     // ========================================================================
-
-    // CREATE
     public Lesson createLesson(LessonRequest request) {
         Chapter chapter = chapterRepository.findById(request.getChapterId())
                 .orElseThrow(() -> new ResourceNotFoundException("Chương không tồn tại"));
 
         Lesson lesson = new Lesson();
-        lesson.setTitle(request.getTitle());
+        lesson.setTitleVi(request.getTitleVi());
+        lesson.setTitleEn(request.getTitleEn());
         lesson.setVideoUrl(request.getVideoUrl());
         lesson.setOrderNo(request.getOrderNo());
         lesson.setChapter(chapter);
 
-        // Xử lý nội dung (Contents)
         List<LessonContent> contentList = new ArrayList<>();
         if (request.getContents() != null) {
             for (var contentReq : request.getContents()) {
                 LessonContent content = new LessonContent();
                 content.setContentType(contentReq.getType());
                 content.setContentOrder(contentReq.getOrder());
-                content.setContentValue(contentReq.getValue());
+                content.setContentValueVi(contentReq.getValueVi());
+                content.setContentValueEn(contentReq.getValueEn());
                 content.setLesson(lesson);
                 contentList.add(content);
             }
@@ -119,24 +112,21 @@ public class AdminContentServiceImpl {
         return lessonRepository.save(lesson);
     }
 
-    // READ (GET LIST BY CHAPTER) - Thêm mới
     public List<Lesson> getLessonsByChapterId(Long chapterId) {
-        // Đảm bảo LessonRepository có hàm: findByChapterIdOrderByOrderNoAsc(Long chapterId)
         return lessonRepository.findByChapterIdOrderByOrderNoAsc(chapterId);
     }
 
-    // READ (GET DETAIL)
     public Lesson getLessonById(Long id) {
         return lessonRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Bài học không tồn tại với ID: " + id));
     }
 
-    // UPDATE
     public Lesson updateLesson(Long lessonId, LessonRequest request) {
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bài học không tồn tại với ID: " + lessonId));
 
-        lesson.setTitle(request.getTitle());
+        lesson.setTitleVi(request.getTitleVi());
+        lesson.setTitleEn(request.getTitleEn());
         lesson.setVideoUrl(request.getVideoUrl());
         lesson.setOrderNo(request.getOrderNo());
 
@@ -148,12 +138,12 @@ public class AdminContentServiceImpl {
 
         if (request.getContents() != null) {
             lesson.getContents().clear();
-
             for (var contentReq : request.getContents()) {
                 LessonContent content = new LessonContent();
                 content.setContentType(contentReq.getType());
                 content.setContentOrder(contentReq.getOrder());
-                content.setContentValue(contentReq.getValue());
+                content.setContentValueVi(contentReq.getValueVi());
+                content.setContentValueEn(contentReq.getValueEn());
                 content.setLesson(lesson);
                 lesson.getContents().add(content);
             }
@@ -162,7 +152,6 @@ public class AdminContentServiceImpl {
         return lessonRepository.save(lesson);
     }
 
-    // DELETE
     public void deleteLesson(Long lessonId) {
         if (!lessonRepository.existsById(lessonId)) {
             throw new ResourceNotFoundException("Bài học không tồn tại để xóa");

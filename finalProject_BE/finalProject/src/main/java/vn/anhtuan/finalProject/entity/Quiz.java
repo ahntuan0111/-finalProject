@@ -31,8 +31,11 @@ public class Quiz {
     private String code;
 
     // THÊM: Tiêu đề bài kiểm tra
-    @Column(nullable = false)
-    private String title;
+    @Column(name = "title_vi", nullable = false, length = 255)
+    private String titleVi;
+
+    @Column(name = "title_en", length = 255)
+    private String titleEn;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -70,12 +73,20 @@ public class Quiz {
         this.createdAt = createdAt;
     }
 
-    public String getTitle() {
-        return title;
+    public String getTitleVi() {
+        return titleVi;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setTitleVi(String titleVi) {
+        this.titleVi = titleVi;
+    }
+
+    public String getTitleEn() {
+        return titleEn;
+    }
+
+    public void setTitleEn(String titleEn) {
+        this.titleEn = titleEn;
     }
 
     public String getCode() {

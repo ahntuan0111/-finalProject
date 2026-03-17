@@ -5,7 +5,6 @@ const BASE_URL = 'http://localhost:8080/api/documents';
 // Hàm hỗ trợ tự động lấy Token từ LocalStorage
 const getAuthHeader = () => {
     // Lưu ý: Đảm bảo 'token' là tên biến bạn dùng khi lưu ở hàm Login
-    // Nếu bạn lưu là 'accessToken', hãy đổi lại cho đúng.
     const token = localStorage.getItem('access_token'); 
     if (token) {
         return { 'Authorization': `Bearer ${token}` };
@@ -17,26 +16,28 @@ export const documentApi = {
     // R: Lấy tất cả tài liệu
     getAll: async () => {
         const response = await axios.get(`${BASE_URL}/all`, {
-            headers: getAuthHeader() // Truyền Token vào header
+            headers: getAuthHeader() 
         });
         return response.data;
     },
 
     // C: Upload tài liệu mới
-    upload: async (file, title, description, subjectCode, grade, examType) => {
+    upload: async (file, titleVi, titleEn, descriptionVi, descriptionEn, subjectCode, grade, examTypeVi, examTypeEn) => {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('title', title);
-        formData.append('description', description || '');
+        formData.append('titleVi', titleVi);
+        if (titleEn) formData.append('titleEn', titleEn);
+        if (descriptionVi) formData.append('descriptionVi', descriptionVi);
+        if (descriptionEn) formData.append('descriptionEn', descriptionEn);
         formData.append('subjectCode', subjectCode);
         formData.append('grade', grade);
-        formData.append('examType', examType);
+        if (examTypeVi) formData.append('examTypeVi', examTypeVi);
+        if (examTypeEn) formData.append('examTypeEn', examTypeEn);
 
         const response = await axios.post(`${BASE_URL}/upload`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-                ...getAuthHeader() // Truyền Token kèm với Multipart header
-            }
+            // SỬA LỖI Ở ĐÂY: Xóa bỏ 'Content-Type': 'multipart/form-data'
+            // Chỉ cần truyền mỗi Auth Header, Axios sẽ tự động thêm Content-Type + Boundary
+            headers: getAuthHeader() 
         });
         return response.data;
     },
@@ -44,7 +45,7 @@ export const documentApi = {
     // U: Cập nhật thông tin
     update: async (id, documentData) => {
         const response = await axios.put(`${BASE_URL}/${id}`, documentData, {
-            headers: getAuthHeader() // Truyền Token vào header
+            headers: getAuthHeader() 
         });
         return response.data;
     },
@@ -52,7 +53,7 @@ export const documentApi = {
     // D: Xóa tài liệu
     delete: async (id) => {
         const response = await axios.delete(`${BASE_URL}/${id}`, {
-            headers: getAuthHeader() // Truyền Token vào header
+            headers: getAuthHeader() 
         });
         return response.data;
     }

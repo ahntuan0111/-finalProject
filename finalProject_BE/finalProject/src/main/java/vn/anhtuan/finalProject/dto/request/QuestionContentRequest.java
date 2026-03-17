@@ -6,7 +6,8 @@ import lombok.Data;
 public class QuestionContentRequest {
     private Long id;
     private String contentType;
-    private String contentValue;
+    private String contentValueVi;
+    private String contentValueEn;
     private Integer contentOrder; // THÊM
 
     public Long getId() {
@@ -25,12 +26,20 @@ public class QuestionContentRequest {
         this.contentType = contentType;
     }
 
-    public String getContentValue() {
-        return contentValue;
+    public String getContentValueVi() {
+        return contentValueVi;
     }
 
-    public void setContentValue(String contentValue) {
-        this.contentValue = contentValue;
+    public void setContentValueVi(String contentValueVi) {
+        this.contentValueVi = contentValueVi;
+    }
+
+    public String getContentValueEn() {
+        return contentValueEn;
+    }
+
+    public void setContentValueEn(String contentValueEn) {
+        this.contentValueEn = contentValueEn;
     }
 
     public Integer getContentOrder() {
