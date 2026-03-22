@@ -25,6 +25,12 @@ const ExerciseModal = ({ open, onClose, onSubmit, initialValues, loading, nextOr
           questionType: initialValues.questionType || 'TEXT', 
           questionValueVi: initialValues.questionValueVi || '',
           questionValueEn: initialValues.questionValueEn || '',
+          hint1Vi: initialValues.hint1Vi || '',
+          hint1En: initialValues.hint1En || '',
+          hint2Vi: initialValues.hint2Vi || '',
+          hint2En: initialValues.hint2En || '',
+          hint3Vi: initialValues.hint3Vi || '',
+          hint3En: initialValues.hint3En || '',
           orderNo: initialValues.orderNo || 1,
           solutions: safeSolutions.map(sol => ({
             type: sol.solutionType || 'TEXT', 
@@ -39,6 +45,9 @@ const ExerciseModal = ({ open, onClose, onSubmit, initialValues, loading, nextOr
         form.setFieldsValue({
             questionType: 'TEXT', 
             orderNo: nextOrderNo || 1, 
+            hint1Vi: '', hint1En: '',
+            hint2Vi: '', hint2En: '',
+            hint3Vi: '', hint3En: '',
             solutions: [{ type: 'TEXT', valueVi: '', valueEn: '', order: 1 }]
         });
       }
@@ -196,6 +205,46 @@ const ExerciseModal = ({ open, onClose, onSubmit, initialValues, loading, nextOr
                     );
                 }}
             </Form.Item>
+        </Card>
+
+        <Divider orientation="left" style={{ borderColor: '#999' }}>Gợi ý (Hints - Tùy chọn)</Divider>
+        <Card size="small" style={{ marginBottom: 20, background: '#fffbe6', borderColor: '#ffe58f' }}>
+            <Row gutter={16}>
+                <Col span={12}>
+                    <Form.Item name="hint1Vi" label={<Text strong>Gợi ý 1 (VN) - Hiện sau 2 phút</Text>}>
+                        <MathEditor placeholder="Ví dụ: Áp dụng hằng đẳng thức..." />
+                    </Form.Item>
+                </Col>
+                <Col span={12}>
+                    <Form.Item name="hint1En" label={<Text strong>Gợi ý 1 (EN) - Hiện sau 2 phút</Text>}>
+                        <MathEditor placeholder="Example: Apply the identity..." />
+                    </Form.Item>
+                </Col>
+            </Row>
+            <Row gutter={16}>
+                <Col span={12}>
+                    <Form.Item name="hint2Vi" label={<Text strong>Gợi ý 2 (VN) - Hiện sau 5 phút</Text>}>
+                        <MathEditor placeholder="Gợi ý chi tiết hơn..." />
+                    </Form.Item>
+                </Col>
+                <Col span={12}>
+                    <Form.Item name="hint2En" label={<Text strong>Gợi ý 2 (EN) - Hiện sau 5 phút</Text>}>
+                        <MathEditor placeholder="More detailed hint..." />
+                    </Form.Item>
+                </Col>
+            </Row>
+            <Row gutter={16}>
+                <Col span={12}>
+                    <Form.Item name="hint3Vi" label={<Text strong>Gợi ý 3 (VN) - Hiện sau 8 phút</Text>}>
+                        <MathEditor placeholder="Gợi ý sát với đáp án nhất..." />
+                    </Form.Item>
+                </Col>
+                <Col span={12}>
+                    <Form.Item name="hint3En" label={<Text strong>Gợi ý 3 (EN) - Hiện sau 8 phút</Text>}>
+                        <MathEditor placeholder="Hint closest to solution..." />
+                    </Form.Item>
+                </Col>
+            </Row>
         </Card>
 
         <Divider orientation="left" style={{ borderColor: '#999' }}>Lời giải chi tiết</Divider>

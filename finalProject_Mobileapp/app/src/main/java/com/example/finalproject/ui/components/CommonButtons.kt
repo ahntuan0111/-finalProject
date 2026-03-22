@@ -27,6 +27,6 @@ fun PrimaryButton(
         shape = RoundedCornerShape(12.dp),
         enabled = !isLoading
     ) {
-        Text(text = if (isLoading) "Đang xử lý..." else text, fontSize = 16.sp, color = Color.White)
+        Text(text = if (isLoading) "Đang xử lý..." else text, fontSize = 16.sp, color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary)
     }
 }

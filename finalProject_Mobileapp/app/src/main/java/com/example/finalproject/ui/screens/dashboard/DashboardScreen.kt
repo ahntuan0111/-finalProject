@@ -57,8 +57,6 @@ import java.time.format.DateTimeFormatter
 
 // --- MÀU SẮC CHỦ ĐẠO ---
 val PrimaryBlue = Color(0xFF2B58C4)
-val CardBg = Color.White
-val BgOffWhite = Color(0xFFFAFBFF)
 val OrangeFlame = Color(0xFFFF6D00)
 val OrangeLight = Color(0xFFFFF3E0)
 
@@ -77,7 +75,7 @@ fun DashboardScreen(
     var showStreakSheet by remember { mutableStateOf(false) }
 
     Scaffold(
-        containerColor = BgOffWhite,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             Row(
                 modifier = Modifier
@@ -96,13 +94,13 @@ fun DashboardScreen(
                     text = stringResource(id = R.string.dashboard_title),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1C2A3A)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Notifications,
                         contentDescription = stringResource(id = R.string.dashboard_desc_bell),
-                        tint = Color.Gray,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
@@ -181,7 +179,7 @@ fun DashboardScreen(
                         ModalBottomSheet(
                             onDismissRequest = { showStreakSheet = false },
                             sheetState = sheetState,
-                            containerColor = Color.White,
+                            containerColor = MaterialTheme.colorScheme.surface,
                             dragHandle = { BottomSheetDefaults.DragHandle() },
                             shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
                         ) {
@@ -232,7 +230,7 @@ fun StreakCalendarContent(data: DashboardResponse, onClose: () -> Unit) {
             text = stringResource(id = R.string.dashboard_streak_journey),
             fontSize = 22.sp,
             fontWeight = FontWeight.ExtraBold,
-            color = Color(0xFF1C2A3A)
+            color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -249,7 +247,7 @@ fun StreakCalendarContent(data: DashboardResponse, onClose: () -> Unit) {
                 modifier = Modifier.weight(1f),
                 title = stringResource(id = R.string.dashboard_longest_streak),
                 value = "$longest",
-                bgColor = Color(0xFFF0F5FF),
+                bgColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha=0.5f),
                 valueColor = PrimaryBlue
             )
         }
@@ -276,7 +274,7 @@ fun StreakCalendarContent(data: DashboardResponse, onClose: () -> Unit) {
                 text = stringResource(id = R.string.dashboard_month_year_format, currentViewMonth.monthValue, currentViewMonth.year),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1C2A3A)
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             IconButton(
@@ -310,7 +308,7 @@ fun StreakCalendarContent(data: DashboardResponse, onClose: () -> Unit) {
                     textAlign = TextAlign.Center,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -342,12 +340,12 @@ fun StreakCalendarContent(data: DashboardResponse, onClose: () -> Unit) {
         Spacer(modifier = Modifier.height(24.dp))
 
         Card(
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(Color.White), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surface), contentAlignment = Alignment.Center) {
                     Icon(Icons.Rounded.RocketLaunch, contentDescription = null, tint = PrimaryBlue)
                 }
                 Spacer(modifier = Modifier.width(12.dp))
@@ -355,10 +353,10 @@ fun StreakCalendarContent(data: DashboardResponse, onClose: () -> Unit) {
                 val daysLeft = if (data.topStats.currentStreak < 30) 30 - data.topStats.currentStreak else 0
                 Column {
                     Row {
-                        Text(stringResource(id = R.string.dashboard_streak_encourage_1), fontSize = 13.sp, color = Color(0xFF1C2A3A))
+                        Text(stringResource(id = R.string.dashboard_streak_encourage_1), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
                         Text(stringResource(id = R.string.dashboard_streak_encourage_days_left, daysLeft), fontSize = 13.sp, fontWeight = FontWeight.Bold, color = PrimaryBlue)
                     }
-                    Text(stringResource(id = R.string.dashboard_streak_encourage_2), fontSize = 13.sp, color = Color(0xFF1C2A3A))
+                    Text(stringResource(id = R.string.dashboard_streak_encourage_2), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
                 }
             }
         }
@@ -437,7 +435,7 @@ fun TopStatCard(modifier: Modifier, icon: androidx.compose.ui.graphics.vector.Im
     Card(
         modifier = modifier.height(140.dp).clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBg),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -449,10 +447,10 @@ fun TopStatCard(modifier: Modifier, icon: androidx.compose.ui.graphics.vector.Im
                 Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(20.dp))
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Text(title, fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+            Text(title, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
             Row(verticalAlignment = Alignment.Bottom) {
-                Text(value, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF1C2A3A))
-                Text(" $unit", fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(bottom = 4.dp))
+                Text(value, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+                Text(" $unit", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 4.dp))
             }
             Spacer(modifier = Modifier.height(8.dp))
             Box(modifier = Modifier.background(badgeColor, RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 4.dp)) {
@@ -467,12 +465,12 @@ fun ProgressTrackCard(progressTrack: List<SubjectProgressDto>) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBg),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(id = R.string.dashboard_progress_track), fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF1C2A3A))
+                Text(stringResource(id = R.string.dashboard_progress_track), fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
                 Icon(Icons.Default.Notifications, contentDescription = stringResource(id = R.string.dashboard_desc_flag), tint = Color.LightGray)
             }
             Spacer(modifier = Modifier.height(20.dp))
@@ -505,11 +503,11 @@ fun SubjectProgressRow(iconText: String, name: String, completed: Int, total: In
                     Text(iconText, color = color, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.width(12.dp))
-                Text(name, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1C2A3A))
+                Text(name, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             }
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(stringResource(id = R.string.dashboard_lesson_progress_format, completed, total), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = color)
-                Text("(${if(total > 0) (completed*100/total) else 0}%)", fontSize = 10.sp, color = Color.Gray)
+                Text("(${if(total > 0) (completed*100/total) else 0}%)", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -527,14 +525,14 @@ fun PerformanceChartCard(chartData: List<ChartPointDto>) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBg),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
-                    Text(stringResource(id = R.string.dashboard_performance_chart), fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF1C2A3A))
-                    Text(stringResource(id = R.string.dashboard_performance_desc), fontSize = 12.sp, color = Color.Gray)
+                    Text(stringResource(id = R.string.dashboard_performance_chart), fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(id = R.string.dashboard_performance_desc), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Box(modifier = Modifier.border(1.dp, Color(0xFFF0F0F0), RoundedCornerShape(50)).padding(horizontal = 12.dp, vertical = 6.dp)) {
                     Text(stringResource(id = R.string.dashboard_this_month), fontSize = 12.sp, color = Color.DarkGray)
@@ -572,7 +570,7 @@ fun PerformanceChartCard(chartData: List<ChartPointDto>) {
                 )
             } else {
                 Box(modifier = Modifier.fillMaxWidth().height(180.dp), contentAlignment = Alignment.Center) {
-                    Text(stringResource(id = R.string.dashboard_no_exam_data), color = Color.Gray)
+                    Text(stringResource(id = R.string.dashboard_no_exam_data), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
@@ -623,13 +621,13 @@ fun HeatmapCard(heatmapData: List<HeatmapPointDto>) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBg),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(id = R.string.dashboard_heatmap_title), fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF1C2A3A))
-                Text(stringResource(id = R.string.dashboard_heatmap_desc), fontSize = 12.sp, color = Color.Gray)
+                Text(stringResource(id = R.string.dashboard_heatmap_title), fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+                Text(stringResource(id = R.string.dashboard_heatmap_desc), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -664,7 +662,7 @@ fun HeatmapCard(heatmapData: List<HeatmapPointDto>) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(id = R.string.dashboard_heatmap_less), fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.dashboard_heatmap_less), fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Box(modifier = Modifier.size(10.dp).clip(RoundedCornerShape(2.dp)).background(Color(0xFFF0F0F0)))
                     Box(modifier = Modifier.size(10.dp).clip(RoundedCornerShape(2.dp)).background(PrimaryBlue.copy(alpha = 0.2f)))
@@ -672,7 +670,7 @@ fun HeatmapCard(heatmapData: List<HeatmapPointDto>) {
                     Box(modifier = Modifier.size(10.dp).clip(RoundedCornerShape(2.dp)).background(PrimaryBlue.copy(alpha = 0.8f)))
                     Box(modifier = Modifier.size(10.dp).clip(RoundedCornerShape(2.dp)).background(PrimaryBlue))
                 }
-                Text(stringResource(id = R.string.dashboard_heatmap_more), fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.dashboard_heatmap_more), fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
             }
         }
     }

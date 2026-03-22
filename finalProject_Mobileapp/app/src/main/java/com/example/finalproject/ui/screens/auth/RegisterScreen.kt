@@ -1,6 +1,7 @@
 package com.example.finalproject.ui.screens.auth
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -24,7 +25,7 @@ import com.example.finalproject.R
 import com.example.finalproject.ui.components.CustomTextField
 import com.example.finalproject.ui.components.PrimaryButton
 import com.example.finalproject.ui.theme.PrimaryBlue
-import com.example.finalproject.ui.theme.TextGray
+
 import com.example.finalproject.ui.viewmodel.AuthState
 import com.example.finalproject.ui.viewmodel.AuthViewModel
 
@@ -58,6 +59,7 @@ fun RegisterScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .padding(24.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -74,7 +76,7 @@ fun RegisterScreen(
         Text(
             text = stringResource(id = R.string.register_subtitle),
             fontSize = 16.sp,
-            color = TextGray,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.align(Alignment.Start).padding(top = 8.dp)
         )
 
@@ -132,7 +134,7 @@ fun RegisterScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            Text(text = stringResource(id = R.string.register_already_have_account), color = TextGray)
+            Text(text = stringResource(id = R.string.register_already_have_account), color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(
                 text = stringResource(id = R.string.register_btn_login),
                 color = PrimaryBlue,

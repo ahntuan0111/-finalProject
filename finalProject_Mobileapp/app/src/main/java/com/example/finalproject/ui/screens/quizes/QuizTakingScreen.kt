@@ -108,11 +108,11 @@ fun QuizTakingScreen(navController: NavController, viewModel: QuizViewModel) {
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF0F2F5))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
         bottomBar = {
-            Column(modifier = Modifier.background(Color.White).padding(16.dp)) {
+            Column(modifier = Modifier.background(MaterialTheme.colorScheme.surface).padding(16.dp)) {
 
                 if (isLastQuestion && !isAllAnswered && timeLeft > 0) {
                     Row(
@@ -173,7 +173,7 @@ fun QuizTakingScreen(navController: NavController, viewModel: QuizViewModel) {
                 }
             }
         },
-        containerColor = Color(0xFFFAFAFA)
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -195,7 +195,7 @@ fun QuizTakingScreen(navController: NavController, viewModel: QuizViewModel) {
                 Text(
                     text = stringResource(id = R.string.quiz_taking_answered_count, viewModel.userAnswers.size, totalQuestions),
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -211,7 +211,7 @@ fun QuizTakingScreen(navController: NavController, viewModel: QuizViewModel) {
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -228,7 +228,7 @@ fun QuizTakingScreen(navController: NavController, viewModel: QuizViewModel) {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(stringResource(id = R.string.quiz_taking_select_answer), fontWeight = FontWeight.Bold, color = Color.Gray)
+            Text(stringResource(id = R.string.quiz_taking_select_answer), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(modifier = Modifier.height(8.dp))
 
             currentQuestion.choices.forEach { choice ->
@@ -246,7 +246,7 @@ fun QuizTakingScreen(navController: NavController, viewModel: QuizViewModel) {
                         color = if (isSelected) MaterialTheme.colorScheme.primary else Color(0xFFE0E0E0)
                     ),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (isSelected) Color(0xFFE6F7FF) else Color.White
+                        containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
                     )
                 ) {
                     Row(

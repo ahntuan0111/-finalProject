@@ -4,9 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.anhtuan.finalProject.dto.response.ApiResponse;
+import vn.anhtuan.finalProject.dto.response.NotificationResponse;
 import vn.anhtuan.finalProject.entity.User;
 import vn.anhtuan.finalProject.service.IUserService;
 import vn.anhtuan.finalProject.service.NotificationService;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -22,8 +26,26 @@ public class NotificationController {
     @GetMapping
     public ResponseEntity<?> getMyNotifications() {
         User user = userService.getCurrentUser();
+
+        List<NotificationResponse> responses = notificationService.getUserNotifications(user)
+                .stream()
+                .map(notif -> {
+                    // Khởi tạo Object theo cách truyền thống và dùng Setter
+                    NotificationResponse response = new NotificationResponse();
+                    response.setId(notif.getId());
+                    response.setTitle(notif.getTitle());
+                    response.setMessage(notif.getMessage());
+                    response.setType(notif.getType());
+                    response.setRead(notif.isRead()); // Lưu ý: Lombok tự sinh hàm setRead() cho biến boolean isRead
+                    response.setActionUrl(notif.getActionUrl());
+                    response.setCreatedAt(notif.getCreatedAt());
+
+                    return response;
+                })
+                .collect(Collectors.toList());
+
         return ResponseEntity.ok(ApiResponse.success(
-                notificationService.getUserNotifications(user),
+                responses,
                 "Thành công"
         ));
     }

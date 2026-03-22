@@ -11,6 +11,14 @@ public class ExerciseAdminResponse {
     private String questionType;
     private String questionValueVi; // Trả về nguyên bản Vi
     private String questionValueEn; // Trả về nguyên bản En
+    
+    private String hint1Vi;
+    private String hint1En;
+    private String hint2Vi;
+    private String hint2En;
+    private String hint3Vi;
+    private String hint3En;
+
     private Integer orderNo;
     private List<ExerciseSolutionAdminResponse> solutions;
 
@@ -20,6 +28,14 @@ public class ExerciseAdminResponse {
         res.setQuestionType(exercise.getQuestionType().name());
         res.setQuestionValueVi(exercise.getQuestionValueVi());
         res.setQuestionValueEn(exercise.getQuestionValueEn());
+        
+        res.setHint1Vi(exercise.getHint1Vi());
+        res.setHint1En(exercise.getHint1En());
+        res.setHint2Vi(exercise.getHint2Vi());
+        res.setHint2En(exercise.getHint2En());
+        res.setHint3Vi(exercise.getHint3Vi());
+        res.setHint3En(exercise.getHint3En());
+        
         res.setOrderNo(exercise.getOrderNo());
 
         if (exercise.getSolutions() != null) {

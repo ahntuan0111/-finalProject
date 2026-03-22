@@ -25,6 +25,7 @@ import com.example.finalproject.ui.screens.class_selection.ClassSelectionScreen
 import com.example.finalproject.ui.screens.dashboard.DashboardScreen
 import com.example.finalproject.ui.screens.document.DocumentListScreen
 import com.example.finalproject.ui.screens.document.PdfViewerScreen
+import com.example.finalproject.ui.screens.reminder.ReminderScreen
 import com.example.finalproject.ui.screens.exercise.ExerciseDetailScreen
 import com.example.finalproject.ui.screens.home.HomeScreen
 import com.example.finalproject.ui.screens.subject_detail.SubjectDetailScreen
@@ -50,6 +51,7 @@ object AppRoutes {
     const val HOME = "home"
     const val DASHBOARD = "dashboard"
     const val AI_CHAT = "ai_chat"
+    const val REMINDER = "reminder_global"
     const val USER = "user"
     const val FORGOT_PASSWORD = "forgot_password"
     const val RESET_PASSWORD = "reset_password/{email}"
@@ -135,6 +137,7 @@ fun AppNavHost(
             DashboardScreen(navController = navController)
         }
         composable(AppRoutes.AI_CHAT) { Text("Màn hình AI Chat") }
+        composable(AppRoutes.REMINDER) { ReminderScreen(navController = navController) }
         composable(AppRoutes.USER) {
             UserScreen(navController = navController)
         }

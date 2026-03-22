@@ -54,10 +54,10 @@ fun QuizResultScreen(navController: NavController, viewModel: QuizViewModel) {
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(id = R.string.quiz_result_top_title), fontWeight = FontWeight.Bold) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF0F2F5))
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
-        containerColor = Color(0xFFFAFAFA)
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
 
@@ -66,7 +66,7 @@ fun QuizResultScreen(navController: NavController, viewModel: QuizViewModel) {
                     .fillMaxWidth()
                     .padding(16.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Column(
@@ -84,7 +84,7 @@ fun QuizResultScreen(navController: NavController, viewModel: QuizViewModel) {
                     Text(stringResource(id = resultTextId), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = resultColor)
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text(stringResource(id = R.string.quiz_result_your_score), fontSize = 14.sp, color = Color.Gray)
+                    Text(stringResource(id = R.string.quiz_result_your_score), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text("$formattedScore / 10", fontSize = 48.sp, fontWeight = FontWeight.ExtraBold, color = resultColor)
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -98,14 +98,14 @@ fun QuizResultScreen(navController: NavController, viewModel: QuizViewModel) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Outlined.Checklist, contentDescription = null, tint = Color(0xFF1890FF))
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(stringResource(id = R.string.quiz_result_correct_answers), fontSize = 12.sp, color = Color.Gray)
+                            Text(stringResource(id = R.string.quiz_result_correct_answers), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text("$correctAnswers / $totalQuestions", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                         }
 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Outlined.Timer, contentDescription = null, tint = Color(0xFFFAAD14))
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(stringResource(id = R.string.quiz_result_time_taken), fontSize = 12.sp, color = Color.Gray)
+                            Text(stringResource(id = R.string.quiz_result_time_taken), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text("15:30", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                         }
                     }
@@ -150,7 +150,7 @@ fun ResultQuestionItem(question: QuestionResponse, viewModel: QuizViewModel) {
             .fillMaxWidth()
             .padding(vertical = 8.dp)
             .clickable { isExpanded = !isExpanded },
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = CardDefaults.outlinedCardBorder(isCorrect),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
@@ -167,7 +167,7 @@ fun ResultQuestionItem(question: QuestionResponse, viewModel: QuizViewModel) {
                 Icon(
                     imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                     contentDescription = null,
-                    tint = Color.Gray
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -187,7 +187,7 @@ fun ResultQuestionItem(question: QuestionResponse, viewModel: QuizViewModel) {
 
                     val userChoice = question.choices.find { it.id == selectedChoiceId }
                     if (userChoice != null) {
-                        Text(stringResource(id = R.string.quiz_result_you_selected), fontSize = 12.sp, color = Color.Gray)
+                        Text(stringResource(id = R.string.quiz_result_you_selected), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -209,7 +209,7 @@ fun ResultQuestionItem(question: QuestionResponse, viewModel: QuizViewModel) {
 
                     if (!isCorrect && correctChoice != null) {
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text(stringResource(id = R.string.quiz_result_correct_is), fontSize = 12.sp, color = Color.Gray)
+                        Text(stringResource(id = R.string.quiz_result_correct_is), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()

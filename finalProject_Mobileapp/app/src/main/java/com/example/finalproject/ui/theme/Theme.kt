@@ -31,17 +31,15 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun FinalProjectTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Đã xóa tham số dynamicColor để tránh lỗi
     content: @Composable () -> Unit
 ) {
-    // Luôn dùng màu tĩnh (Static colors)
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
+            window.statusBarColor = colorScheme.background.toArgb() // Dùng background màu thay vì primary
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }

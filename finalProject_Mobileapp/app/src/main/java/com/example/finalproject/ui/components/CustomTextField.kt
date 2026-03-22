@@ -14,7 +14,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.finalproject.ui.theme.PrimaryBlue
-import com.example.finalproject.ui.theme.TextGray
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,7 +32,7 @@ fun CustomTextField(
         Text(
             text = label,
             fontSize = 14.sp,
-            color = TextGray,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.Medium,
             modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
         )
@@ -45,9 +45,9 @@ fun CustomTextField(
             shape = RoundedCornerShape(12.dp), // Bo góc 12dp
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = PrimaryBlue,
-                unfocusedBorderColor = Color(0xFFE2E8F0), // Màu xám nhạt
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant, // Màu xám nhạt
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface
             ),
             singleLine = singleLine,
             keyboardOptions = keyboardOptions,

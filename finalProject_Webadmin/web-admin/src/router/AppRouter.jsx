@@ -8,6 +8,7 @@ import CoursePage from '../pages/Course/CoursePage';
 import PrivateRoute from './PrivateRoute';
 
 import ExercisePage from '../pages/Exercise/ExercisePage'; 
+import SubmissionPage from '../pages/Submission/SubmissionPage'; 
 import DocumentManagement from '../pages/Document/DocumentManagement';
 
 // SỬA 1: Đổi './pages/...' thành '../pages/...' cho đồng nhất với cấu trúc
@@ -24,6 +25,7 @@ const AppRouter = () => {
         <Route path="users" element={<UserList />} />
         <Route path="courses" element={<CoursePage />} />
         <Route path="exercises" element={<ExercisePage />} />
+        <Route path="submissions" element={<SubmissionPage />} />
         <Route path="documents" element={<DocumentManagement />} />
         
         {/* SỬA 2: Đổi path "/admin/quizzes" thành "quizzes" để khớp với Sidebar */}

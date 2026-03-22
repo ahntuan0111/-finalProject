@@ -1,6 +1,7 @@
 package com.example.finalproject.ui.screens.auth
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -45,7 +46,12 @@ fun ResetPasswordScreen(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(24.dp)
+    ) {
         Spacer(modifier = Modifier.height(40.dp))
 
         Text(stringResource(id = R.string.reset_title), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = PrimaryBlue)

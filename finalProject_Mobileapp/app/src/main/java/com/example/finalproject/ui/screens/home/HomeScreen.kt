@@ -71,7 +71,7 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFAFAFA))
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(scrollState)
             .padding(horizontal = 24.dp, vertical = 16.dp)
     ) {
@@ -167,13 +167,13 @@ fun HomeHeader(
                     text = stringResource(id = R.string.home_welcome_user, userName),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color(0xFF1C2A3A)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
             Text(
                 text = stringResource(id = R.string.home_what_to_learn),
                 fontSize = 14.sp,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp)
             )
         }
@@ -198,7 +198,7 @@ fun HomeHeader(
                     Icon(
                         imageVector = Icons.Default.Notifications,
                         contentDescription = stringResource(id = R.string.home_content_desc_notification),
-                        tint = Color(0xFF1C2A3A),
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(28.dp)
                     )
                 }
@@ -215,7 +215,7 @@ fun HomeHeader(
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = stringResource(id = R.string.home_content_desc_avatar),
-                    tint = Color.Gray,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(28.dp)
                 )
             }
@@ -231,9 +231,9 @@ fun HomeSearchBar(onSearchClick: () -> Unit) {
             .height(54.dp)
             .clickable { onSearchClick() },
         shape = RoundedCornerShape(20.dp),
-        color = Color.White,
+        color = MaterialTheme.colorScheme.surface,
         shadowElevation = 0.5.dp,
-        border = BorderStroke(1.dp, Color(0xFFF0F0F0))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -242,7 +242,7 @@ fun HomeSearchBar(onSearchClick: () -> Unit) {
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = stringResource(id = R.string.home_content_desc_search),
-                tint = Color.Gray
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
@@ -274,7 +274,7 @@ fun HomeDashboard(stats: List<DashboardStat>) {
             .fillMaxWidth()
             .height(160.dp),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -304,12 +304,12 @@ fun HomeDashboard(stats: List<DashboardStat>) {
                         text = progressStat.value,
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 24.sp,
-                        color = Color(0xFF1C2A3A)
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = progressStat.label.uppercase(),
                         fontSize = 10.sp,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -328,8 +328,8 @@ fun HomeDashboard(stats: List<DashboardStat>) {
                     iconRes = completedStat.imageRes,
                     value = completedStat.value,
                     label = completedStat.label,
-                    bgColor = Color(0xFFF2FCF5),
-                    iconBg = Color.White
+                    bgColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha=0.5f),
+                    iconBg = MaterialTheme.colorScheme.surface
                 )
 
                 MiniStatCard(
@@ -337,8 +337,8 @@ fun HomeDashboard(stats: List<DashboardStat>) {
                     iconRes = streakStat.imageRes,
                     value = "${streakStat.value} $daysLabel", // Ép chuỗi động: "0 Ngày" / "0 Days"
                     label = streakLabel,
-                    bgColor = Color(0xFFFFF9F0),
-                    iconBg = Color.White
+                    bgColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha=0.5f),
+                    iconBg = MaterialTheme.colorScheme.surface
                 )
             }
         }
@@ -384,12 +384,12 @@ fun MiniStatCard(iconRes: Int, value: String, label: String, bgColor: Color, ico
                     text = value,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 15.sp,
-                    color = Color(0xFF1C2A3A)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = label,
                     fontSize = 12.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -406,7 +406,7 @@ fun HomeSubjects(subjects: List<SubjectItem>, onClick: (String) -> Unit) {
                 text = stringResource(id = R.string.home_your_subjects),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = Color(0xFF1C2A3A)
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
 
@@ -424,7 +424,7 @@ fun SubjectCard(subject: SubjectItem, onClick: () -> Unit) {
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
@@ -452,7 +452,7 @@ fun SubjectCard(subject: SubjectItem, onClick: () -> Unit) {
                     text = subject.name,
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp,
-                    color = Color(0xFF1C2A3A)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(10.dp))
 
@@ -474,7 +474,7 @@ fun SubjectCard(subject: SubjectItem, onClick: () -> Unit) {
                     else
                         stringResource(id = R.string.home_lesson_count_format, subject.finishedLessons, subject.totalLessons),
                     fontSize = 12.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -488,7 +488,7 @@ fun HomeAiAssistant(onAiClick: () -> Unit) {
             .fillMaxWidth()
             .clickable { onAiClick() },
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF4F6FB)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
@@ -497,7 +497,7 @@ fun HomeAiAssistant(onAiClick: () -> Unit) {
                     modifier = Modifier
                         .size(48.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color.White),
+                        .background(MaterialTheme.colorScheme.surface),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -519,7 +519,7 @@ fun HomeAiAssistant(onAiClick: () -> Unit) {
                     Text(
                         text = stringResource(id = R.string.home_ai_desc),
                         fontSize = 13.sp,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -529,7 +529,7 @@ fun HomeAiAssistant(onAiClick: () -> Unit) {
             Surface(
                 modifier = Modifier.fillMaxWidth().height(48.dp),
                 shape = RoundedCornerShape(24.dp),
-                color = Color.White
+                color = MaterialTheme.colorScheme.surface
             ) {
                 Row(
                     modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 4.dp),

@@ -55,7 +55,7 @@ fun TheoryDetailScreen(
                 title = {
                     Text(
                         text = stringResource(id = R.string.theory_detail_title),
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
                     )
@@ -65,16 +65,16 @@ fun TheoryDetailScreen(
                         Icon(
                             Icons.Default.ArrowBack,
                             contentDescription = stringResource(id = R.string.common_back),
-                            tint = Color.Black
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         },
-        containerColor = Color.White
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -129,7 +129,7 @@ fun TheoryDetailScreen(
                                 }
 
                                 Spacer(modifier = Modifier.height(16.dp))
-                                HorizontalDivider(thickness = 1.dp, color = Color.LightGray)
+                                HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
                         }
@@ -146,10 +146,10 @@ fun TheoryDetailScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .height(200.dp)
-                                            .background(Color.LightGray),
+                                            .background(MaterialTheme.colorScheme.surfaceVariant),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(stringResource(id = R.string.theory_detail_image_placeholder), color = Color.DarkGray)
+                                        Text(stringResource(id = R.string.theory_detail_image_placeholder), color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     }
                                 }
                             }
@@ -196,37 +196,80 @@ fun TheoryDetailScreen(
     }
 }
 
-// --- COMPONENT CHƠI VIDEO NATIVE (CỰC KỲ TỐI ƯU) ---
+// --- COMPONENT CHƠI VIDEO NATIVE (FIX LỖI 152 & UPDATE V13.0.0) ---
 @Composable
 fun NativeYouTubePlayer(videoId: String) {
     val lifecycleOwner = LocalLifecycleOwner.current
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     var youtubePlayerRef by remember { mutableStateOf<YouTubePlayer?>(null) }
+    var hasError by remember { mutableStateOf(false) }
 
-    AndroidView(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(16f / 9f)
-            .clip(RoundedCornerShape(8.dp))
-            .background(Color.Black),
-        factory = { context ->
-            YouTubePlayerView(context).apply {
-                lifecycleOwner.lifecycle.addObserver(this)
-
-                addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
-                    override fun onReady(youTubePlayer: YouTubePlayer) {
-                        youtubePlayerRef = youTubePlayer
-                        youTubePlayer.cueVideo(videoId, 0f)
-                    }
-                })
+    if (hasError) {
+        // Fallback: Hiển thị nút mở trên YouTube nếu video bị lỗi
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(16f / 9f)
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color(0xFF1A1A1A)),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("Không thể phát video trong ứng dụng", color = Color.White, fontSize = 14.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        val intent = android.content.Intent(
+                            android.content.Intent.ACTION_VIEW,
+                            Uri.parse("https://www.youtube.com/watch?v=$videoId")
+                        )
+                        context.startActivity(intent)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF0000))
+                ) {
+                    Text("▶ Mở trên YouTube", color = Color.White)
+                }
             }
-        },
-        update = { _ ->
-            youtubePlayerRef?.cueVideo(videoId, 0f)
         }
-    )
-}
+    } else {
+        AndroidView(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(16f / 9f)
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color.Black),
+            factory = { ctx -> // ctx (Context) được cung cấp ở đây
+                YouTubePlayerView(ctx).apply {
+                    enableAutomaticInitialization = false
+                    lifecycleOwner.lifecycle.addObserver(this)
 
+                    // ĐÃ FIX: Truyền ctx vào Builder() theo yêu cầu của thư viện v13.0.0
+                    val iFrameOptions = com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions.Builder(ctx)
+                        .controls(1)
+                        .rel(0)
+                        .build()
+
+                    val listener = object : AbstractYouTubePlayerListener() {
+                        override fun onReady(youTubePlayer: YouTubePlayer) {
+                            youtubePlayerRef = youTubePlayer
+                            youTubePlayer.cueVideo(videoId, 0f)
+                        }
+
+                        override fun onError(youTubePlayer: YouTubePlayer, error: com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerError) {
+                            hasError = true
+                        }
+                    }
+
+                    initialize(listener, iFrameOptions)
+                }
+            },
+            update = { _ ->
+                youtubePlayerRef?.cueVideo(videoId, 0f)
+            }
+        )
+    }
+}
 /**
  * Hàm tách ID Youtube
  */
@@ -256,6 +299,8 @@ fun extractYoutubeVideoId(url: String): String {
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun LatexWebView(content: String) {
+    val textColorHex = if (androidx.compose.foundation.isSystemInDarkTheme()) "#FAFAFA" else "#333333"
+
     val htmlContent = """
         <!DOCTYPE html>
         <html>
@@ -287,7 +332,7 @@ fun LatexWebView(content: String) {
                 body { 
                     font-family: 'Roboto', sans-serif; 
                     font-size: 16px; 
-                    color: #333; 
+                    color: ${'$'}textColorHex; 
                     line-height: 1.6;
                     
                     overflow-wrap: break-word;

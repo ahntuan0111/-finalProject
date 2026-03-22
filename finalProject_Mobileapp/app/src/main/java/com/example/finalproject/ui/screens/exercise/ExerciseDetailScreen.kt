@@ -1,10 +1,15 @@
 package com.example.finalproject.ui.screens.exercise
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.util.Base64
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -13,9 +18,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -38,6 +47,8 @@ import com.example.finalproject.data.remote.model.ExerciseDto
 import com.example.finalproject.data.remote.model.ExerciseSolutionDto
 import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.viewmodel.ExerciseDetailViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 // IP máy chủ (Thay đổi tùy môi trường)
 const val BASE_IMAGE_URL = "http://10.0.2.2:8080"
@@ -58,11 +69,57 @@ fun ExerciseDetailScreen(
     val isLoading by viewModel.isLoading.collectAsState()
 
     val isCompletedState by viewModel.isCompleted.collectAsState()
+    val validationResult by viewModel.validationResult.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+
+    // ĐÃ SỬA: Thêm biến isSubmitting để khắc phục lỗi Unresolved reference
     val isSubmitting by viewModel.isSubmitting.collectAsState()
+
+    var showCamera by remember { mutableStateOf(false) }
+    var capturedImageUri by remember { mutableStateOf<Uri?>(null) }
+    val context = LocalContext.current
+
+    // Camera permission request
+    var hasCameraPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        hasCameraPermission = isGranted
+        if (isGranted) showCamera = true
+    }
+
+    // 15-Minute Timer
+    var timeLeft by remember { mutableIntStateOf(15 * 60) } // 900 seconds
 
     LaunchedEffect(lessonId) {
         viewModel.fetchExercises(lessonId)
     }
+
+    LaunchedEffect(Unit) {
+        while (timeLeft > 0) {
+            delay(1000L)
+            timeLeft--
+        }
+    }
+
+    if (showCamera) {
+        CameraCaptureScreen(
+            onImageCaptured = { uri ->
+                showCamera = false
+                capturedImageUri = uri
+                // Start AI Validation and Firebase Upload workflow
+                viewModel.submitExerciseImage(context, state.firstOrNull()?.id ?: 0L, lessonId, uri)
+            },
+            onCancel = { showCamera = false }
+        )
+        return
+    }
+
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         topBar = {
@@ -81,10 +138,11 @@ fun ExerciseDetailScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
-        containerColor = Color(0xFFFAFAFA)
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -102,24 +160,101 @@ fun ExerciseDetailScreen(
                     Text(
                         text = stringResource(id = R.string.exercise_detail_empty),
                         modifier = Modifier.align(Alignment.Center),
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 } else {
                     LazyColumn(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
+                        // Timer UI
+                        item {
+                            val mins = timeLeft / 60
+                            val secs = timeLeft % 60
+                            val timeStr = String.format("%02d:%02d", mins, secs)
+
+                            Card(
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3E0)),
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(Icons.Default.ExpandLess, contentDescription = null, tint = Color(0xFFFF9800))
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        "Thời gian làm bài: $timeStr",
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFE65100),
+                                        fontSize = 16.sp
+                                    )
+                                }
+                            }
+                        }
+
+                        // Validation UI
+                        if (validationResult != null || errorMessage != null) {
+                            item {
+                                val isPassed = validationResult?.isValid == true
+                                val cardColor = if (isPassed) Color(0xFFF6FFED) else Color(0xFFFFF2F0)
+                                val textColor = if (isPassed) Color(0xFF389E0D) else Color(0xFFCF1322)
+
+                                Card(
+                                    colors = CardDefaults.cardColors(containerColor = cardColor),
+                                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Text(
+                                            if (isPassed) "AI Đánh giá: Hợp lệ!" else "AI Đánh giá: Cần làm lại",
+                                            fontWeight = FontWeight.Bold,
+                                            color = textColor,
+                                            fontSize = 16.sp
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            validationResult?.reason ?: errorMessage ?: "",
+                                            color = textColor,
+                                            fontSize = 14.sp
+                                        )
+                                        if (!isPassed && errorMessage == null) {
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Button(
+                                                onClick = { viewModel.resetValidationResult() },
+                                                colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = textColor)
+                                            ) {
+                                                Text("Đã hiểu, chụp ảnh lại")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         items(exercises) { exercise ->
-                            ExerciseItem(exercise = exercise)
+                            ExerciseItem(
+                                exercise = exercise,
+                                timeLeft = timeLeft,
+                                snackbarHostState = snackbarHostState
+                            )
                         }
 
                         item {
                             Spacer(modifier = Modifier.height(24.dp))
 
-                            val finalIsCompleted = isCompletedState
+                            val isPassedState = validationResult?.isValid == true
+                            val finalIsCompleted = isCompletedState || isPassedState
 
                             Button(
-                                onClick = { viewModel.markAsCompleted(lessonId) },
+                                onClick = {
+                                    if (hasCameraPermission) {
+                                        showCamera = true
+                                    } else {
+                                        launcher.launch(Manifest.permission.CAMERA)
+                                    }
+                                },
                                 enabled = !finalIsCompleted && !isSubmitting,
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = if (finalIsCompleted) Color(0xFF52C41A) else PrimaryBlue,
@@ -136,6 +271,8 @@ fun ExerciseDetailScreen(
                                         strokeWidth = 2.dp,
                                         modifier = Modifier.size(24.dp)
                                     )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Đang dùng AI chấm bài...", color = Color.White, fontWeight = FontWeight.Bold)
                                 } else if (finalIsCompleted) {
                                     Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.White)
                                     Spacer(modifier = Modifier.width(8.dp))
@@ -146,8 +283,10 @@ fun ExerciseDetailScreen(
                                         fontWeight = FontWeight.Bold
                                     )
                                 } else {
+                                    Icon(Icons.Default.CameraAlt, contentDescription = null, tint = Color.White)
+                                    Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        stringResource(id = R.string.exercise_detail_btn_complete),
+                                        "Chụp bài tự luận (Validation AI)",
                                         fontSize = 16.sp,
                                         color = Color.White,
                                         fontWeight = FontWeight.Bold
@@ -165,12 +304,13 @@ fun ExerciseDetailScreen(
 }
 
 @Composable
-fun ExerciseItem(exercise: ExerciseDto) {
+fun ExerciseItem(exercise: ExerciseDto, timeLeft: Int, snackbarHostState: SnackbarHostState) {
     var isExpanded by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     Card(
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -195,6 +335,53 @@ fun ExerciseItem(exercise: ExerciseDto) {
 
             // --- Nội dung câu hỏi ---
             ContentRenderer(type = exercise.questionType, value = exercise.questionValue)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- Gợi ý (Hints) - Luôn hiển thị, nhấn vào mới mở nội dung ---
+            val isHint1Unlocked = timeLeft <= 13 * 60 // đã qua 2 phút
+            val isHint2Unlocked = timeLeft <= 10 * 60 // đã qua 5 phút
+            val isHint3Unlocked = timeLeft <= 7 * 60  // đã qua 8 phút
+
+            if (!exercise.hint1.isNullOrEmpty()) {
+                HintBlock(
+                    title = "Gợi ý 1",
+                    content = exercise.hint1,
+                    isUnlocked = isHint1Unlocked,
+                    unlockMinutes = 2,
+                    onLockedClick = {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("⏰ Gợi ý 1 sẽ mở sau khi làm bài được 2 phút")
+                        }
+                    }
+                )
+            }
+            if (!exercise.hint2.isNullOrEmpty()) {
+                HintBlock(
+                    title = "Gợi ý 2",
+                    content = exercise.hint2,
+                    isUnlocked = isHint2Unlocked,
+                    unlockMinutes = 5,
+                    onLockedClick = {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("⏰ Gợi ý 2 sẽ mở sau khi làm bài được 5 phút")
+                        }
+                    }
+                )
+            }
+            if (!exercise.hint3.isNullOrEmpty()) {
+                HintBlock(
+                    title = "Gợi ý 3",
+                    content = exercise.hint3,
+                    isUnlocked = isHint3Unlocked,
+                    unlockMinutes = 8,
+                    onLockedClick = {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("⏰ Gợi ý 3 sẽ mở sau khi làm bài được 8 phút")
+                        }
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -236,7 +423,7 @@ fun ExerciseItem(exercise: ExerciseDto) {
                     Text(
                         text = stringResource(id = R.string.exercise_item_solution_guide),
                         fontWeight = FontWeight.Bold,
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 14.sp
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -245,7 +432,7 @@ fun ExerciseItem(exercise: ExerciseDto) {
                         Text(
                             text = stringResource(id = R.string.exercise_item_solution_empty),
                             fontSize = 13.sp,
-                            color = Color.Gray
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     } else {
                         exercise.solutions.sortedBy { it.solutionOrder }.forEach { solution ->
@@ -253,6 +440,75 @@ fun ExerciseItem(exercise: ExerciseDto) {
                             Spacer(modifier = Modifier.height(12.dp))
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun HintBlock(
+    title: String,
+    content: String,
+    isUnlocked: Boolean,
+    unlockMinutes: Int,
+    onLockedClick: () -> Unit
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+
+    Card(
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isUnlocked) Color(0xFFFFFBE6) else Color(0xFFF5F5F5)
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        onClick = {
+            if (isUnlocked) {
+                isExpanded = !isExpanded
+            } else {
+                onLockedClick()
+            }
+        }
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = if (isUnlocked) Icons.Default.Lightbulb else Icons.Default.Lock,
+                    contentDescription = null,
+                    tint = if (isUnlocked) Color(0xFFFAAD14) else Color(0xFFBFBFBF),
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = title,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isUnlocked) Color(0xFFD48806) else Color(0xFF8C8C8C),
+                    fontSize = 14.sp
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                if (!isUnlocked) {
+                    Text(
+                        text = "Mở khoá sau ${unlockMinutes} phút",
+                        fontSize = 11.sp,
+                        color = Color(0xFFBFBFBF)
+                    )
+                } else {
+                    Icon(
+                        imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = null,
+                        tint = Color(0xFFD48806),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+
+            // Nội dung chỉ hiện khi đã mở khoá VÀ đã nhấn expand
+            AnimatedVisibility(visible = isUnlocked && isExpanded) {
+                Column {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    LatexMathView(latex = content, modifier = Modifier)
                 }
             }
         }
@@ -301,7 +557,8 @@ fun ContentRenderer(type: String?, value: String?) {
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun LatexMathView(latex: String, modifier: Modifier = Modifier) {
-    val dollarSign = "$"
+    val textColorHex = if (androidx.compose.foundation.isSystemInDarkTheme()) "#FAFAFA" else "#000000"
+    val dollarSign = "${'$'}"
 
     val htmlContent = """
         <!DOCTYPE html>
@@ -317,7 +574,7 @@ fun LatexMathView(latex: String, modifier: Modifier = Modifier) {
             <style>
                 body { 
                     font-size: 16px; 
-                    color: #000000; 
+                    color: ${'$'}textColorHex; 
                     font-family: 'Roboto', sans-serif; 
                     margin: 0; 
                     padding: 0;

@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.finalproject.R
 import com.example.finalproject.ui.components.PrimaryButton
-import com.example.finalproject.ui.theme.InactiveGray
+
 import com.example.finalproject.ui.theme.PrimaryBlue
 import kotlinx.coroutines.launch
 
@@ -56,7 +56,7 @@ fun WelcomeScreen(navController: NavController) {
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             TextButton(onClick = { navController.navigate("auth_selection") }) {
-                Text(stringResource(id = R.string.welcome_skip), color = InactiveGray)
+                Text(stringResource(id = R.string.welcome_skip), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
 
@@ -84,7 +84,7 @@ fun WelcomeScreen(navController: NavController) {
                 Text(
                     text = stringResource(id = pages[page].descRes),
                     textAlign = TextAlign.Center,
-                    color = InactiveGray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 16.sp
                 )
             }
@@ -99,7 +99,7 @@ fun WelcomeScreen(navController: NavController) {
             horizontalArrangement = Arrangement.Center
         ) {
             repeat(pages.size) { iteration ->
-                val color = if (pagerState.currentPage == iteration) PrimaryBlue else InactiveGray
+                val color = if (pagerState.currentPage == iteration) PrimaryBlue else MaterialTheme.colorScheme.onSurfaceVariant
                 Box(
                     modifier = Modifier
                         .padding(4.dp)

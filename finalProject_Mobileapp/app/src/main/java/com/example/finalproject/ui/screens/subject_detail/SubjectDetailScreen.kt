@@ -40,16 +40,15 @@ import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.viewmodel.SubjectDetailViewModel
 
 // --- MÀU SẮC ĐỊNH NGHĨA DỰA THEO MOCKUP ---
-val BgOffWhite = Color(0xFFFAFBFF)
-val BannerStart = Color(0xFF4A85F6)
-val BannerEnd = Color(0xFF2B58C4)
-
-// Màu thẻ thực hành
-val GreenTint = Color(0xFFF2FCF5)
+// Màu thẻ thực hành (chuyển sang dynamic)
+@Composable
+fun getGreenTint() = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
 val GreenIcon = Color(0xFF4CAF50)
-val OrangeTint = Color(0xFFFFF9F0)
+@Composable
+fun getOrangeTint() = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f)
 val OrangeIcon = Color(0xFFFF9800)
-val PurpleTint = Color(0xFFFDF7FF)
+@Composable
+fun getPurpleTint() = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
 val PurpleIcon = Color(0xFF9C27B0)
 
 @Composable
@@ -72,7 +71,7 @@ fun SubjectDetailScreen(
     val nextLessonId = overview?.nextLessonId ?: -1L
 
     Scaffold(
-        containerColor = BgOffWhite,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CustomTopBar(
                 title = stringResource(id = R.string.subject_detail_top_bar_title, currentGrade, subjectName),
@@ -102,7 +101,7 @@ fun SubjectDetailScreen(
                     text = stringResource(id = R.string.subject_detail_learning_path),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color(0xFF1C2A3A)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = stringResource(id = R.string.subject_detail_view_all),
@@ -144,7 +143,7 @@ fun SubjectDetailScreen(
             ) {
                 BounceCard(
                     modifier = Modifier.weight(1f).aspectRatio(1f),
-                    bgColor = GreenTint,
+                    bgColor = getGreenTint(),
                     icon = Icons.Rounded.CheckCircle,
                     iconColor = GreenIcon,
                     title = stringResource(id = R.string.subject_detail_exercise_title),
@@ -158,7 +157,7 @@ fun SubjectDetailScreen(
 
                 BounceCard(
                     modifier = Modifier.weight(1f).aspectRatio(1f),
-                    bgColor = OrangeTint,
+                    bgColor = getOrangeTint(),
                     icon = Icons.Rounded.Bolt,
                     iconColor = OrangeIcon,
                     title = stringResource(id = R.string.subject_detail_quiz_title),
@@ -174,7 +173,7 @@ fun SubjectDetailScreen(
             // 5. THẺ BỘ ĐỀ THI
             BounceCard(
                 modifier = Modifier.fillMaxWidth().height(90.dp),
-                bgColor = PurpleTint,
+                bgColor = getPurpleTint(),
                 icon = Icons.Rounded.Assignment,
                 iconColor = PurpleIcon,
                 title = stringResource(id = R.string.subject_detail_exam_title),
@@ -206,7 +205,7 @@ fun CustomTopBar(title: String, onBack: () -> Unit) {
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.surface)
                 .border(1.dp, Color(0xFFF0F0F0), CircleShape)
                 .clickable { onBack() },
             contentAlignment = Alignment.Center
@@ -214,13 +213,13 @@ fun CustomTopBar(title: String, onBack: () -> Unit) {
             Icon(Icons.Rounded.ArrowBackIosNew, contentDescription = "Back", tint = PrimaryBlue, modifier = Modifier.size(18.dp))
         }
 
-        Text(text = title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1C2A3A))
+        Text(text = title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 
         Box(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.surface)
                 .border(1.dp, Color(0xFFF0F0F0), CircleShape),
             contentAlignment = Alignment.Center
         ) {
@@ -235,7 +234,7 @@ fun HeroBanner(subjectName: String, grade: Int) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
-            .background(Brush.linearGradient(listOf(BannerStart, BannerEnd)))
+            .background(Brush.linearGradient(listOf(Color(0xFF1E3C72), Color(0xFF2A5298))))
             .padding(24.dp)
     ) {
         Text("∑", color = Color.White.copy(alpha = 0.1f), fontSize = 60.sp, modifier = Modifier.align(Alignment.TopEnd).offset(x = (-40).dp, y = (-10).dp))
@@ -273,10 +272,10 @@ fun HeroBanner(subjectName: String, grade: Int) {
             Spacer(modifier = Modifier.height(20.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(28.dp).clip(CircleShape).background(Color.Black).border(2.dp, BannerEnd, CircleShape))
-                Box(modifier = Modifier.size(28.dp).offset(x = (-10).dp).clip(CircleShape).background(Color.White).border(2.dp, BannerEnd, CircleShape))
+                Box(modifier = Modifier.size(28.dp).clip(CircleShape).background(Color.Black).border(2.dp, Color(0xFF2A5298), CircleShape))
+                Box(modifier = Modifier.size(28.dp).offset(x = (-10).dp).clip(CircleShape).background(MaterialTheme.colorScheme.surface).border(2.dp, Color(0xFF2A5298), CircleShape))
                 Box(
-                    modifier = Modifier.size(28.dp).offset(x = (-20).dp).clip(CircleShape).background(PrimaryBlue).border(2.dp, BannerEnd, CircleShape),
+                    modifier = Modifier.size(28.dp).offset(x = (-20).dp).clip(CircleShape).background(PrimaryBlue).border(2.dp, Color(0xFF2A5298), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text("+12", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold)
@@ -292,9 +291,9 @@ fun PrimaryTheoryCard(progress: Float, onContinueClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        border = BorderStroke(1.dp, Color(0xFFF0F0F0))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(
@@ -314,8 +313,8 @@ fun PrimaryTheoryCard(progress: Float, onContinueClick: () -> Unit) {
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
-                        Text(stringResource(id = R.string.subject_detail_theory_title), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1C2A3A))
-                        Text(stringResource(id = R.string.subject_detail_theory_subtitle), fontSize = 12.sp, color = Color.Gray)
+                        Text(stringResource(id = R.string.subject_detail_theory_title), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                        Text(stringResource(id = R.string.subject_detail_theory_subtitle), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
 
@@ -336,7 +335,7 @@ fun PrimaryTheoryCard(progress: Float, onContinueClick: () -> Unit) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(stringResource(id = R.string.subject_detail_progress_label), fontSize = 12.sp, color = Color.Gray)
+                Text(stringResource(id = R.string.subject_detail_progress_label), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text("${(progress * 100).toInt()}%", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = PrimaryBlue)
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -380,15 +379,15 @@ fun BounceCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
-                    modifier = Modifier.size(48.dp).clip(CircleShape).background(Color.White),
+                    modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surface),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(icon, contentDescription = null, tint = iconColor)
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1C2A3A))
-                    Text(subtitle, fontSize = 12.sp, color = Color.Gray)
+                    Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                    Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Icon(Icons.Rounded.ChevronRight, contentDescription = null, tint = Color.LightGray)
             }
@@ -398,15 +397,15 @@ fun BounceCard(
                 verticalArrangement = Arrangement.Center
             ) {
                 Box(
-                    modifier = Modifier.size(44.dp).clip(CircleShape).background(Color.White),
+                    modifier = Modifier.size(44.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surface),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(icon, contentDescription = null, tint = iconColor)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(title, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1C2A3A))
+                Text(title, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(subtitle, fontSize = 11.sp, color = Color.Gray, lineHeight = 16.sp)
+                Text(subtitle, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 16.sp)
             }
         }
     }

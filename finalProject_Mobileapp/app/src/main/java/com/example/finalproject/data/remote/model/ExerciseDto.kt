@@ -7,6 +7,9 @@ data class ExerciseDto(
     val questionType: String, // "TEXT" hoặc "IMAGE"
     val questionValue: String,
     val orderNo: Int,
+    val hint1: String?,
+    val hint2: String?,
+    val hint3: String?,
     val solutions: List<ExerciseSolutionDto> = emptyList() // Danh sách lời giải
 )
 

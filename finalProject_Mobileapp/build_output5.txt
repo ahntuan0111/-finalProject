@@ -1,0 +1,85 @@
+﻿Starting a Gradle Daemon, 1 incompatible and 8 stopped Daemons could not be reused, use --status for details
+> Task :app:clean
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:generateDebugResValues
+> Task :app:processDebugGoogleServices
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources
+> Task :app:checkDebugAarMetadata
+> Task :app:mergeDebugResources
+> Task :app:packageDebugResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:parseDebugLocalResources
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:mergeDebugShaders
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets
+> Task :app:compressDebugAssets
+> Task :app:desugarDebugFileDependencies
+> Task :app:mergeDebugJniLibFolders
+> Task :app:processDebugManifestForPackage
+> Task :app:mergeDebugNativeLibs
+> Task :app:javaPreCompileDebug
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+
+> Task :app:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so, libdatastore_shared_counter.so, libimage_processing_util_jni.so.
+
+> Task :app:writeDebugSigningConfigVersions
+> Task :app:checkDebugDuplicateClasses
+> Task :app:mergeLibDexDebug
+> Task :app:processDebugResources
+> Task :app:mergeExtDexDebug
+> Task :app:kaptGenerateStubsDebugKotlin
+w: Kapt currently doesn't support language version 2.0+. Falling back to 1.9.
+
+> Task :app:kaptDebugKotlin
+> Task :app:compileDebugKotlin
+w: file:///E:/Final_Project/finalProject_Mobileapp/app/src/main/java/com/example/finalproject/ui/screens/dashboard/DashboardScreen.kt:89:49 '@property:Deprecated(...) val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+w: file:///E:/Final_Project/finalProject_Mobileapp/app/src/main/java/com/example/finalproject/ui/screens/document/DocumentListScreen.kt:62:44 '@property:Deprecated(...) val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+w: file:///E:/Final_Project/finalProject_Mobileapp/app/src/main/java/com/example/finalproject/ui/screens/document/PdfViewerScreen.kt:85:44 '@property:Deprecated(...) val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+w: file:///E:/Final_Project/finalProject_Mobileapp/app/src/main/java/com/example/finalproject/ui/screens/exercise/CameraCaptureScreen.kt:40:26 '@property:Deprecated(...) val LocalLifecycleOwner: ProvidableCompositionLocal<LifecycleOwner>' is deprecated. Moved to lifecycle-runtime-compose library in androidx.lifecycle.compose package.
+w: file:///E:/Final_Project/finalProject_Mobileapp/app/src/main/java/com/example/finalproject/ui/screens/exercise/CameraCaptureScreen.kt:87:32 '@property:Deprecated(...) val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+w: file:///E:/Final_Project/finalProject_Mobileapp/app/src/main/java/com/example/finalproject/ui/screens/exercise/ExerciseDetailScreen.kt:136:43 '@property:Deprecated(...) val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+w: file:///E:/Final_Project/finalProject_Mobileapp/app/src/main/java/com/example/finalproject/ui/screens/home/HomeScreen.kt:553:57 '@property:Deprecated(...) val Icons.Filled.Send: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Send.
+w: file:///E:/Final_Project/finalProject_Mobileapp/app/src/main/java/com/example/finalproject/ui/screens/quizes/QuizListScreen.kt:42:44 '@property:Deprecated(...) val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+w: file:///E:/Final_Project/finalProject_Mobileapp/app/src/main/java/com/example/finalproject/ui/screens/quizes/QuizTakingScreen.kt:138:44 '@property:Deprecated(...) val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+w: file:///E:/Final_Project/finalProject_Mobileapp/app/src/main/java/com/example/finalproject/ui/screens/quizes/QuizTakingScreen.kt:170:48 '@property:Deprecated(...) val Icons.Filled.ArrowForward: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowForward.
+w: file:///E:/Final_Project/finalProject_Mobileapp/app/src/main/java/com/example/finalproject/ui/screens/subject_detail/SubjectDetailScreen.kt:177:38 '@property:Deprecated(...) val Icons.Rounded.Assignment: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.Assignment.
+w: file:///E:/Final_Project/finalProject_Mobileapp/app/src/main/java/com/example/finalproject/ui/screens/subject_detail/SubjectDetailScreen.kt:312:44 '@property:Deprecated(...) val Icons.Rounded.MenuBook: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Rounded.MenuBook.
+w: file:///E:/Final_Project/finalProject_Mobileapp/app/src/main/java/com/example/finalproject/ui/screens/theory/TheoryDetailScreen.kt:66:43 '@property:Deprecated(...) val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+w: file:///E:/Final_Project/finalProject_Mobileapp/app/src/main/java/com/example/finalproject/ui/screens/theory/TheoryScreen.kt:88:43 '@property:Deprecated(...) val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+w: file:///E:/Final_Project/finalProject_Mobileapp/app/src/main/java/com/example/finalproject/ui/screens/theory/TheoryScreen.kt:234:67 '@property:Deprecated(...) val Icons.Filled.Assignment: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Assignment.
+w: file:///E:/Final_Project/finalProject_Mobileapp/app/src/main/java/com/example/finalproject/ui/screens/theory/TheoryScreen.kt:234:97 '@property:Deprecated(...) val Icons.Filled.MenuBook: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.MenuBook.
+w: file:///E:/Final_Project/finalProject_Mobileapp/app/src/main/java/com/example/finalproject/ui/theme/Theme.kt:42:20 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+
+> Task :app:compileDebugJavaWithJavac
+> Task :app:hiltAggregateDepsDebug
+> Task :app:hiltJavaCompileDebug
+> Task :app:processDebugJavaRes
+> Task :app:transformDebugClassesWithAsm
+> Task :app:mergeDebugJavaResource
+> Task :app:dexBuilderDebug
+> Task :app:mergeDebugGlobalSynthetics
+> Task :app:mergeProjectDexDebug
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+
+[Incubating] Problems report is available at: file:///E:/Final_Project/finalProject_Mobileapp/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 7m 38s
+43 actionable tasks: 43 executed

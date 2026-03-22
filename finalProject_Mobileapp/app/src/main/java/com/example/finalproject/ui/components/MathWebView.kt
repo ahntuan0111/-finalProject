@@ -10,6 +10,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun MathWebView(htmlContent: String, modifier: Modifier = Modifier) {
+    val textColorHex = if (androidx.compose.foundation.isSystemInDarkTheme()) "#FAFAFA" else "#333333"
+
     // Template HTML nhúng MathJax để render LaTeX
     val htmlTemplate = """
         <!DOCTYPE html>
@@ -34,7 +36,7 @@ fun MathWebView(htmlContent: String, modifier: Modifier = Modifier) {
                 body {
                     font-family: 'sans-serif';
                     font-size: 16px;
-                    color: #333333;
+                    color: ${'$'}textColorHex;
                     background-color: transparent; /* Giúp trong suốt nền */
                     margin: 0;
                     padding: 0;

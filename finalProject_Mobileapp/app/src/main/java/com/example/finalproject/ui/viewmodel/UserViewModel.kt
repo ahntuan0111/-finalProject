@@ -94,4 +94,16 @@ class UserViewModel @Inject constructor(
             AppCompatDelegate.setApplicationLocales(appLocale)
         }
     }
+
+    val isDarkTheme = dataStoreManager.getDarkThemeFlow().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = null // Trả về null để UI dùng `isSystemInDarkTheme()` làm fallback
+    )
+
+    fun toggleDarkMode(isDark: Boolean) {
+        viewModelScope.launch {
+            dataStoreManager.saveTheme(isDark)
+        }
+    }
 }

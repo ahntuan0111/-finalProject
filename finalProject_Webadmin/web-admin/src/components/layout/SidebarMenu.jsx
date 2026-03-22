@@ -32,6 +32,7 @@ const SidebarMenu = () => {
         children: [
             { key: '/courses', icon: <BookOutlined />, label: 'Quản lý Bài học' },
             { key: '/exercises', icon: <EditOutlined />, label: 'Ngân hàng Bài tập' },
+            { key: '/submissions', icon: <CheckSquareOutlined />, label: 'Lịch sử Nộp bài AI' },
             { key: '/quizzes', icon: <CheckSquareOutlined />, label: 'Quản lý Đề thi' },
             { key: '/documents', icon: <FilePdfOutlined />, label: 'Quản lý Tài liệu' },
         ]

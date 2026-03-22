@@ -1,6 +1,7 @@
 package com.example.finalproject.ui.screens.auth
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,7 +18,7 @@ import com.example.finalproject.R
 import com.example.finalproject.ui.components.CustomTextField
 import com.example.finalproject.ui.components.PrimaryButton
 import com.example.finalproject.ui.theme.PrimaryBlue
-import com.example.finalproject.ui.theme.TextGray
+
 import com.example.finalproject.ui.viewmodel.AuthState
 import com.example.finalproject.ui.viewmodel.AuthViewModel
 
@@ -41,7 +42,10 @@ fun ForgotPasswordScreen(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(60.dp))
@@ -54,7 +58,7 @@ fun ForgotPasswordScreen(
         )
         Text(
             text = stringResource(id = R.string.forgot_subtitle),
-            color = TextGray,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 14.sp,
             modifier = Modifier.padding(top = 8.dp, bottom = 40.dp)
         )
@@ -79,7 +83,7 @@ fun ForgotPasswordScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         TextButton(onClick = { navController.popBackStack() }) {
-            Text(stringResource(id = R.string.forgot_back_to_login), color = TextGray)
+            Text(stringResource(id = R.string.forgot_back_to_login), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

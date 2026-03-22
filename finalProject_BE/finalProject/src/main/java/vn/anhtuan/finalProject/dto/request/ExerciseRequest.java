@@ -11,6 +11,14 @@ public class ExerciseRequest {
     private ContentType questionType;
     private String questionValueVi; // Đề bài Tiếng Việt
     private String questionValueEn; // Đề bài Tiếng Anh
+    
+    private String hint1Vi;
+    private String hint1En;
+    private String hint2Vi;
+    private String hint2En;
+    private String hint3Vi;
+    private String hint3En;
+
     private Integer orderNo;
     private List<SolutionRequest> solutions;
 

@@ -12,6 +12,12 @@ public class ExerciseResponse {
     private Long id;
     private String questionType;
     private String questionValue; // Đã được Service chọn lọc
+    
+    // Gợi ý hỗ trợ đa ngôn ngữ
+    private String hint1;
+    private String hint2;
+    private String hint3;
+
     private Integer orderNo;
     private List<ExerciseSolutionResponse> solutions;
 

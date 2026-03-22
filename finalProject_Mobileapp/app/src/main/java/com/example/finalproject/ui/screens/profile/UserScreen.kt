@@ -29,12 +29,20 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.finalproject.ui.viewmodel.UserViewModel
 import androidx.compose.material.icons.outlined.Language
-// Định nghĩa mã màu Light Theme
-val LightBackground = Color(0xFFFAFAFA)
-val CardBackground = Color.White
 val PrimaryBlue = Color(0xFF1890FF)
-val TextPrimary = Color(0xFF333333)
-val TextSecondary = Color.Gray
+
+// Màu động tùy Theme (Phải gọi trong scope @Composable)
+@Composable
+fun getAppBackground() = MaterialTheme.colorScheme.background
+
+@Composable
+fun getCardBackground() = MaterialTheme.colorScheme.surface
+
+@Composable
+fun getTextPrimary() = MaterialTheme.colorScheme.onBackground
+
+@Composable
+fun getTextSecondary() = MaterialTheme.colorScheme.onSurfaceVariant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,23 +60,23 @@ fun UserScreen(
     val currentLanguage by viewModel.currentLanguage.collectAsState(initial = "vi")
 
     if (isLoading && profile == null) {
-        Box(modifier = Modifier.fillMaxSize().background(LightBackground), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.fillMaxSize().background(getAppBackground()), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(color = PrimaryBlue)
         }
         return
     }
 
     Scaffold(
-        containerColor = LightBackground,
+        containerColor = getAppBackground(),
         topBar = {
             TopAppBar(
-                title = { Text("Hồ sơ người dùng", fontWeight = FontWeight.Bold, color = TextPrimary) },
+                title = { Text("Hồ sơ người dùng", fontWeight = FontWeight.Bold, color = getTextPrimary()) },
                 actions = {
                     IconButton(onClick = { /* Mở Cài đặt hệ thống (Đăng xuất, Đổi mật khẩu...) */ }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Cài đặt", tint = TextSecondary)
+                        Icon(Icons.Default.Settings, contentDescription = "Cài đặt", tint = getTextSecondary())
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = LightBackground)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = getAppBackground())
             )
         }
     ) { padding ->
@@ -108,7 +116,7 @@ fun UserScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = profile?.username ?: "Chưa cập nhật",
-                    color = TextPrimary,
+                    color = getTextPrimary(),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -125,7 +133,7 @@ fun UserScreen(
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("• E-Learning App", color = TextSecondary, fontSize = 14.sp)
+                    Text("• E-Learning App", color = getTextSecondary(), fontSize = 14.sp)
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -154,9 +162,9 @@ fun UserScreen(
             // ================== CHỌN KHỐI LỚP (MỚI THÊM) ==================
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    Text("Khối lớp học", color = TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text("Khối lớp học", color = getTextPrimary(), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("Thay đổi khối lớp sẽ cập nhật lại toàn bộ nội dung môn học.", color = TextSecondary, fontSize = 13.sp)
+                    Text("Thay đổi khối lớp sẽ cập nhật lại toàn bộ nội dung môn học.", color = getTextSecondary(), fontSize = 13.sp)
                     Spacer(modifier = Modifier.height(16.dp))
 
                     GradeSelector(
@@ -172,7 +180,7 @@ fun UserScreen(
             // ================== THÔNG TIN CÁ NHÂN ==================
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    Text("Thông tin cá nhân", color = TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text("Thông tin cá nhân", color = getTextPrimary(), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
 
                     InfoRow(Icons.Default.Email, "Email", profile?.email ?: "Chưa cập nhật")
@@ -185,12 +193,13 @@ fun UserScreen(
             // ================== CÀI ĐẶT ỨNG DỤNG ==================
             item {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    Text("Cài đặt ứng dụng", color = TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text("Cài đặt ứng dụng", color = getTextPrimary(), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // Ngôn ngữ
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = CardBackground),
+                        colors = CardDefaults.cardColors(containerColor = getCardBackground()),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {
@@ -201,7 +210,6 @@ fun UserScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            // Cụm Icon và Text
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Box(
                                     modifier = Modifier
@@ -213,15 +221,67 @@ fun UserScreen(
                                     Icon(Icons.Outlined.Language, contentDescription = "Language", tint = PrimaryBlue, modifier = Modifier.size(20.dp))
                                 }
                                 Spacer(modifier = Modifier.width(16.dp))
-                                Text("Ngôn ngữ / Language", color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                                Text("Ngôn ngữ / Language", color = getTextPrimary(), fontSize = 16.sp, fontWeight = FontWeight.Medium)
                             }
-
-                            // Cụm Toggle Button [ VN | EN ]
                             LanguageToggleButton(
                                 currentLang = currentLanguage,
                                 onLanguageSelect = { langCode ->
                                     viewModel.changeLanguage(langCode)
                                 }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Chế độ tối (Dark Theme)
+                    val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme()
+                    val isDarkThemePref by viewModel.isDarkTheme.collectAsState()
+                    val isDarkTheme = isDarkThemePref ?: isSystemDark
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = getCardBackground()),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFFE6F7FF)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = if (isDarkTheme) Icons.Default.Settings else Icons.Default.Settings, // Tạm dùng Settings icon thay vì cần tìm DarkMode
+                                        contentDescription = "Chế độ tối",
+                                        tint = PrimaryBlue,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Text("Chế độ tối (Dark Theme)", color = getTextPrimary(), fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                            }
+
+                            Switch(
+                                checked = isDarkTheme,
+                                onCheckedChange = { isChecked ->
+                                    viewModel.toggleDarkMode(isChecked)
+                                },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = Color.White,
+                                    checkedTrackColor = PrimaryBlue,
+                                    uncheckedThumbColor = Color.Gray,
+                                    uncheckedTrackColor = Color.LightGray
+                                )
                             )
                         }
                     }
@@ -269,7 +329,7 @@ fun LanguageToggleButton(currentLang: String, onLanguageSelect: (String) -> Unit
         ) {
             Text(
                 "VN",
-                color = if (currentLang == "vi") Color.White else TextSecondary,
+                color = if (currentLang == "vi") Color.White else getTextSecondary(),
                 fontWeight = FontWeight.Bold,
                 fontSize = 13.sp
             )
@@ -286,7 +346,7 @@ fun LanguageToggleButton(currentLang: String, onLanguageSelect: (String) -> Unit
         ) {
             Text(
                 "EN",
-                color = if (currentLang == "en") Color.White else TextSecondary,
+                color = if (currentLang == "en") Color.White else getTextSecondary(),
                 fontWeight = FontWeight.Bold,
                 fontSize = 13.sp
             )
@@ -311,7 +371,7 @@ fun GradeSelector(
                     .clickable { onGradeSelected(grade) },
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (isSelected) PrimaryBlue else CardBackground
+                    containerColor = if (isSelected) PrimaryBlue else getCardBackground()
                 ),
                 border = if (!isSelected) BorderStroke(1.dp, Color(0xFFEBEBEB)) else null,
                 elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 4.dp else 0.dp)
@@ -322,7 +382,7 @@ fun GradeSelector(
                 ) {
                     Text(
                         text = "Lớp $grade",
-                        color = if (isSelected) Color.White else TextPrimary,
+                        color = if (isSelected) Color.White else getTextPrimary(),
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                         fontSize = 15.sp
                     )
@@ -336,7 +396,7 @@ fun GradeSelector(
 fun StatCard(value: String, label: String, modifier: Modifier = Modifier, valueColor: Color = PrimaryBlue) {
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = CardBackground),
+        colors = CardDefaults.cardColors(containerColor = getCardBackground()),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(12.dp)
     ) {
@@ -346,7 +406,7 @@ fun StatCard(value: String, label: String, modifier: Modifier = Modifier, valueC
         ) {
             Text(text = value, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = valueColor)
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = label, fontSize = 13.sp, color = TextSecondary)
+            Text(text = label, fontSize = 13.sp, color = getTextSecondary())
         }
     }
 }
@@ -355,7 +415,7 @@ fun StatCard(value: String, label: String, modifier: Modifier = Modifier, valueC
 fun InfoRow(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, value: String) {
     Card(
         modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-        colors = CardDefaults.cardColors(containerColor = CardBackground),
+        colors = CardDefaults.cardColors(containerColor = getCardBackground()),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         shape = RoundedCornerShape(12.dp)
     ) {
@@ -375,9 +435,9 @@ fun InfoRow(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String
 
             Spacer(modifier = Modifier.width(16.dp))
             Column {
-                Text(title, color = TextSecondary, fontSize = 13.sp)
+                Text(title, color = getTextSecondary(), fontSize = 13.sp)
                 Spacer(modifier = Modifier.height(2.dp))
-                Text(value, color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                Text(value, color = getTextPrimary(), fontSize = 16.sp, fontWeight = FontWeight.Medium)
             }
         }
     }
@@ -395,8 +455,8 @@ fun EditProfileDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = CardBackground,
-        title = { Text("Chỉnh sửa hồ sơ", fontWeight = FontWeight.Bold, color = TextPrimary) },
+        containerColor = getCardBackground(),
+        title = { Text("Chỉnh sửa hồ sơ", fontWeight = FontWeight.Bold, color = getTextPrimary()) },
         text = {
             Column {
                 OutlinedTextField(
@@ -426,7 +486,7 @@ fun EditProfileDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Hủy", color = TextSecondary)
+                Text("Hủy", color = getTextSecondary())
             }
         }
     )

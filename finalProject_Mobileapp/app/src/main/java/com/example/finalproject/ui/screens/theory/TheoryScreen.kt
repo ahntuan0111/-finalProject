@@ -35,7 +35,8 @@ import com.example.finalproject.ui.viewmodel.TheoryViewModel
 import com.example.finalproject.ui.viewmodel.UserViewModel
 
 // --- MÀU SẮC ---
-val ExpandBlueBg = Color(0xFFE3F2FD)
+@Composable
+fun getExpandBlueBg() = MaterialTheme.colorScheme.primaryContainer
 val SuccessGreen = Color(0xFF4CAF50)
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,7 +75,7 @@ fun TheoryScreen(
                             id = R.string.theory_screen_top_bar_title,
                             screenTitlePrefix, subjectName, grade
                         ),
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
@@ -86,22 +87,22 @@ fun TheoryScreen(
                         Icon(
                             Icons.Default.ArrowBack,
                             contentDescription = stringResource(id = R.string.common_back),
-                            tint = Color.Black
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         },
-        containerColor = Color(0xFFFAFAFA)
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(Color(0xFFFAFAFA))
+                .background(MaterialTheme.colorScheme.background)
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
@@ -150,7 +151,7 @@ fun ChapterItem(
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isExpanded) ExpandBlueBg else Color.White
+            containerColor = if (isExpanded) getExpandBlueBg() else MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier.fillMaxWidth()
@@ -185,14 +186,14 @@ fun ChapterItem(
                     text = chapter.title ?: "Chương (Chưa có tên)", // BỔ SUNG ?:
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f)
                 )
 
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowDown,
                     contentDescription = stringResource(id = R.string.theory_screen_desc_expand),
-                    tint = Color.Gray,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.rotate(rotationState)
                 )
             }
@@ -203,7 +204,7 @@ fun ChapterItem(
                         Text(
                             text = stringResource(id = R.string.theory_screen_no_content),
                             modifier = Modifier.padding(start = 72.dp, bottom = 16.dp),
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 14.sp
                         )
                     } else {
@@ -244,7 +245,7 @@ fun LessonItem(lesson: LessonDto, onClick: () -> Unit, mode: String) {
         Text(
             text = lesson.title ?: "Bài học (Chưa có tên)", // BỔ SUNG ?:
             fontSize = 14.sp,
-            color = Color.Black.copy(alpha = 0.8f),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
             modifier = Modifier.weight(1f)
         )
 
@@ -259,7 +260,7 @@ fun LessonItem(lesson: LessonDto, onClick: () -> Unit, mode: String) {
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = stringResource(id = R.string.theory_screen_desc_go),
-                tint = Color.Gray,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )
         }

@@ -36,9 +36,13 @@ object AppModule {
     // 2. Cung cấp OkHttpClient đã gắn Interceptor
     @Provides
     @Singleton
-    fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
+    fun provideOkHttpClient(
+        authInterceptor: AuthInterceptor,
+        languageInterceptor: LanguageInterceptor
+    ): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
+            .addInterceptor(languageInterceptor) // Thêm LanguageInterceptor để gắn Accept-Language
             .connectTimeout(30, TimeUnit.SECONDS) // Tăng thời gian chờ
             .readTimeout(30, TimeUnit.SECONDS)
             .build()

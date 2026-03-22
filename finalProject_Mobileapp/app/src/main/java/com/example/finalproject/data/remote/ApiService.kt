@@ -59,6 +59,23 @@ interface ApiService {
     @GET("exercises/by-lesson/{lessonId}")
     suspend fun getExercisesByLesson(@Path("lessonId") lessonId: Long): ApiResponse<List<ExerciseDto>>
 
+    @POST("exercises/{exerciseId}/validate-image")
+    suspend fun validateImage(
+        @Path("exerciseId") exerciseId: Long,
+        @Body request: ValidationSubmissionRequest
+    ): ApiResponse<ValidationSubmissionResponse>
+
+    @POST("exercises/{exerciseId}/save-submission")
+    suspend fun saveSubmission(
+        @Path("exerciseId") exerciseId: Long,
+        @Body request: SaveSubmissionRequest
+    ): ApiResponse<Any>
+
+    @GET("exercises/{exerciseId}/upload-url")
+    suspend fun getUploadUrl(
+        @Path("exerciseId") exerciseId: Long
+    ): ApiResponse<UploadUrlResponse>
+
     @GET("documents")
     suspend fun getDocuments(
         @Query("subjectCode") subjectCode: String,
@@ -110,15 +127,15 @@ interface ApiService {
     suspend fun updateFcmToken(@Body request: Map<String, String>): Response<Any>
 // Lưu ý: Response<Any> hoặc Response<BaseResponse<Any>> tuỳ thuộc vào cấu trúc trả về của BE bạn
 
-    @GET("api/notifications")
+    @GET("notifications")
     suspend fun getNotifications(): Response<BaseResponse<List<NotificationDto>>>
 
-    @GET("api/notifications/unread-count")
+    @GET("notifications/unread-count")
     suspend fun getUnreadNotificationCount(): Response<BaseResponse<Int>>
 
-    @PUT("api/notifications/{id}/read")
+    @PUT("notifications/{id}/read")
     suspend fun markNotificationAsRead(@Path("id") id: Long): Response<BaseResponse<Any>>
 
-    @PUT("api/notifications/read-all")
+    @PUT("notifications/read-all")
     suspend fun markAllNotificationsAsRead(): Response<BaseResponse<Any>>
 }

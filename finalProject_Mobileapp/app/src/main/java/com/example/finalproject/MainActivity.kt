@@ -15,6 +15,8 @@ import com.example.finalproject.ui.MainScreen
 import com.example.finalproject.ui.navigation.AppRoutes
 import com.example.finalproject.ui.theme.FinalProjectTheme
 import com.example.finalproject.utils.DataStoreManager
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -107,7 +109,10 @@ class MainActivity : AppCompatActivity() { // SỬA: Kế thừa từ AppCompatA
 
         // Render giao diện Jetpack Compose
         setContent {
-            FinalProjectTheme {
+            val isDarkThemePref by dataStoreManager.getDarkThemeFlow().collectAsState(initial = null)
+            val isDarkTheme = isDarkThemePref ?: androidx.compose.foundation.isSystemInDarkTheme()
+
+            FinalProjectTheme(darkTheme = isDarkTheme) {
                 MainScreen(
                     dataStoreManager = dataStoreManager,
                     startDestination = startDestination

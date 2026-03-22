@@ -24,7 +24,7 @@ fun MainScreen(
     val currentRoute = navBackStackEntry?.destination?.route
 
     val showBottomBar = currentRoute in listOf(
-        AppRoutes.HOME, AppRoutes.DASHBOARD, AppRoutes.AI_CHAT, AppRoutes.USER
+        AppRoutes.HOME, AppRoutes.DASHBOARD, AppRoutes.AI_CHAT, AppRoutes.REMINDER, AppRoutes.USER
     )
 
     Scaffold(

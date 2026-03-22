@@ -37,7 +37,7 @@ fun NotificationBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.surface,
         dragHandle = { BottomSheetDefaults.DragHandle() }
     ) {
         Column(
@@ -57,23 +57,23 @@ fun NotificationBottomSheet(
                     text = "Thông báo",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1A1A1A)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 TextButton(onClick = onMarkAllRead) {
-                    Text("Đánh dấu đã đọc", color = Color(0xFF1677FF), fontWeight = FontWeight.Medium)
+                    Text("Đánh dấu đã đọc", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
                 }
             }
 
-            HorizontalDivider(color = Color(0xFFEEEEEE))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
             // --- LIST ---
             if (isLoading && notifications.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Color(0xFF1677FF))
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             } else if (notifications.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Bạn chưa có thông báo nào.", color = Color.Gray)
+                    Text("Bạn chưa có thông báo nào.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             } else {
                 LazyColumn {
@@ -82,7 +82,7 @@ fun NotificationBottomSheet(
                             notification = notif,
                             onClick = { onItemClick(notif) }
                         )
-                        HorizontalDivider(color = Color(0xFFF5F5F5))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     }
                 }
             }
@@ -93,16 +93,16 @@ fun NotificationBottomSheet(
 @Composable
 fun NotificationItem(notification: NotificationDto, onClick: () -> Unit) {
     // Styling tuỳ thuộc vào Đã đọc/Chưa đọc
-    val bgColor = if (notification.isRead) Color.White else Color(0xFFF0F7FF)
+    val bgColor = if (notification.isRead) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primaryContainer
     val titleWeight = if (notification.isRead) FontWeight.Medium else FontWeight.Bold
-    val titleColor = if (notification.isRead) Color(0xFF333333) else Color(0xFF1A1A1A)
+    val titleColor = if (notification.isRead) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
 
     // Cấu hình Icon và Màu sắc dựa theo Type
     val (icon, iconColor, iconBg) = when (notification.type) {
-        "REMINDER" -> Triple(Icons.Default.Notifications, Color(0xFFFF9800), Color(0xFFFFF3E0))
-        "GAMIFICATION" -> Triple(Icons.Default.Star, Color(0xFFFFC107), Color(0xFFFFF8E1))
-        "SYSTEM" -> Triple(Icons.Default.Info, Color(0xFF2196F3), Color(0xFFE3F2FD))
-        else -> Triple(Icons.Default.Notifications, Color(0xFF9E9E9E), Color(0xFFF5F5F5))
+        "REMINDER" -> Triple(Icons.Default.Notifications, MaterialTheme.colorScheme.onSecondaryContainer, MaterialTheme.colorScheme.secondaryContainer)
+        "GAMIFICATION" -> Triple(Icons.Default.Star, MaterialTheme.colorScheme.onTertiaryContainer, MaterialTheme.colorScheme.tertiaryContainer)
+        "SYSTEM" -> Triple(Icons.Default.Info, MaterialTheme.colorScheme.onPrimaryContainer, MaterialTheme.colorScheme.primaryContainer)
+        else -> Triple(Icons.Default.Notifications, MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.surfaceVariant)
     }
 
     Row(
@@ -140,7 +140,7 @@ fun NotificationItem(notification: NotificationDto, onClick: () -> Unit) {
             Text(
                 text = notification.message,
                 fontSize = 14.sp,
-                color = Color(0xFF666666),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -156,7 +156,7 @@ fun NotificationItem(notification: NotificationDto, onClick: () -> Unit) {
             Text(
                 text = timeText,
                 fontSize = 12.sp,
-                color = Color(0xFF999999)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
@@ -167,7 +167,7 @@ fun NotificationItem(notification: NotificationDto, onClick: () -> Unit) {
                     .padding(start = 8.dp, top = 6.dp)
                     .size(10.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF1677FF))
+                    .background(MaterialTheme.colorScheme.primary)
             )
         }
     }

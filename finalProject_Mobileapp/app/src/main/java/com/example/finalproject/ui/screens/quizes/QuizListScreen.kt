@@ -55,7 +55,7 @@ fun QuizListScreen(
                 Text(
                     text = stringResource(id = R.string.quiz_list_empty),
                     modifier = Modifier.align(Alignment.Center),
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             } else {
                 LazyColumn(
@@ -94,7 +94,7 @@ fun QuizListScreen(
                                     Text(
                                         text = stringResource(id = R.string.quiz_list_type, quiz.quizTypeName),
                                         style = MaterialTheme.typography.bodySmall,
-                                        color = Color.Gray
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     Text(
                                         text = stringResource(id = R.string.quiz_list_question_count, quiz.questions.size),

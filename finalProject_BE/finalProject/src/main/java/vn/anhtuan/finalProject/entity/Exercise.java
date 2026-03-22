@@ -29,6 +29,24 @@ public class Exercise {
     @Column(name = "question_value_en", columnDefinition = "TEXT")
     private String questionValueEn;
 
+    @Column(name = "hint1_vi", columnDefinition = "TEXT")
+    private String hint1Vi;
+
+    @Column(name = "hint1_en", columnDefinition = "TEXT")
+    private String hint1En;
+
+    @Column(name = "hint2_vi", columnDefinition = "TEXT")
+    private String hint2Vi;
+
+    @Column(name = "hint2_en", columnDefinition = "TEXT")
+    private String hint2En;
+
+    @Column(name = "hint3_vi", columnDefinition = "TEXT")
+    private String hint3Vi;
+
+    @Column(name = "hint3_en", columnDefinition = "TEXT")
+    private String hint3En;
+
     // ---------------------------------------------------
 
     @Column(name = "order_no", nullable = false)
