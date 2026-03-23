@@ -1,19 +1,21 @@
 package com.example.finalproject.ui.viewmodel
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.finalproject.data.remote.model.ReminderSettingRequest
+import com.example.finalproject.data.remote.model.ReminderSettingResponse
+import com.example.finalproject.domain.repository.ReminderRepository
+import com.example.finalproject.utils.Resource
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import android.content.Context
+import androidx.work.WorkManager
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import androidx.work.Data
-import com.example.finalproject.utils.DataStoreManager
-import com.example.finalproject.utils.ReminderWorker
-import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -21,51 +23,93 @@ import javax.inject.Inject
 @HiltViewModel
 class ReminderViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val dataStoreManager: DataStoreManager
+    private val repository: ReminderRepository
 ) : ViewModel() {
 
-    private val workManager = WorkManager.getInstance(context)
+    private val _settings = MutableStateFlow<ReminderSettingResponse?>(null)
+    val settings = _settings.asStateFlow()
 
-    val dailyEnabled = dataStoreManager.getReminderDailyEnabledFlow()
-        .stateIn(viewModelScope, SharingStarted.Lazily, false)
-    val dailyTime = dataStoreManager.getReminderDailyTimeFlow()
-        .stateIn(viewModelScope, SharingStarted.Lazily, Pair(7, 30))
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading = _isLoading.asStateFlow()
 
-    val streakEnabled = dataStoreManager.getReminderStreakEnabledFlow()
-        .stateIn(viewModelScope, SharingStarted.Lazily, false)
-    val streakTime = dataStoreManager.getReminderStreakTimeFlow()
-        .stateIn(viewModelScope, SharingStarted.Lazily, Pair(21, 0))
+    private val _error = MutableStateFlow<String?>(null)
+    val error = _error.asStateFlow()
 
-    val examEnabled = dataStoreManager.getReminderExamEnabledFlow()
-        .stateIn(viewModelScope, SharingStarted.Lazily, false)
+    init {
+        fetchSettings()
+    }
 
-    fun toggleDaily(enabled: Boolean, hour: Int, minute: Int) {
+    fun fetchSettings() {
         viewModelScope.launch {
-            dataStoreManager.saveReminderDailyEnabled(enabled)
-            dataStoreManager.saveReminderDailyTime(hour, minute)
-            if (enabled) scheduleReminder("daily", hour, minute)
-            else workManager.cancelUniqueWork("reminder_daily")
+            repository.getMySettings().collect { result ->
+                when (result) {
+                    is Resource.Loading -> _isLoading.value = true
+                    is Resource.Success -> {
+                        _isLoading.value = false
+                        _settings.value = result.data
+                        syncAlarms(result.data)
+                    }
+                    is Resource.Error -> {
+                        _isLoading.value = false
+                        _error.value = result.message
+                    }
+                }
+            }
         }
     }
 
-    fun toggleStreak(enabled: Boolean, hour: Int, minute: Int) {
+    fun updateSettings(request: ReminderSettingRequest) {
         viewModelScope.launch {
-            dataStoreManager.saveReminderStreakEnabled(enabled)
-            dataStoreManager.saveReminderStreakTime(hour, minute)
-            if (enabled) scheduleReminder("streak", hour, minute)
-            else workManager.cancelUniqueWork("reminder_streak")
+            repository.updateMySettings(request).collect { result ->
+                when (result) {
+                    is Resource.Loading -> _isLoading.value = true
+                    is Resource.Success -> {
+                        _isLoading.value = false
+                        _settings.value = result.data
+                        syncAlarms(result.data)
+                    }
+                    is Resource.Error -> {
+                        _isLoading.value = false
+                        _error.value = result.message
+                    }
+                }
+            }
         }
     }
 
-    fun toggleExam(enabled: Boolean) {
-        viewModelScope.launch {
-            dataStoreManager.saveReminderExamEnabled(enabled)
-            if (enabled) scheduleReminder("exam", 8, 0) // Giả định nhắc vào 8h sáng
-            else workManager.cancelUniqueWork("reminder_exam")
+    private fun syncAlarms(settings: ReminderSettingResponse?) {
+        val workManager = WorkManager.getInstance(context)
+        if (settings == null) {
+            workManager.cancelAllWork()
+            return
+        }
+
+        if (settings.isStudyReminderEnabled && !settings.studyTime.isNullOrEmpty()) {
+            val parts = settings.studyTime.split(":")
+            if (parts.size == 2) {
+                scheduleReminder(workManager, "daily", parts[0].toInt(), parts[1].toInt(), settings.studyDays)
+            }
+        } else {
+            workManager.cancelUniqueWork("reminder_daily")
+        }
+
+        if (settings.isStreakReminderEnabled && !settings.streakTime.isNullOrEmpty()) {
+            val parts = settings.streakTime.split(":")
+            if (parts.size == 2) {
+                scheduleReminder(workManager, "streak", parts[0].toInt(), parts[1].toInt(), null)
+            }
+        } else {
+            workManager.cancelUniqueWork("reminder_streak")
+        }
+
+        if (settings.isGoalReminderEnabled && !settings.targetDate.isNullOrEmpty()) {
+            scheduleReminder(workManager, "exam", 8, 0, null)
+        } else {
+            workManager.cancelUniqueWork("reminder_exam")
         }
     }
 
-    private fun scheduleReminder(type: String, hour: Int, minute: Int) {
+    private fun scheduleReminder(workManager: WorkManager, type: String, hour: Int, minute: Int, days: String?) {
         val now = Calendar.getInstance()
         val target = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, hour)
@@ -78,11 +122,12 @@ class ReminderViewModel @Inject constructor(
         }
 
         val delay = target.timeInMillis - now.timeInMillis
-        val data = Data.Builder().putString("type", type).build()
+        val dataBuilder = Data.Builder().putString("type", type)
+        if (days != null) dataBuilder.putString("days", days)
 
-        val request = PeriodicWorkRequestBuilder<ReminderWorker>(24, TimeUnit.HOURS)
+        val request = PeriodicWorkRequestBuilder<com.example.finalproject.utils.ReminderWorker>(24, TimeUnit.HOURS)
             .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-            .setInputData(data)
+            .setInputData(dataBuilder.build())
             .build()
 
         workManager.enqueueUniquePeriodicWork(

@@ -10,7 +10,7 @@ data class ValidationSubmissionResponse(
 )
 
 data class SaveSubmissionRequest(
-    val imageUrl: String,
+    val firebaseImageUrl: String,
     val aiReason: String?
 )
 

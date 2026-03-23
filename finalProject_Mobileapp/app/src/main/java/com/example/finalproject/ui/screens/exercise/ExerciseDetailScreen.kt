@@ -16,8 +16,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ExpandLess
@@ -49,9 +48,10 @@ import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.viewmodel.ExerciseDetailViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.material.icons.Icons
 
 // IP máy chủ (Thay đổi tùy môi trường)
-const val BASE_IMAGE_URL = "http://10.0.2.2:8080"
+const val BASE_IMAGE_URL = "http://192.168.1.18:8080"
 
 fun getFullImageUrl(path: String?): String {
     if (path.isNullOrEmpty()) return ""
@@ -63,6 +63,7 @@ fun getFullImageUrl(path: String?): String {
 fun ExerciseDetailScreen(
     navController: NavController,
     lessonId: Long,
+    exerciseId: Long,
     viewModel: ExerciseDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.exercises.collectAsState()
@@ -112,7 +113,7 @@ fun ExerciseDetailScreen(
                 showCamera = false
                 capturedImageUri = uri
                 // Start AI Validation and Firebase Upload workflow
-                viewModel.submitExerciseImage(context, state.firstOrNull()?.id ?: 0L, lessonId, uri)
+                viewModel.submitExerciseImage(context, exerciseId, lessonId, uri)
             },
             onCancel = { showCamera = false }
         )
@@ -133,7 +134,7 @@ fun ExerciseDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
-                            Icons.Default.ArrowBack,
+                            Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(id = R.string.common_back)
                         )
                     }
@@ -194,8 +195,41 @@ fun ExerciseDetailScreen(
                             }
                         }
 
+                        val isPassedState = validationResult?.isValid == true
+                        val finalIsCompleted = isCompletedState
+
                         // Validation UI
-                        if (validationResult != null || errorMessage != null) {
+                        if (errorMessage != null) {
+                            item {
+                                Card(
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF2F0)),
+                                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Text(
+                                            "Lỗi kết nối",
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFFCF1322),
+                                            fontSize = 16.sp
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            errorMessage ?: "",
+                                            color = Color(0xFFCF1322),
+                                            fontSize = 14.sp
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Button(
+                                            onClick = { viewModel.resetValidationResult() },
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color(0xFFCF1322))
+                                        ) {
+                                            Text("Đã hiểu, chụp ảnh lại")
+                                        }
+                                    }
+                                }
+                            }
+                        } else if (validationResult != null) {
                             item {
                                 val isPassed = validationResult?.isValid == true
                                 val cardColor = if (isPassed) Color(0xFFF6FFED) else Color(0xFFFFF2F0)
@@ -215,11 +249,11 @@ fun ExerciseDetailScreen(
                                         )
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(
-                                            validationResult?.reason ?: errorMessage ?: "",
+                                            validationResult?.reason ?: "",
                                             color = textColor,
                                             fontSize = 14.sp
                                         )
-                                        if (!isPassed && errorMessage == null) {
+                                        if (!isPassed) {
                                             Spacer(modifier = Modifier.height(8.dp))
                                             Button(
                                                 onClick = { viewModel.resetValidationResult() },
@@ -233,19 +267,24 @@ fun ExerciseDetailScreen(
                             }
                         }
 
-                        items(exercises) { exercise ->
-                            ExerciseItem(
-                                exercise = exercise,
-                                timeLeft = timeLeft,
-                                snackbarHostState = snackbarHostState
-                            )
+                        val currentExercise = exercises.find { it.id == exerciseId }
+                        if (currentExercise != null) {
+                            item {
+                                ExerciseItem(
+                                    exercise = currentExercise,
+                                    timeLeft = timeLeft,
+                                    snackbarHostState = snackbarHostState,
+                                    isCompleted = finalIsCompleted
+                                )
+                            }
+                        } else {
+                            item {
+                                Text("Không tìm thấy bài tập", color = Color.Red, modifier = Modifier.align(Alignment.Center))
+                            }
                         }
 
                         item {
                             Spacer(modifier = Modifier.height(24.dp))
-
-                            val isPassedState = validationResult?.isValid == true
-                            val finalIsCompleted = isCompletedState || isPassedState
 
                             Button(
                                 onClick = {
@@ -304,7 +343,12 @@ fun ExerciseDetailScreen(
 }
 
 @Composable
-fun ExerciseItem(exercise: ExerciseDto, timeLeft: Int, snackbarHostState: SnackbarHostState) {
+fun ExerciseItem(
+    exercise: ExerciseDto,
+    timeLeft: Int,
+    snackbarHostState: SnackbarHostState,
+    isCompleted: Boolean
+) {
     var isExpanded by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
@@ -385,59 +429,63 @@ fun ExerciseItem(exercise: ExerciseDto, timeLeft: Int, snackbarHostState: Snackb
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- Nút Xem Lời Giải ---
-            Button(
-                onClick = { isExpanded = !isExpanded },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isExpanded) Color(0xFFEEEEEE) else Color(0xFFE3F2FD),
-                    contentColor = if (isExpanded) Color.Gray else PrimaryBlue
-                ),
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp),
-                contentPadding = PaddingValues(vertical = 10.dp)
-            ) {
-                Icon(
-                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.Lightbulb,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                val btnText = if (isExpanded) {
-                    stringResource(id = R.string.exercise_item_btn_hide_solution)
-                } else {
-                    stringResource(id = R.string.exercise_item_btn_show_solution)
-                }
-                Text(btnText)
-            }
-
-            // --- Danh sách Lời giải ---
-            AnimatedVisibility(visible = isExpanded) {
-                Column(
-                    modifier = Modifier
-                        .padding(top = 12.dp)
-                        .background(Color(0xFFF8F9FA), RoundedCornerShape(8.dp))
-                        .padding(12.dp)
-                        .fillMaxWidth()
+            if (isCompleted) {
+                // --- Nút Xem Lời Giải ---
+                Button(
+                    onClick = { isExpanded = !isExpanded },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isExpanded) Color(0xFFEEEEEE) else Color(0xFFE3F2FD),
+                        contentColor = if (isExpanded) Color.Gray else PrimaryBlue
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(vertical = 10.dp)
                 ) {
-                    Text(
-                        text = stringResource(id = R.string.exercise_item_solution_guide),
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontSize = 14.sp
+                    Icon(
+                        imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.Lightbulb,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
 
-                    if (exercise.solutions.isNullOrEmpty()) {
-                        Text(
-                            text = stringResource(id = R.string.exercise_item_solution_empty),
-                            fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    val btnText = if (isExpanded) {
+                        stringResource(id = R.string.exercise_item_btn_hide_solution)
                     } else {
-                        exercise.solutions.sortedBy { it.solutionOrder }.forEach { solution ->
-                            SolutionItem(solution)
-                            Spacer(modifier = Modifier.height(12.dp))
+                        stringResource(id = R.string.exercise_item_btn_show_solution)
+                    }
+                    Text(btnText)
+                }
+
+                // --- Danh sách Lời giải ---
+                AnimatedVisibility(visible = isExpanded) {
+                    Column(
+                        modifier = Modifier
+                            .padding(top = 12.dp)
+                            .background(Color(0xFFF8F9FA), RoundedCornerShape(8.dp))
+                            .padding(12.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.exercise_item_solution_guide),
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 14.sp
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        if (exercise.solutions.isNullOrEmpty()) {
+                            Text(
+                                text = stringResource(id = R.string.exercise_item_solution_empty),
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else {
+                            exercise.solutions.sortedBy { it.solutionOrder }.forEach { solution ->
+                                SolutionItem(solution)
+                                Spacer(modifier = Modifier.height(12.dp))
+                            }
                         }
                     }
                 }

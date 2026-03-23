@@ -137,7 +137,7 @@ class ExerciseDetailViewModel @Inject constructor(
                                     val saveResponse = exerciseRepository.saveSubmission(
                                         exerciseId,
                                         SaveSubmissionRequest(
-                                            imageUrl = urlData.publicUrl,
+                                            firebaseImageUrl = urlData.publicUrl,
                                             aiReason = result.reason
                                         )
                                     )

@@ -61,6 +61,7 @@ object AppRoutes {
     const val SUBJECT_NAME = "subjectName"
     const val MODE = "mode"
     const val LESSON_ID = "lessonId"
+    const val EXERCISE_ID = "exerciseId"
     const val GRADE = "grade"
 
     const val SUBJECT_DETAIL = "subject_detail/{$SUBJECT_CODE}/{$SUBJECT_NAME}"
@@ -74,8 +75,12 @@ object AppRoutes {
     const val LESSON_DETAIL = "lesson_detail/{$LESSON_ID}"
     fun createLessonDetailRoute(id: Long) = "lesson_detail/$id"
 
-    const val EXERCISE_DETAIL = "exercise_detail/{$LESSON_ID}"
-    fun createExerciseDetailRoute(id: Long) = "exercise_detail/$id"
+    // Các màn hình Detail
+    const val THEO_DETAIL = "theo_detail/{$SUBJECT_CODE}/{$GRADE}"
+    const val EXERCISE_LIST = "exercise_list/{$LESSON_ID}" // MỚI
+    fun createExerciseListRoute(id: Long) = "exercise_list/$id"
+
+    const val EXERCISE_DETAIL = "exercise_detail/{$LESSON_ID}/{$EXERCISE_ID}"
 
     const val DOCUMENT_LIST = "document_list/{$SUBJECT_CODE}/{$GRADE}"
     fun createDocumentListRoute(code: String, grade: Int) = "document_list/$code/$grade"
@@ -194,8 +199,9 @@ fun AppNavHost(
             )
         }
 
+        // Bổ sung ExerciseListScreen
         composable(
-            route = AppRoutes.EXERCISE_DETAIL,
+            route = AppRoutes.EXERCISE_LIST,
             arguments = listOf(
                 navArgument(AppRoutes.LESSON_ID) { type = NavType.StringType }
             )
@@ -203,9 +209,29 @@ fun AppNavHost(
             val lessonIdString = backStackEntry.arguments?.getString(AppRoutes.LESSON_ID)
             val lessonId = lessonIdString?.toLongOrNull() ?: 0L
 
-            ExerciseDetailScreen(
+            com.example.finalproject.ui.screens.exercise.ExerciseListScreen(
                 navController = navController,
                 lessonId = lessonId
+            )
+        }
+
+        composable(
+            route = AppRoutes.EXERCISE_DETAIL,
+            arguments = listOf(
+                navArgument(AppRoutes.LESSON_ID) { type = NavType.StringType },
+                navArgument(AppRoutes.EXERCISE_ID) { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val lessonIdString = backStackEntry.arguments?.getString(AppRoutes.LESSON_ID)
+            val lessonId = lessonIdString?.toLongOrNull() ?: 0L
+            
+            val exerciseIdString = backStackEntry.arguments?.getString(AppRoutes.EXERCISE_ID)
+            val exerciseId = exerciseIdString?.toLongOrNull() ?: 0L
+
+            ExerciseDetailScreen(
+                navController = navController,
+                lessonId = lessonId,
+                exerciseId = exerciseId
             )
         }
 

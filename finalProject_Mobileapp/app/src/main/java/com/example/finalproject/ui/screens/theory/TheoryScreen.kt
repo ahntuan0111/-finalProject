@@ -121,7 +121,7 @@ fun TheoryScreen(
                             onToggle = { viewModel.toggleChapter(chapter.id) },
                             onLessonClick = { lesson ->
                                 if (mode == TheoryMode.EXERCISE) {
-                                    navController.navigate(AppRoutes.createExerciseDetailRoute(lesson.id))
+                                    navController.navigate(AppRoutes.createExerciseListRoute(lesson.id))
                                 } else {
                                     navController.navigate(AppRoutes.createLessonDetailRoute(lesson.id))
                                 }

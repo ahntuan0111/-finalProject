@@ -4,7 +4,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import org.springframework.context.annotation.Configuration;
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.io.InputStream;
 
 @Configuration
@@ -14,7 +14,7 @@ public class FirebaseConfig {
     public void initialize() {
         try {
             // Đọc file config từ resources
-            InputStream serviceAccount = this.getClass().getClassLoader().getResourceAsStream("firebase-service-account.json");
+            InputStream serviceAccount = new org.springframework.core.io.ClassPathResource("firebase-service-account.json").getInputStream();
 
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))

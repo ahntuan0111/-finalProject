@@ -34,4 +34,10 @@ abstract class RepositoryModule {
     abstract fun bindStatisticsRepository(
         statisticsRepositoryImpl: StatisticsRepositoryImpl
     ): StatisticsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindReminderRepository(
+        reminderRepositoryImpl: com.example.finalproject.data.repository.ReminderRepositoryImpl
+    ): com.example.finalproject.domain.repository.ReminderRepository
 }

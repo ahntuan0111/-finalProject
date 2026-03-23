@@ -24,6 +24,29 @@ class ReminderWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         val type = inputData.getString("type") ?: return Result.failure()
         
+        if (type == "daily") {
+            val daysStr = inputData.getString("days")
+            if (daysStr != null) {
+                val calendar = java.util.Calendar.getInstance()
+                val currentDayInt = calendar.get(java.util.Calendar.DAY_OF_WEEK)
+                val dayMap = mapOf(
+                    java.util.Calendar.MONDAY to "MON",
+                    java.util.Calendar.TUESDAY to "TUE",
+                    java.util.Calendar.WEDNESDAY to "WED",
+                    java.util.Calendar.THURSDAY to "THU",
+                    java.util.Calendar.FRIDAY to "FRI",
+                    java.util.Calendar.SATURDAY to "SAT",
+                    java.util.Calendar.SUNDAY to "SUN"
+                )
+                val currentDayCode = dayMap[currentDayInt]
+                if (currentDayCode != null && !daysStr.contains(currentDayCode)) {
+                    // Skip notification today since it's not selected
+                    return Result.success()
+                }
+            }
+        }
+
+        
         val title = when (type) {
             "daily" -> "Đến giờ học rồi! 📚"
             "streak" -> "Bảo vệ Streak của bạn! 🔥"
