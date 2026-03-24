@@ -53,7 +53,7 @@ object AppModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://192.168.1.18:8080/api/")
+            .baseUrl("http://10.0.2.2:8080/api/")
             .client(okHttpClient) // <--- QUAN TRỌNG
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -69,6 +69,12 @@ object AppModule {
     @Singleton
     fun provideReminderApiService(retrofit: Retrofit): com.example.finalproject.data.remote.api.ReminderApiService {
         return retrofit.create(com.example.finalproject.data.remote.api.ReminderApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAiTutorApiService(retrofit: Retrofit): com.example.finalproject.data.remote.api.AiTutorApiService {
+        return retrofit.create(com.example.finalproject.data.remote.api.AiTutorApiService::class.java)
     }
 
     // ... Các phần provide Repository giữ nguyên

@@ -38,6 +38,7 @@ import com.example.finalproject.ui.screens.quizes.QuizResultScreen
 import com.example.finalproject.ui.screens.quizes.QuizTakingScreen
 import com.example.finalproject.ui.screens.quizes.QuizListScreen
 import com.example.finalproject.ui.viewmodel.QuizViewModel
+import com.example.finalproject.ui.screens.ai.ChatBoxAIScreen
 import com.example.finalproject.ui.screens.profile.UserScreen
 
 /**
@@ -141,7 +142,7 @@ fun AppNavHost(
         composable(AppRoutes.DASHBOARD) {
             DashboardScreen(navController = navController)
         }
-        composable(AppRoutes.AI_CHAT) { Text("Màn hình AI Chat") }
+        composable(AppRoutes.AI_CHAT) { ChatBoxAIScreen() }
         composable(AppRoutes.REMINDER) { ReminderScreen(navController = navController) }
         composable(AppRoutes.USER) {
             UserScreen(navController = navController)
