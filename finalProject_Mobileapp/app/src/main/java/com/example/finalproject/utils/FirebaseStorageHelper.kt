@@ -1,44 +1,63 @@
 package com.example.finalproject.utils
 
-import android.content.Context
 import android.net.Uri
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import java.io.OutputStream
-import java.net.HttpURLConnection
-import java.net.URL
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.util.UUID
 
-/**
- * Upload ảnh lên Firebase Storage thông qua Signed URL từ Backend.
- * Không cần Firebase Auth hay Firebase SDK trên client.
- */
 object FirebaseStorageHelper {
+    private val storage = FirebaseStorage.getInstance()
+    private val storageRef = storage.reference
 
-    suspend fun uploadImageWithSignedUrl(context: Context, imageUri: Uri, signedUploadUrl: String): Boolean {
+    /**
+     * Tải lên ảnh Avatar lên Firebase Storage
+     *
+     * @param localUri Đường dẫn Uri của ảnh (content://...)
+     * @return Download URL của ảnh sau khi upload thành công, hoặc null nếu thất bại
+     */
+    suspend fun uploadAvatar(localUri: Uri): String? {
+        return try {
+            // Tạo unique ID cho filename
+            val filename = UUID.randomUUID().toString() + ".jpg"
+            val avatarRef = storageRef.child("avatar").child(filename)
+            
+            // Upload ảnh lên Firebase
+            val uploadTaskSnapshot = avatarRef.putFile(localUri).await()
+            
+            // Lấy Download URL
+            val downloadUrl = avatarRef.downloadUrl.await()
+            downloadUrl.toString()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    /**
+     * Upload bằng Signed URL (dùng OkHttp để PUT trực tiếp lên Google Cloud Storage)
+     */
+    suspend fun uploadImageWithSignedUrl(context: android.content.Context, localUri: Uri, signedUrl: String): Boolean {
         return withContext(Dispatchers.IO) {
             try {
-                val inputStream = context.contentResolver.openInputStream(imageUri)
-                    ?: throw Exception("Không thể đọc ảnh từ URI")
-                val imageBytes = inputStream.readBytes()
+                val inputStream = context.contentResolver.openInputStream(localUri)
+                val bytes = inputStream?.readBytes() ?: return@withContext false
                 inputStream.close()
 
-                val url = URL(signedUploadUrl)
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "PUT"
-                connection.setRequestProperty("Content-Type", "image/jpeg")
-                connection.doOutput = true
-                connection.connectTimeout = 30000
-                connection.readTimeout = 30000
+                val client = OkHttpClient()
+                val requestBody = bytes.toRequestBody("image/jpeg".toMediaType())
+                val request = Request.Builder()
+                    .url(signedUrl)
+                    .put(requestBody)
+                    .build()
 
-                val outputStream: OutputStream = connection.outputStream
-                outputStream.write(imageBytes)
-                outputStream.flush()
-                outputStream.close()
-
-                val responseCode = connection.responseCode
-                connection.disconnect()
-
-                responseCode in 200..299
+                val response = client.newCall(request).execute()
+                response.isSuccessful
             } catch (e: Exception) {
                 e.printStackTrace()
                 false

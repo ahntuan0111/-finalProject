@@ -23,6 +23,9 @@ sealed class AuthState {
     // State dùng cho Register/Forgot/Reset (Chỉ cần biết thành công)
     data class Success(val data: AuthResponse?) : AuthState()
 
+    // State cho đăng ký: Mã OTP đã được gửi
+    object OtpSent : AuthState()
+
     // State đặc biệt cho Login (Cần biết đã có lớp hay chưa)
     data class LoginSuccess(val hasGrade: Boolean) : AuthState()
 }
@@ -72,7 +75,38 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    // --- REGISTER FLOW ---
+    // --- REGISTER FLOW (OTP) ---
+    private var pendingRegisterRequest: RegisterRequest? = null
+
+    fun requestRegisterOtp(username: String, email: String, pass: String) {
+        val request = RegisterRequest(username, email, pass)
+        pendingRegisterRequest = request
+        viewModelScope.launch {
+            _registerState.value = AuthState.Loading
+            authRepository.requestRegisterOtp(request).collect { result ->
+                result.onSuccess {
+                    _registerState.value = AuthState.OtpSent
+                }.onFailure {
+                    _registerState.value = AuthState.Error(it.message ?: "Gửi mã thất bại")
+                }
+            }
+        }
+    }
+
+    fun verifyRegisterOtp(email: String, otp: String) {
+        viewModelScope.launch {
+            _registerState.value = AuthState.Loading
+            authRepository.verifyRegisterOtp(com.example.finalproject.data.remote.model.VerifyRegisterRequest(email, otp)).collect { result ->
+                result.onSuccess {
+                    _registerState.value = AuthState.Success(it)
+                }.onFailure {
+                    _registerState.value = AuthState.Error(it.message ?: "Mã xác thực không chính xác")
+                }
+            }
+        }
+    }
+
+    // Luồng register cũ (nếu vẫn cần)
     fun register(username: String, email: String, pass: String) {
         viewModelScope.launch {
             _registerState.value = AuthState.Loading

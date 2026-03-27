@@ -68,7 +68,13 @@ const DashboardPage = () => {
       title: false,
       content: {
         style: { whiteSpace: 'pre-wrap', overflow: 'hidden', textOverflow: 'ellipsis', fontSize: '18px' },
-        content: '70%\nTOÁN HỌC',
+        // Tính động: lấy môn học có tỷ lệ lớn nhất từ API
+        content: (() => {
+          const dist = data?.contentDistribution;
+          if (!dist || dist.length === 0) return 'Chưa có\ndữ liệu';
+          const top = dist.reduce((a, b) => (a.value > b.value ? a : b));
+          return `${top.value}%\n${top.type}`;
+        })(),
       },
     },
     color: ['#1890ff', '#d9d9d9'],

@@ -18,6 +18,7 @@ import com.example.finalproject.di.TheoryMode
 import com.example.finalproject.ui.screens.auth.AuthSelectionScreen
 import com.example.finalproject.ui.screens.auth.ForgotPasswordScreen
 import com.example.finalproject.ui.screens.auth.LoginScreen
+import com.example.finalproject.ui.screens.auth.OtpVerificationScreen
 import com.example.finalproject.ui.screens.auth.RegisterScreen
 import com.example.finalproject.ui.screens.auth.ResetPasswordScreen
 import com.example.finalproject.ui.screens.auth.WelcomeScreen
@@ -49,6 +50,8 @@ object AppRoutes {
     const val AUTH_SELECTION = "auth_selection"
     const val LOGIN = "login"
     const val REGISTER = "register"
+    const val OTP_VERIFICATION = "otp_verification/{email}"
+    fun createOtpVerificationRoute(email: String) = "otp_verification/$email"
     const val HOME = "home"
     const val DASHBOARD = "dashboard"
     const val AI_CHAT = "ai_chat"
@@ -127,6 +130,13 @@ fun AppNavHost(
         composable(AppRoutes.AUTH_SELECTION) { AuthSelectionScreen(navController = navController) }
         composable(AppRoutes.LOGIN) { LoginScreen(navController = navController) }
         composable(AppRoutes.REGISTER) { RegisterScreen(navController = navController) }
+        composable(
+            route = AppRoutes.OTP_VERIFICATION,
+            arguments = listOf(navArgument("email") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            OtpVerificationScreen(navController = navController, email = email)
+        }
         composable(AppRoutes.HOME) { HomeScreen(navController = navController) }
         composable(AppRoutes.FORGOT_PASSWORD) { ForgotPasswordScreen(navController = navController) }
 

@@ -16,38 +16,44 @@ import androidx.compose.ui.unit.sp
 import com.example.finalproject.ui.theme.PrimaryBlue
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
+    leadingIcon: (@Composable () -> Unit)? = null,
+    trailingIcon: (@Composable () -> Unit)? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
-    singleLine: Boolean = true
+    singleLine: Boolean = true,
+    showLabelOutside: Boolean = true
 ) {
     Column(modifier = modifier.padding(bottom = 16.dp)) {
-        // Label phía trên (giống thiết kế)
-        Text(
-            text = label,
-            fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
-        )
+        if (showLabelOutside) {
+            Text(
+                text = label,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
+            )
+        }
 
-        // Ô nhập liệu bo tròn
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp), // Bo góc 12dp
+            label = if (!showLabelOutside) { { Text(label) } } else null,
+            placeholder = if (!showLabelOutside) { { Text(label) } } else null,
+            leadingIcon = leadingIcon,
+            trailingIcon = trailingIcon,
+            shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = PrimaryBlue,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant, // Màu xám nhạt
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                unfocusedBorderColor = Color(0xFFE2E8F0),
+                focusedContainerColor = Color(0xFFF8FAFC),
+                unfocusedContainerColor = Color(0xFFF8FAFC)
             ),
             singleLine = singleLine,
             keyboardOptions = keyboardOptions,

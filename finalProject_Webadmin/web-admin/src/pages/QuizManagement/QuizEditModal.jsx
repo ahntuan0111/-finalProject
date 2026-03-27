@@ -220,26 +220,20 @@ const QuizEditModal = ({ visible, onCancel, onSuccess, quizData }) => {
                                                                             return (
                                                                                 <Row gutter={16}>
                                                                                     <Col span={12}>
-                                                                                        <Form.Item name={[cField.name, 'contentValueVi']} rules={[{ required: true, message: 'Upload ảnh VN!' }]} style={{ margin: 0 }}>
-                                                                                            <div style={{ border: '1px dashed #d9d9d9', padding: 10, textAlign: 'center', background: '#fff' }}>
-                                                                                                {valVi ? (
-                                                                                                    <div><Image src={getFullImageUrl(valVi)} height={80}/><br/><Button size="small" danger onClick={() => { const q = form.getFieldValue('questions'); q[qField.name].contents[cField.name].contentValueVi = ''; form.setFieldsValue({questions: q}); }}>Xóa</Button></div>
-                                                                                                ) : (
-                                                                                                    <Upload customRequest={(opts) => customRequest(opts, qField.name, 'contents', cField.name, 'contentValueVi')} showUploadList={false}><Button icon={<UploadOutlined/>}>Tải ảnh VN</Button></Upload>
-                                                                                                )}
-                                                                                            </div>
-                                                                                        </Form.Item>
+                                                                                        <div style={{ border: '1px dashed #d9d9d9', padding: 10, background: '#fff', borderRadius: 4 }}>
+                                                                                            <Form.Item name={[cField.name, 'contentValueVi']} rules={[{ required: true, message: 'Upload ảnh VN!' }]} style={{ marginBottom: 8 }}>
+                                                                                                <Input size="small" placeholder="URL ảnh hoặc tải lên..." addonAfter={<Upload customRequest={(opts) => customRequest(opts, qField.name, 'contents', cField.name, 'contentValueVi')} showUploadList={false} accept="image/*"><UploadOutlined style={{cursor: 'pointer'}}/></Upload>}/>
+                                                                                            </Form.Item>
+                                                                                            {valVi && <div style={{textAlign: 'center'}}><Image src={getFullImageUrl(valVi)} height={80}/><br/><Button size="small" danger style={{marginTop: 5}} onClick={() => { const q = form.getFieldValue('questions'); q[qField.name].contents[cField.name].contentValueVi = ''; form.setFieldsValue({questions: q}); }}>Xóa</Button></div>}
+                                                                                        </div>
                                                                                     </Col>
                                                                                     <Col span={12}>
-                                                                                        <Form.Item name={[cField.name, 'contentValueEn']} style={{ margin: 0 }}>
-                                                                                            <div style={{ border: '1px dashed #d9d9d9', padding: 10, textAlign: 'center', background: '#fff' }}>
-                                                                                                {valEn ? (
-                                                                                                    <div><Image src={getFullImageUrl(valEn)} height={80}/><br/><Button size="small" danger onClick={() => { const q = form.getFieldValue('questions'); q[qField.name].contents[cField.name].contentValueEn = ''; form.setFieldsValue({questions: q}); }}>Xóa</Button></div>
-                                                                                                ) : (
-                                                                                                    <Upload customRequest={(opts) => customRequest(opts, qField.name, 'contents', cField.name, 'contentValueEn')} showUploadList={false}><Button icon={<UploadOutlined/>}>Tải ảnh EN</Button></Upload>
-                                                                                                )}
+                                                                                        <div style={{ border: '1px dashed #d9d9d9', padding: 10, background: '#fff', borderRadius: 4 }}>
+                                                                                            <Form.Item name={[cField.name, 'contentValueEn']} style={{ marginBottom: 8 }}>
+                                                                                                <Input size="small" placeholder="Paste URL or upload..." addonAfter={<Upload customRequest={(opts) => customRequest(opts, qField.name, 'contents', cField.name, 'contentValueEn')} showUploadList={false} accept="image/*"><UploadOutlined style={{cursor: 'pointer'}}/></Upload>}/>
+                                                                                            </Form.Item>
+                                                                                            {valEn && <div style={{textAlign: 'center'}}><Image src={getFullImageUrl(valEn)} height={80}/><br/><Button size="small" danger style={{marginTop: 5}} onClick={() => { const q = form.getFieldValue('questions'); q[qField.name].contents[cField.name].contentValueEn = ''; form.setFieldsValue({questions: q}); }}>Xóa</Button></div>}
                                                                                         </div>
-                                                                                        </Form.Item>
                                                                                     </Col>
                                                                                 </Row>
                                                                             );
@@ -310,18 +304,20 @@ const QuizEditModal = ({ visible, onCancel, onSuccess, quizData }) => {
                                                                             return (
                                                                                 <Row gutter={16}>
                                                                                     <Col span={12}>
-                                                                                        <Form.Item name={[chField.name, 'contentValueVi']} rules={[{ required: true, message: 'Upload!' }]} style={{ margin: 0 }}>
-                                                                                            <div style={{ border: '1px dashed #d9d9d9', padding: 10, textAlign: 'center', background: '#fff' }}>
-                                                                                                {valVi ? <div><Image src={getFullImageUrl(valVi)} height={60}/><br/><Button size="small" danger onClick={() => { const q = form.getFieldValue('questions'); q[qField.name].choices[chField.name].contentValueVi = ''; form.setFieldsValue({questions: q}); }}>Xóa</Button></div> : <Upload customRequest={(opts) => customRequest(opts, qField.name, 'choices', chField.name, 'contentValueVi')} showUploadList={false}><Button icon={<UploadOutlined/>}>Tải ảnh VN</Button></Upload>}
-                                                                                            </div>
-                                                                                        </Form.Item>
+                                                                                        <div style={{ border: '1px dashed #d9d9d9', padding: 8, background: '#fff', borderRadius: 4 }}>
+                                                                                            <Form.Item name={[chField.name, 'contentValueVi']} rules={[{ required: true, message: 'Upload!' }]} style={{ marginBottom: 8 }}>
+                                                                                                <Input size="small" placeholder="URL ảnh VN..." addonAfter={<Upload customRequest={(opts) => customRequest(opts, qField.name, 'choices', chField.name, 'contentValueVi')} showUploadList={false} accept="image/*"><UploadOutlined style={{cursor: 'pointer'}}/></Upload>}/>
+                                                                                            </Form.Item>
+                                                                                            {valVi && <div style={{textAlign: 'center'}}><Image src={getFullImageUrl(valVi)} height={60}/><br/><Button size="small" danger style={{marginTop: 4}} onClick={() => { const q = form.getFieldValue('questions'); q[qField.name].choices[chField.name].contentValueVi = ''; form.setFieldsValue({questions: q}); }}>Xóa</Button></div>}
+                                                                                        </div>
                                                                                     </Col>
                                                                                     <Col span={12}>
-                                                                                        <Form.Item name={[chField.name, 'contentValueEn']} style={{ margin: 0 }}>
-                                                                                            <div style={{ border: '1px dashed #d9d9d9', padding: 10, textAlign: 'center', background: '#fff' }}>
-                                                                                                {valEn ? <div><Image src={getFullImageUrl(valEn)} height={60}/><br/><Button size="small" danger onClick={() => { const q = form.getFieldValue('questions'); q[qField.name].choices[chField.name].contentValueEn = ''; form.setFieldsValue({questions: q}); }}>Xóa</Button></div> : <Upload customRequest={(opts) => customRequest(opts, qField.name, 'choices', chField.name, 'contentValueEn')} showUploadList={false}><Button icon={<UploadOutlined/>}>Tải ảnh EN</Button></Upload>}
-                                                                                            </div>
-                                                                                        </Form.Item>
+                                                                                        <div style={{ border: '1px dashed #d9d9d9', padding: 8, background: '#fff', borderRadius: 4 }}>
+                                                                                            <Form.Item name={[chField.name, 'contentValueEn']} style={{ marginBottom: 8 }}>
+                                                                                                <Input size="small" placeholder="URL EN Image..." addonAfter={<Upload customRequest={(opts) => customRequest(opts, qField.name, 'choices', chField.name, 'contentValueEn')} showUploadList={false} accept="image/*"><UploadOutlined style={{cursor: 'pointer'}}/></Upload>}/>
+                                                                                            </Form.Item>
+                                                                                            {valEn && <div style={{textAlign: 'center'}}><Image src={getFullImageUrl(valEn)} height={60}/><br/><Button size="small" danger style={{marginTop: 4}} onClick={() => { const q = form.getFieldValue('questions'); q[qField.name].choices[chField.name].contentValueEn = ''; form.setFieldsValue({questions: q}); }}>Xóa</Button></div>}
+                                                                                        </div>
                                                                                     </Col>
                                                                                 </Row>
                                                                             );

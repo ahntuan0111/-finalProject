@@ -25,6 +25,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finalproject.data.remote.model.AiChatMessageItem
@@ -42,10 +44,11 @@ fun ChatBoxAIScreen(
     val messages by viewModel.messages.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+    val inputValue by viewModel.inputValue.collectAsState()
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    var inputText by remember { mutableStateOf("") }
     var showClearDialog by remember { mutableStateOf(false) }
+    var isMathBarVisible by remember { mutableStateOf(false) }
 
     // Tự động cuộn xuống cuối khi có tin nhắn mới
     LaunchedEffect(messages.size) {
@@ -136,14 +139,22 @@ fun ChatBoxAIScreen(
                 LaunchedEffect(errMsg) { viewModel.clearError() }
             }
 
-            // Input field
+            // Solution 2: Real-time preview - chỉ hiện khi có LaTeX trong ô nhập
+            MathPreviewCard(inputText = inputValue.text)
+
+            // Math Symbol Bar + Input field
+            if (isMathBarVisible) {
+                MathSymbolBar(
+                    onSymbolClick = { text -> viewModel.insertSymbol(text) }
+                )
+            }
             MessageInput(
-                text = inputText,
-                onTextChange = { inputText = it },
+                value = inputValue,
+                onValueChange = { viewModel.onInputValueChange(it) },
                 isLoading = isLoading,
+                onFocusChange = { focused -> isMathBarVisible = focused },
                 onSend = {
-                    viewModel.sendMessage(inputText.trim())
-                    inputText = ""
+                    viewModel.sendMessage(inputValue.text.trim())
                 }
             )
         }
@@ -357,9 +368,10 @@ private fun TypingIndicator() {
 
 @Composable
 private fun MessageInput(
-    text: String,
-    onTextChange: (String) -> Unit,
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
     isLoading: Boolean,
+    onFocusChange: (Boolean) -> Unit,
     onSend: () -> Unit
 ) {
     Surface(
@@ -375,15 +387,17 @@ private fun MessageInput(
             verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedTextField(
-                value = text,
-                onValueChange = onTextChange,
+                value = value,
+                onValueChange = onValueChange,
                 placeholder = {
                     Text(
                         "Đặt câu hỏi hoặc nhập đề bài...",
                         fontSize = 14.sp
                     )
                 },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .onFocusChanged { focusState -> onFocusChange(focusState.isFocused) },
                 shape = RoundedCornerShape(24.dp),
                 maxLines = 4,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -395,7 +409,7 @@ private fun MessageInput(
             FloatingActionButton(
                 onClick = onSend,
                 modifier = Modifier.size(48.dp),
-                containerColor = if (text.isBlank() || isLoading)
+                containerColor = if (value.text.isBlank() || isLoading)
                     MaterialTheme.colorScheme.surfaceVariant
                 else
                     MaterialTheme.colorScheme.primary,
@@ -411,7 +425,7 @@ private fun MessageInput(
                     Icon(
                         Icons.AutoMirrored.Rounded.Send,
                         contentDescription = "Gửi",
-                        tint = if (text.isBlank()) MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = if (value.text.isBlank()) MaterialTheme.colorScheme.onSurfaceVariant
                         else Color.White
                     )
                 }

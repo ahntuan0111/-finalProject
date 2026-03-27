@@ -55,6 +55,7 @@ fun HomeScreen(
 ) {
     val userName by viewModel.userName.collectAsState()
     val subjects by viewModel.subjects.collectAsState()
+    val stats by viewModel.stats.collectAsState()
     val scrollState = rememberScrollState()
 
     // --- State cho Thông báo ---
@@ -94,7 +95,7 @@ fun HomeScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         // 3. Dashboard Thống kê
-        HomeDashboard(stats = viewModel.stats)
+        HomeDashboard(stats = stats)
 
         Spacer(modifier = Modifier.height(32.dp))
 

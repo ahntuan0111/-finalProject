@@ -36,18 +36,32 @@ public class GeminiValidationService {
     }
 
     public GeminiValidationResult validateHandwriting(String base64Image, String exerciseContent, String lang) {
-        String prompt = "Bạn là một giáo viên chấm thi. Đây là câu hỏi: [" + exerciseContent + "]. "
-                + "Đây là bức ảnh bài tập viết tay của học sinh (được base64 encode). "
-                + "Bạn KHÔNG cần chấm điểm đúng/sai. Hãy đánh giá xem bức ảnh này CÓ CHỨA NỘI DUNG LIÊN QUAN ĐẾN VIỆC GIẢI CÂU HỎI TRÊN KHÔNG (Ví dụ: có viết công thức toán, có các phép tính, hình vẽ, hay dòng chữ liên quan). "
-                + "Nếu ảnh chụp cảnh vật lung tung, đồ vật, selfie, thú cưng, giấy trắng, hoặc viết linh tinh chống đối -> KHÔNG HỢP LỆ. "
-                + "Chỉ xuất ra JSON. Định dạng bắt buộc: {\"isValid\": true hoặc false, \"reason\": \"Lý do ngắn gọn\"}";
-        
+        String prompt = "Bạn là một giáo viên chấm thi nghiêm khắc. Câu hỏi: [" + exerciseContent + "]. "
+                + "Đây là ảnh bài tập viết tay của học sinh. Hãy kiểm tra theo CÁC TIÊU CHÍ SAU ĐÂY:\n"
+                + "TIÊU CHÍ 1 – Nội dung hợp lệ: Ảnh phải chứa nội dung RÕ RÀNG liên quan đến việc giải câu hỏi trên (công thức toán, phép tính, hình vẽ, sơ đồ). "
+                + "Không chấp nhận: giấy trắng, phong cảnh, selfie, thú cưng, đồ vật, chữ lan man không liên quan.\n"
+                + "TIÊU CHÍ 2 – Diện tích hợp lệ: Bài giải phải CHIẾM ÍT NHẤT 20% diện tích ảnh. "
+                + "Nếu nội dung chỉ xuất hiện ở một góc nhỏ, bị cắt xén, mờ hoặc không đọc được -> TỪ CHỐI, yêu cầu học sinh chụp lại cho đầy đủ và rõ ràng hơn.\n"
+                + "TIÊU CHÍ 3 – Không gian trống: Nếu hơn 80% diện tích ảnh là giấy trắng hoặc nền trống, dù góc ảnh có chút chữ -> TỪ CHỐI.\n"
+                + "TIÊU CHÍ 4 – Đúng câu hỏi (QUAN TRỌNG NHẤT – chống gian lận): Đọc kỹ nội dung bài giải trong ảnh. "
+                + "Xác minh xem bài giải đó CÓ ĐANG CỐ GẮNG GIẢI QUYẾT ĐÚNG CÂU HỎI ĐÃ CHO không. "
+                + "Ví dụ: nếu câu hỏi là (-7) - (-5/8), nhưng ảnh lại là bài giải phương trình bậc 2 hoặc một phép tính hoàn toàn khác -> TỪ CHỐI. "
+                + "Không cần đáp án phải đúng, nhưng VẤN ĐỀ ĐANG GIẢI PHẢI TRÙNG KHỚP với câu hỏi đã cho.\n"
+                + "Chỉ xuất ra JSON. Định dạng bắt buộc: {\"isValid\": true hoặc false, \"reason\": \"Lý do ngắn gọn bằng tiếng Việt\"}";
+
         if ("en".equalsIgnoreCase(lang)) {
-            prompt = "You are a teacher grading a test. Question: [" + exerciseContent + "]. "
-                + "Here is the picture of student's handwriting (base64 encoded). "
-                + "You DO NOT need to check if the answer is correct or wrong. Only verify if the image CONTAINS CONTENTS RELATED TO SOLVING THE QUESTION (e.g. math formulas, calculations, related text). "
-                + "If the image is scenery, objects, selfie, pets, blank paper, or random unrelated text -> NOT VALID. "
-                + "Output ONLY JSON. Strict format: {\"isValid\": true or false, \"reason\": \"Short reason\"}";
+            prompt = "You are a strict grading teacher. Question: [" + exerciseContent + "]. "
+                + "This is the student's handwritten answer photo. Check ALL the following criteria:\n"
+                + "CRITERIA 1 – Valid content: The image must CLEARLY contain content related to solving the question (math formulas, calculations, diagrams). "
+                + "Not acceptable: blank paper, scenery, selfie, pets, objects, or unrelated random text.\n"
+                + "CRITERIA 2 – Sufficient area: The handwritten work must occupy AT LEAST 20% of the image area. "
+                + "If content only appears in a tiny corner, is cut off, blurry or unreadable -> REJECT and ask student to retake.\n"
+                + "CRITERIA 3 – Whitespace: If more than 80% of the image is blank/white, even if there is a little writing in a corner -> REJECT.\n"
+                + "CRITERIA 4 – Correct question (MOST IMPORTANT – anti-cheating): Read the solution in the image carefully. "
+                + "Verify that the solution IS ATTEMPTING TO SOLVE THE SPECIFIC GIVEN QUESTION. "
+                + "Example: if the question is (-7) - (-5/8) but the image shows a quadratic equation or a completely different calculation -> REJECT. "
+                + "The answer doesn't have to be correct, but THE PROBLEM BEING SOLVED MUST MATCH the given question.\n"
+                + "Output ONLY JSON. Strict format: {\"isValid\": true or false, \"reason\": \"Short reason in English\"}";
         }
 
         try {

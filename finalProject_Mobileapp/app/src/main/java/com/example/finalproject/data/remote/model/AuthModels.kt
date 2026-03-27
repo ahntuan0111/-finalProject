@@ -33,6 +33,11 @@ data class ResetPasswordRequest(
     val newPassword: String
 )
 
+data class VerifyRegisterRequest(
+    val email: String,
+    val otp: String
+)
+
 // --- 3. Model Data ---
 
 // Đây là data bên trong của phản hồi đăng nhập

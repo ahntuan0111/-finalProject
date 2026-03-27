@@ -86,4 +86,37 @@ class AuthRepositoryImpl @Inject constructor(
             emit(Result.failure(e))
         }
     }
+
+    override suspend fun requestRegisterOtp(request: RegisterRequest) = flow {
+        try {
+            val response = apiService.requestRegisterOtp(request)
+            if (response.isSuccessful) {
+                emit(Result.success(Unit))
+            } else {
+                val errorMsg = response.errorBody()?.string() ?: "Gửi mã xác thực thất bại"
+                emit(Result.failure(Exception(errorMsg)))
+            }
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
+    }
+
+    override suspend fun verifyRegisterOtp(request: com.example.finalproject.data.remote.model.VerifyRegisterRequest) = flow {
+        try {
+            val response = apiService.verifyRegister(request)
+            if (response.isSuccessful && response.body() != null) {
+                val authResponse = response.body()!!
+                val token = authResponse.data?.token
+                if (!token.isNullOrEmpty()) {
+                    dataStoreManager.saveToken(token)
+                }
+                emit(Result.success(authResponse))
+            } else {
+                val errorMsg = response.errorBody()?.string() ?: "Xác nhận OTP thất bại"
+                emit(Result.failure(Exception(errorMsg)))
+            }
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
+    }
 }

@@ -17,6 +17,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+
 @HiltViewModel
 class UserViewModel @Inject constructor(
     private val userRepository: UserRepository,
@@ -29,6 +33,14 @@ class UserViewModel @Inject constructor(
     var isLoading = mutableStateOf(false)
         private set
 
+    private val _events = MutableSharedFlow<UserEvent>()
+    val events: SharedFlow<UserEvent> = _events.asSharedFlow()
+
+    sealed class UserEvent {
+        data class ShowMessage(val message: String) : UserEvent()
+        object UpdateSuccess : UserEvent()
+    }
+
     // ĐÃ SỬA LỖI: Dùng map { it ?: 6 } để đảm bảo luôn trả về Int thay vì Int?
     val currentGrade: StateFlow<Int> = dataStoreManager.getGrade()
         .map { it ?: 6 }
@@ -37,7 +49,6 @@ class UserViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = 6
         )
-
 
     init {
         fetchProfile()
@@ -57,21 +68,44 @@ class UserViewModel @Inject constructor(
                 if (response.success) profile.value = response.data
             } catch (e: Exception) {
                 e.printStackTrace()
+                _events.emit(UserEvent.ShowMessage("Lỗi tải thông tin: ${e.message}"))
             } finally {
                 isLoading.value = false
             }
         }
     }
 
-    fun updateProfile(avatarUrl: String?, dateOfBirth: String?) {
+    fun updateProfile(avatarUrlOrUri: String?, dateOfBirth: String?) {
         viewModelScope.launch {
             isLoading.value = true
             try {
-                val request = UserProfileUpdateRequest(avatarUrl, dateOfBirth)
+                var finalAvatarUrl: String? = avatarUrlOrUri
+                
+                // Nếu avatar là URI content:// (từ thiết bị), tiến hành upload lên Firebase
+                if (avatarUrlOrUri != null && avatarUrlOrUri.startsWith("content://")) {
+                    _events.emit(UserEvent.ShowMessage("Đang tải ảnh lên..."))
+                    val uri = android.net.Uri.parse(avatarUrlOrUri)
+                    val downloadUrl = com.example.finalproject.utils.FirebaseStorageHelper.uploadAvatar(uri)
+                    if (downloadUrl != null) {
+                        finalAvatarUrl = downloadUrl
+                    } else {
+                        _events.emit(UserEvent.ShowMessage("Lỗi tải ảnh. Sẽ giữ lại ảnh cũ."))
+                        finalAvatarUrl = profile.value?.avatarUrl
+                    }
+                }
+
+                val request = UserProfileUpdateRequest(finalAvatarUrl, dateOfBirth)
                 val response = userRepository.updateProfile(request)
-                if (response.success) profile.value = response.data
+                if (response.success) {
+                    profile.value = response.data
+                    _events.emit(UserEvent.UpdateSuccess)
+                    _events.emit(UserEvent.ShowMessage("Cập nhật hồ sơ thành công!"))
+                } else {
+                    _events.emit(UserEvent.ShowMessage("Cập nhật thất bại: ${response.message}"))
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
+                _events.emit(UserEvent.ShowMessage("Lỗi hệ thống: ${e.message}"))
             } finally {
                 isLoading.value = false
             }
@@ -81,6 +115,7 @@ class UserViewModel @Inject constructor(
     fun saveGrade(newGrade: Int) {
         viewModelScope.launch {
             dataStoreManager.saveGrade(newGrade)
+            _events.emit(UserEvent.ShowMessage("Đã chuyển sang Lớp $newGrade"))
         }
     }
 
@@ -92,6 +127,14 @@ class UserViewModel @Inject constructor(
             // 2. Ép Android đổi ngôn ngữ UI (Cần Android 13+ hoặc thư viện AppCompat)
             val appLocale = LocaleListCompat.forLanguageTags(langCode)
             AppCompatDelegate.setApplicationLocales(appLocale)
+            
+            _events.emit(UserEvent.ShowMessage(if (langCode == "vi") "Đã đổi sang Tiếng Việt" else "Switched to English"))
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            dataStoreManager.clearToken()
         }
     }
 

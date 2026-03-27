@@ -22,6 +22,12 @@ interface ApiService {
     @POST("auth/register")
     suspend fun register(@Body request: RegisterRequest): Response<AuthResponse>
 
+    @POST("auth/register-otp")
+    suspend fun requestRegisterOtp(@Body request: RegisterRequest): Response<ApiResponse<String>>
+
+    @POST("auth/verify-register")
+    suspend fun verifyRegister(@Body request: VerifyRegisterRequest): Response<AuthResponse>
+
     // Forgot Password trả về message -> ApiResponse<String>
     @POST("auth/forgot-password")
     suspend fun forgotPassword(@Body request: ForgotPasswordRequest): Response<ApiResponse<String>>

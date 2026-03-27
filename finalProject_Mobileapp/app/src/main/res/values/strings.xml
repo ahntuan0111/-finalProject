@@ -1,13 +1,13 @@
 <resources>
-    <string name="app_name">Final Project</string>
+    <string name="app_name">MaSci</string>
 
     <string name="welcome_skip">Bỏ qua</string>
-    <string name="welcome_page1_title">Học tập mọi lúc</string>
-    <string name="welcome_page1_desc">Truy cập bài giảng và làm bài tập bất cứ đâu, bất cứ khi nào.</string>
-    <string name="welcome_page2_title">Theo dõi tiến độ</string>
-    <string name="welcome_page2_desc">Biểu đồ trực quan giúp bạn nắm bắt kết quả học tập từng ngày.</string>
-    <string name="welcome_page3_title">Trao đổi dễ dàng</string>
-    <string name="welcome_page3_desc">Kết nối với giáo viên và bạn bè để giải đáp thắc mắc.</string>
+    <string name="welcome_page1_title">Giải bài tập thông minh</string>
+    <string name="welcome_page1_desc">Sử dụng AI để giải toán và các môn khoa học một cách chi tiết, dễ hiểu.</string>
+    <string name="welcome_page2_title">Chỉnh phục điểm số</string>
+    <string name="welcome_page2_desc">Hệ thống bài tập bám sát chương trình học giúp bạn tự tin đạt điểm 10.</string>
+    <string name="welcome_page3_title">Gia sư AI 24/7</string>
+    <string name="welcome_page3_desc">Học cùng MaSci mọi lúc, mọi nơi để khám phá thế giới tri thức vô tận.</string>
     <string name="welcome_btn_next">Tiếp tục</string>
     <string name="welcome_btn_start">Bắt đầu ngay</string>
 
@@ -15,7 +15,7 @@
     <string name="auth_btn_register">Đăng ký tài khoản mới</string>
 
     <string name="login_title">Đăng nhập</string>
-    <string name="login_subtitle">Đăng nhập vào tài khoản của bạn</string>
+    <string name="login_subtitle">Chào mừng bạn quay trở lại!</string>
     <string name="login_username_hint">Tên đăng nhập</string>
     <string name="login_password_hint">Mật khẩu</string>
     <string name="login_forgot_password">Quên mật khẩu?</string>
@@ -23,8 +23,25 @@
     <string name="login_btn_signup">Đăng ký</string>
     <string name="login_toast_success">Đăng nhập thành công!</string>
 
-    <string name="register_title">Đăng ký</string>
-    <string name="register_subtitle">Tạo tài khoản, hoàn toàn miễn phí</string>
+    <string name="register_title">Bắt đầu hành trình chinh phục điểm 10 ngay hôm nay!</string>
+    <string name="register_subtitle">Gia nhập cộng đồng học tập thông minh cùng hàng ngàn học sinh khác.</string>
+    <string name="register_badge_new_member">CHÀO MỪNG BẠN MỚI</string>
+    <string name="register_label_username">Tên đăng nhập</string>
+    <string name="register_label_email">Email</string>
+    <string name="register_label_password">Mật khẩu</string>
+    <string name="register_label_confirm_password">Xác nhận mật khẩu</string>
+    <string name="register_terms_accept">Tôi đồng ý với các Điều khoản sử dụng và Chính sách bảo mật của MaSci.</string>
+    <string name="social_login_google">Đăng nhập bằng Google</string>
+    <string name="social_login_facebook">Facebook</string>
+    <string name="social_login_google_short">Google</string>
+    <string name="social_login_or">Hoặc tiếp tục với</string>
+    <string name="social_register_or">HOẶC ĐĂNG KÝ BẰNG</string>
+    <string name="register_help_link">Bạn gặp khó khăn khi đăng ký? Liên hệ hỗ trợ</string>
+    <string name="welcome_brand_desc">Cùng nhau học tập,\ncùng nhau vươn xa!</string>
+    <string name="welcome_brand_sub">Khám phá kho tàng kiến thức khổng lồ và bắt đầu hành trình chinh phục tương lai ngay hôm nay.</string>
+    <string name="welcome_btn_login_short">➜ Đăng nhập</string>
+    <string name="welcome_btn_register_new">👤 Đăng ký tài khoản mới</string>
+    <string name="welcome_help_link">Bạn cần hỗ trợ? Liên hệ chúng tôi</string>
     <string name="register_username_hint">Tên đăng nhập</string>
     <string name="register_email_hint">Email</string>
     <string name="register_password_hint">Mật khẩu</string>

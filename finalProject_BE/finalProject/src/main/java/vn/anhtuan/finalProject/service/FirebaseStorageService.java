@@ -6,6 +6,9 @@ import com.google.cloud.storage.HttpMethod;
 import com.google.cloud.storage.Storage;
 import com.google.firebase.cloud.StorageClient;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -59,5 +62,32 @@ public class FirebaseStorageService {
             e.printStackTrace();
             throw new RuntimeException("Lỗi tạo Signed URL: " + e.getMessage());
         }
+    }
+
+    /**
+     * Upload trực tiếp file lên Firebase Storage (sử dụng cho Web-Admin)
+     */
+    public String uploadImageToFirebase(MultipartFile file, String folderName) throws IOException {
+        Storage storage = StorageClient.getInstance().bucket().getStorage();
+        String bucketName = StorageClient.getInstance().bucket().getName();
+
+        // Tạo tên file an toàn
+        String originalFilename = file.getOriginalFilename() != null ? file.getOriginalFilename().replaceAll("[^a-zA-Z0-9.-]", "_") : "image.jpg";
+        String fileName = folderName + "/" + UUID.randomUUID().toString() + "_" + originalFilename;
+
+        BlobId blobId = BlobId.of(bucketName, fileName);
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+                .setContentType(file.getContentType())
+                .build();
+
+        // Tải file lên Firebase
+        storage.create(blobInfo, file.getBytes());
+
+        // Trả về URL public truy cập ảnh
+        return String.format(
+                "https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media",
+                bucketName,
+                fileName.replace("/", "%2F")
+        );
     }
 }

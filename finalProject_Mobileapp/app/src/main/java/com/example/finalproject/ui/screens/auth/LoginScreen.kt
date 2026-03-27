@@ -6,12 +6,21 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -19,6 +28,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -26,8 +37,8 @@ import androidx.navigation.NavController
 import com.example.finalproject.R
 import com.example.finalproject.ui.components.CustomTextField
 import com.example.finalproject.ui.components.PrimaryButton
+import com.example.finalproject.ui.components.SocialButton
 import com.example.finalproject.ui.theme.PrimaryBlue
-
 import com.example.finalproject.ui.viewmodel.AuthState
 import com.example.finalproject.ui.viewmodel.AuthViewModel
 
@@ -35,6 +46,7 @@ import com.example.finalproject.ui.viewmodel.AuthViewModel
 fun LoginScreen(navController: NavController, viewModel: AuthViewModel = hiltViewModel()) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
 
     val state by viewModel.loginState.collectAsState()
     val context = LocalContext.current
@@ -44,7 +56,6 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel = hiltVie
             is AuthState.LoginSuccess -> {
                 val hasGrade = (state as AuthState.LoginSuccess).hasGrade
                 Toast.makeText(context, context.getString(R.string.login_toast_success), Toast.LENGTH_SHORT).show()
-
                 if (hasGrade) {
                     navController.navigate("home") { popUpTo("welcome") { inclusive = true } }
                 } else {
@@ -62,33 +73,70 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel = hiltVie
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(Color.White)
             .padding(24.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // Branding
+        Text(
+            text = "MaSci",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = PrimaryBlue,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
 
         Text(
             text = stringResource(id = R.string.login_title),
-            fontSize = 32.sp,
+            fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            color = PrimaryBlue,
-            modifier = Modifier.align(Alignment.Start)
+            color = Color(0xFF1E293B)
         )
         Text(
             text = stringResource(id = R.string.login_subtitle),
-            fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.align(Alignment.Start).padding(top = 8.dp)
+            fontSize = 15.sp,
+            color = Color(0xFF64748B),
+            modifier = Modifier.padding(top = 8.dp)
         )
 
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
+        // Circular Illustration
+        Box(
+            modifier = Modifier
+                .size(180.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFF1F5F9)),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.study_time),
+                contentDescription = "Login Illustration",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Form fields with leading icons
         CustomTextField(
             value = username,
             onValueChange = { username = it },
             label = stringResource(id = R.string.login_username_hint),
+            showLabelOutside = false,
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    tint = PrimaryBlue
+                )
+            },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
         )
 
@@ -96,7 +144,21 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel = hiltVie
             value = password,
             onValueChange = { password = it },
             label = stringResource(id = R.string.login_password_hint),
-            visualTransformation = PasswordVisualTransformation(),
+            showLabelOutside = false,
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = null,
+                    tint = PrimaryBlue
+                )
+            },
+            trailingIcon = {
+                val image = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(imageVector = image, contentDescription = null, tint = Color(0xFF94A3B8))
+                }
+            },
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done)
         )
 
@@ -107,7 +169,7 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel = hiltVie
             fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .align(Alignment.End)
-                .padding(top = 8.dp, bottom = 24.dp)
+                .padding(bottom = 24.dp)
                 .clickable { navController.navigate("forgot_password") }
         )
 
@@ -117,13 +179,34 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel = hiltVie
             isLoading = state is AuthState.Loading
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Social Login
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFE2E8F0))
+            Text(
+                text = " " + stringResource(id = R.string.social_login_or) + " ",
+                fontSize = 12.sp,
+                color = Color(0xFF94A3B8)
+            )
+            HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFE2E8F0))
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        SocialButton(
+            text = stringResource(id = R.string.social_login_google),
+            icon = R.drawable.ic_launcher_foreground, // Replace with Google icon in drawable
+            onClick = { /* Handle Google Login */ }
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center
         ) {
-            Text(text = stringResource(id = R.string.login_no_account), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(text = stringResource(id = R.string.login_no_account), color = Color(0xFF64748B))
             Text(
                 text = stringResource(id = R.string.login_btn_signup),
                 color = PrimaryBlue,
@@ -132,12 +215,13 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel = hiltVie
             )
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(40.dp))
 
-        Image(
-            painter = painterResource(id = R.drawable.study_time),
-            contentDescription = "Login Illustration",
-            modifier = Modifier.fillMaxWidth().height(200.dp)
+        Text(
+            text = "© 2024 MaSci Learning Platform. All rights reserved.",
+            fontSize = 11.sp,
+            color = Color(0xFF94A3B8),
+            textAlign = TextAlign.Center
         )
     }
 }

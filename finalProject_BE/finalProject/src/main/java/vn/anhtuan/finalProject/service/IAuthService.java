@@ -12,4 +12,8 @@ public interface IAuthService {
 
     void forgotPassword(ForgotPasswordRequest request);
     void resetPassword(ResetPasswordRequest request);
+
+    // OTP Registration
+    void requestRegisterOtp(RegisterRequest registerRequest);
+    AuthResponse verifyRegisterOtp(vn.anhtuan.finalProject.dto.request.VerifyRegisterRequest request);
 }

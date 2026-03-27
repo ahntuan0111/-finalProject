@@ -64,4 +64,17 @@ public class AuthController {
         authService.resetPassword(request);
         return ResponseEntity.ok(ApiResponse.success("Mật khẩu đã được thay đổi thành công", "Thành công"));
     }
+    // --- API ĐĂNG KÝ VỚI OTP ---
+
+    @PostMapping("/register-otp")
+    public ResponseEntity<ApiResponse<String>> requestRegisterOtp(@Valid @RequestBody RegisterRequest request) {
+        authService.requestRegisterOtp(request);
+        return ResponseEntity.ok(ApiResponse.success("Mã OTP đã được gửi đến email của bạn", "Thành công"));
+    }
+
+    @PostMapping("/verify-register")
+    public ResponseEntity<ApiResponse<AuthResponse>> verifyRegister(@Valid @RequestBody vn.anhtuan.finalProject.dto.request.VerifyRegisterRequest request) {
+        AuthResponse authResponse = authService.verifyRegisterOtp(request);
+        return ResponseEntity.ok(ApiResponse.success(authResponse, "Xác thực và đăng ký thành công"));
+    }
 }

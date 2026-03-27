@@ -55,7 +55,7 @@ const val BASE_IMAGE_URL = "http://10.0.2.2:8080"
 
 fun getFullImageUrl(path: String?): String {
     if (path.isNullOrEmpty()) return ""
-    return if (path.startsWith("http")) path else "$BASE_IMAGE_URL$path"
+    return if (path.startsWith("http")) path else "http://10.0.2.2:8080$path"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -605,7 +605,7 @@ fun ContentRenderer(type: String?, value: String?) {
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun LatexMathView(latex: String, modifier: Modifier = Modifier) {
-    val textColorHex = if (androidx.compose.foundation.isSystemInDarkTheme()) "#FAFAFA" else "#000000"
+    val textColorHex = if (androidx.compose.foundation.isSystemInDarkTheme()) "#FAFAFA" else "#1E293B"
     val dollarSign = "${'$'}"
 
     val htmlContent = """
@@ -613,37 +613,36 @@ fun LatexMathView(latex: String, modifier: Modifier = Modifier) {
         <html>
         <head>
             <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-            
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-            
-            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-            <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-            
+            <link rel="stylesheet" href="file:///android_asset/katex/katex.min.css">
+            <script src="file:///android_asset/katex/katex.min.js"></script>
+            <script src="file:///android_asset/katex/auto-render.min.js"></script>
             <style>
                 body { 
                     font-size: 16px; 
                     color: ${'$'}textColorHex; 
-                    font-family: 'Roboto', sans-serif; 
+                    font-family: sans-serif; 
                     margin: 0; 
                     padding: 0;
                     background-color: transparent;
                     overflow-wrap: break-word; 
+                    line-height: 1.7;
                 }
-                img { max-width: 100%; height: auto; display: block; margin: 4px 0; }
                 .katex { font-size: 1.1em; }
+                .katex-display { overflow-x: auto; }
             </style>
-            
             <script>
                 document.addEventListener("DOMContentLoaded", function() {
-                    renderMathInElement(document.body, {
-                        delimiters: [
-                            {left: "$dollarSign$dollarSign", right: "$dollarSign$dollarSign", display: true},
-                            {left: "$dollarSign", right: "$dollarSign", display: false},
-                            {left: "\\(", right: "\\)", display: false},
-                            {left: "\\[", right: "\\]", display: true}
-                        ],
-                        throwOnError : false
-                    });
+                    if (typeof renderMathInElement !== 'undefined') {
+                        renderMathInElement(document.body, {
+                            delimiters: [
+                                {left: "$dollarSign$dollarSign", right: "$dollarSign$dollarSign", display: true},
+                                {left: "$dollarSign", right: "$dollarSign", display: false},
+                                {left: "\\(", right: "\\)", display: false},
+                                {left: "\\[", right: "\\]", display: true}
+                            ],
+                            throwOnError : false
+                        });
+                    }
                 });
             </script>
         </head>
@@ -677,8 +676,7 @@ fun LatexMathView(latex: String, modifier: Modifier = Modifier) {
             }
         },
         update = { webView ->
-            val encodedHtml = Base64.encodeToString(htmlContent.toByteArray(), Base64.NO_PADDING)
-            webView.loadData(encodedHtml, "text/html", "base64")
+            webView.loadDataWithBaseURL("file:///android_asset/", htmlContent, "text/html", "UTF-8", null)
         }
     )
 }

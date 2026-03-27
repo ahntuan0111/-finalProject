@@ -40,6 +40,17 @@ class ExerciseRepositoryImpl @Inject constructor(
             } else {
                 Resource.Error(response.message ?: "Lỗi đánh giá AI")
             }
+        } catch (e: retrofit2.HttpException) {
+            // HTTP 400: Backend trả về lý do từ chối của AI trong body JSON
+            // Cần parse body để lấy message thay vì hiện "Lỗi kết nối"
+            val aiMessage = try {
+                val errorBody = e.response()?.errorBody()?.string()
+                val json = org.json.JSONObject(errorBody ?: "")
+                json.optString("message", "Ảnh không hợp lệ, vui lòng chụp lại")
+            } catch (parseEx: Exception) {
+                "Ảnh không hợp lệ, vui lòng chụp lại"
+            }
+            Resource.Error(aiMessage)
         } catch (e: Exception) {
             Resource.Error("Lỗi kết nối: ${e.message}")
         }

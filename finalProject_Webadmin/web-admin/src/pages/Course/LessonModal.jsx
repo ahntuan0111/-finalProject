@@ -212,58 +212,70 @@ const LessonModal = ({ open, onClose, onSubmit, initialValues, loading, nextOrde
                                     {/* CỘT TIẾNG VIỆT */}
                                     <Col span={12}>
                                         <Text strong style={{ display: 'block', marginBottom: 8 }}>Ảnh (Tiếng Việt)</Text>
-                                        <Form.Item
-                                            {...restField}
-                                            name={[name, 'valueVi']}
-                                            rules={[{ required: true, message: 'Vui lòng upload ảnh tiếng Việt' }]}
-                                        >
-                                            <div style={{ border: '1px dashed #d9d9d9', padding: 20, textAlign: 'center', borderRadius: 6, background: '#fafafa' }}>
-                                                {valueVi ? (
-                                                    <div>
-                                                        <Image src={getFullImageUrl(valueVi)} height={150} style={{ objectFit: 'contain', borderRadius: 4 }} />
-                                                        <div style={{ marginTop: 12 }}>
-                                                            <Button danger onClick={() => {
-                                                                const contents = form.getFieldValue('contents');
-                                                                contents[name].valueVi = '';
-                                                                form.setFieldsValue({ contents });
-                                                            }}>Gỡ ảnh VN</Button>
-                                                        </div>
+                                        <div style={{ border: '1px dashed #d9d9d9', padding: 15, borderRadius: 6, background: '#fafafa' }}>
+                                            <Form.Item
+                                                {...restField}
+                                                name={[name, 'valueVi']}
+                                                rules={[{ required: true, message: 'Vui lòng nhập Link hoặc Upload ảnh Tiếng Việt' }]}
+                                                style={{ marginBottom: 12 }}
+                                            >
+                                                <Input 
+                                                    placeholder="Dán URL ảnh hoặc nhấn nút tải lên..." 
+                                                    addonAfter={
+                                                        <Upload customRequest={(options) => customRequest(options, add, name, 'valueVi')} showUploadList={false} accept="image/*">
+                                                            <UploadOutlined style={{ cursor: 'pointer', padding: '0 8px' }} title="Tải ảnh lên" />
+                                                        </Upload>
+                                                    }
+                                                />
+                                            </Form.Item>
+                                            
+                                            {valueVi && (
+                                                <div style={{ textAlign: 'center' }}>
+                                                    <Image src={getFullImageUrl(valueVi)} height={150} style={{ objectFit: 'contain', borderRadius: 4 }} />
+                                                    <div style={{ marginTop: 12 }}>
+                                                        <Button danger onClick={() => {
+                                                            const contents = form.getFieldValue('contents');
+                                                            contents[name].valueVi = '';
+                                                            form.setFieldsValue({ contents });
+                                                        }}>Gỡ ảnh VN</Button>
                                                     </div>
-                                                ) : (
-                                                    <Upload customRequest={(options) => customRequest(options, add, name, 'valueVi')} showUploadList={false} accept="image/*">
-                                                        <Button icon={<UploadOutlined />}>Tải ảnh lên (VN)</Button>
-                                                    </Upload>
-                                                )}
-                                            </div>
-                                        </Form.Item>
+                                                </div>
+                                            )}
+                                        </div>
                                     </Col>
 
                                     {/* CỘT TIẾNG ANH */}
                                     <Col span={12}>
                                         <Text strong style={{ display: 'block', marginBottom: 8 }}>Ảnh (English) - Tùy chọn</Text>
-                                        <Form.Item
-                                            {...restField}
-                                            name={[name, 'valueEn']}
-                                        >
-                                            <div style={{ border: '1px dashed #d9d9d9', padding: 20, textAlign: 'center', borderRadius: 6, background: '#fafafa' }}>
-                                                {valueEn ? (
-                                                    <div>
-                                                        <Image src={getFullImageUrl(valueEn)} height={150} style={{ objectFit: 'contain', borderRadius: 4 }} />
-                                                        <div style={{ marginTop: 12 }}>
-                                                            <Button danger onClick={() => {
-                                                                const contents = form.getFieldValue('contents');
-                                                                contents[name].valueEn = '';
-                                                                form.setFieldsValue({ contents });
-                                                            }}>Gỡ ảnh EN</Button>
-                                                        </div>
+                                        <div style={{ border: '1px dashed #d9d9d9', padding: 15, borderRadius: 6, background: '#fafafa' }}>
+                                            <Form.Item
+                                                {...restField}
+                                                name={[name, 'valueEn']}
+                                                style={{ marginBottom: 12 }}
+                                            >
+                                                <Input 
+                                                    placeholder="Paste Image URL or upload..." 
+                                                    addonAfter={
+                                                        <Upload customRequest={(options) => customRequest(options, add, name, 'valueEn')} showUploadList={false} accept="image/*">
+                                                            <UploadOutlined style={{ cursor: 'pointer', padding: '0 8px' }} title="Upload English Image" />
+                                                        </Upload>
+                                                    }
+                                                />
+                                            </Form.Item>
+                                            
+                                            {valueEn && (
+                                                <div style={{ textAlign: 'center' }}>
+                                                    <Image src={getFullImageUrl(valueEn)} height={150} style={{ objectFit: 'contain', borderRadius: 4 }} />
+                                                    <div style={{ marginTop: 12 }}>
+                                                        <Button danger onClick={() => {
+                                                            const contents = form.getFieldValue('contents');
+                                                            contents[name].valueEn = '';
+                                                            form.setFieldsValue({ contents });
+                                                        }}>Gỡ ảnh EN</Button>
                                                     </div>
-                                                ) : (
-                                                    <Upload customRequest={(options) => customRequest(options, add, name, 'valueEn')} showUploadList={false} accept="image/*">
-                                                        <Button icon={<UploadOutlined />}>Tải ảnh lên (EN)</Button>
-                                                    </Upload>
-                                                )}
-                                            </div>
-                                        </Form.Item>
+                                                </div>
+                                            )}
+                                        </div>
                                     </Col>
                                 </Row>
                               );

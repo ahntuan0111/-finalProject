@@ -13,16 +13,20 @@ import vn.anhtuan.finalProject.dto.request.ForgotPasswordRequest;
 import vn.anhtuan.finalProject.dto.request.LoginRequest;
 import vn.anhtuan.finalProject.dto.request.RegisterRequest;
 import vn.anhtuan.finalProject.dto.request.ResetPasswordRequest;
+import vn.anhtuan.finalProject.dto.request.VerifyRegisterRequest;
 import vn.anhtuan.finalProject.dto.response.AuthResponse;
 import vn.anhtuan.finalProject.entity.PasswordResetToken;
+import vn.anhtuan.finalProject.entity.RegistrationOtp;
 import vn.anhtuan.finalProject.entity.Role;
 import vn.anhtuan.finalProject.entity.User;
 import vn.anhtuan.finalProject.exception.BadRequestException;
 import vn.anhtuan.finalProject.exception.ResourceNotFoundException;
 import vn.anhtuan.finalProject.repository.PasswordResetTokenRepository;
+import vn.anhtuan.finalProject.repository.RegistrationOtpRepository;
 import vn.anhtuan.finalProject.repository.UserRepository;
 import vn.anhtuan.finalProject.security.JwtTokenProvider;
 import vn.anhtuan.finalProject.service.IAuthService;
+import vn.anhtuan.finalProject.service.IEmailService;
 
 import java.time.LocalDateTime;
 import java.util.Random;
@@ -30,24 +34,30 @@ import java.util.Random;
 @Service
 public class AuthServiceImpl implements IAuthService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class); // Khai báo Logger
+    private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
-    private final PasswordResetTokenRepository tokenRepository; // Inject thêm Repository này
+    private final PasswordResetTokenRepository tokenRepository;
+    private final RegistrationOtpRepository registrationOtpRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final IEmailService emailService;
 
     public AuthServiceImpl(AuthenticationManager authenticationManager,
                            UserRepository userRepository,
                            PasswordResetTokenRepository tokenRepository,
+                           RegistrationOtpRepository registrationOtpRepository,
                            PasswordEncoder passwordEncoder,
-                           JwtTokenProvider jwtTokenProvider) {
+                           JwtTokenProvider jwtTokenProvider,
+                           IEmailService emailService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
+        this.registrationOtpRepository = registrationOtpRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.emailService = emailService;
     }
 
     @Override
@@ -71,14 +81,10 @@ public class AuthServiceImpl implements IAuthService {
 
     @Override
     public String register(RegisterRequest registerRequest) {
-        logger.info("--- Service: Bắt đầu xử lý đăng ký cho user: {}", registerRequest.getUsername());
-
         if (userRepository.existsByUsername(registerRequest.getUsername())) {
-            logger.warn("--- Service Error: Username {} đã tồn tại", registerRequest.getUsername());
             throw new BadRequestException("Username đã tồn tại!");
         }
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            logger.warn("--- Service Error: Email {} đã tồn tại", registerRequest.getEmail());
             throw new BadRequestException("Email đã tồn tại!");
         }
 
@@ -89,65 +95,101 @@ public class AuthServiceImpl implements IAuthService {
         user.setRole(Role.USER);
 
         userRepository.save(user);
-        logger.info("--- Service: Lưu User vào DB thành công với ID: {}", user.getId());
-
         return "Đăng ký thành công!";
     }
 
-    // --- LOGIC QUÊN MẬT KHẨU ---
+    @Override
+    @Transactional
+    public void requestRegisterOtp(RegisterRequest registerRequest) {
+        if (userRepository.existsByUsername(registerRequest.getUsername()) || registrationOtpRepository.existsByUsername(registerRequest.getUsername())) {
+             throw new BadRequestException("Username đã tồn tại!");
+        }
+        if (userRepository.existsByEmail(registerRequest.getEmail())) {
+             throw new BadRequestException("Email đã tồn tại!");
+        }
+
+        registrationOtpRepository.deleteByEmail(registerRequest.getEmail());
+
+        String otp = String.format("%06d", new Random().nextInt(999999));
+        
+        RegistrationOtp registrationOtp = new RegistrationOtp(
+                registerRequest.getUsername(),
+                registerRequest.getEmail(),
+                passwordEncoder.encode(registerRequest.getPassword()),
+                otp,
+                LocalDateTime.now().plusMinutes(5)
+        );
+        registrationOtpRepository.save(registrationOtp);
+
+        emailService.sendOtpEmail(registerRequest.getEmail(), otp);
+        logger.info(">>> Registration OTP sent to {}: {}", registerRequest.getEmail(), otp);
+    }
 
     @Override
-    @Transactional // Cần Transactional để thực hiện xóa token cũ và thêm mới
+    @Transactional
+    public AuthResponse verifyRegisterOtp(VerifyRegisterRequest request) {
+        RegistrationOtp regOtp = registrationOtpRepository.findByEmailAndOtp(request.getEmail(), request.getOtp())
+                .orElseThrow(() -> new BadRequestException("Mã OTP không chính xác hoặc đã hết hạn"));
+
+        if (regOtp.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Mã OTP đã hết hạn");
+        }
+
+        User user = new User();
+        user.setUsername(regOtp.getUsername());
+        user.setEmail(regOtp.getEmail());
+        user.setPassword(regOtp.getPassword());
+        user.setRole(Role.USER);
+        userRepository.save(user);
+
+        registrationOtpRepository.delete(regOtp);
+
+        String token = jwtTokenProvider.generateToken(user);
+        return new AuthResponse(token, user.getId(), user.getUsername(), user.getEmail(), user.getRole().name());
+    }
+
+    @Override
+    @Transactional
     public void forgotPassword(ForgotPasswordRequest request) {
-        // 1. Kiểm tra email có tồn tại không
         if (!userRepository.existsByEmail(request.getEmail())) {
             throw new ResourceNotFoundException("Email không tồn tại trong hệ thống");
         }
 
-        // 2. Xóa token cũ nếu có (để db sạch sẽ)
         tokenRepository.deleteByEmail(request.getEmail());
 
-        // 3. Tạo OTP ngẫu nhiên 6 số
         String otp = String.format("%06d", new Random().nextInt(999999));
 
-        // 4. Lưu vào bảng password_reset_tokens
         PasswordResetToken resetToken = new PasswordResetToken(
                 otp,
                 request.getEmail(),
-                LocalDateTime.now().plusMinutes(15) // Hết hạn sau 15 phút
+                LocalDateTime.now().plusMinutes(15)
         );
         tokenRepository.save(resetToken);
 
-        // 5. Gửi Email (Ở đây in ra console để test)
-        // TODO: Tích hợp JavaMailSender để gửi thật
-        System.out.println(">>> OTP SEND TO " + request.getEmail() + " : " + otp);
+        emailService.sendOtpEmail(request.getEmail(), otp);
+        logger.info(">>> Forgot PW OTP sent to {}: {}", request.getEmail(), otp);
     }
 
     @Override
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
-        // 1. Tìm Token trong DB
         PasswordResetToken resetToken = tokenRepository.findByToken(request.getOtp())
                 .orElseThrow(() -> new BadRequestException("Mã OTP không chính xác"));
 
-        // 2. Kiểm tra Token có khớp với Email gửi lên không
         if (!resetToken.getEmail().equals(request.getEmail())) {
             throw new BadRequestException("Mã OTP không hợp lệ cho email này");
         }
 
-        // 3. Kiểm tra hết hạn
         if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Mã OTP đã hết hạn");
         }
 
-        // 4. Tìm User và đổi mật khẩu
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User không tồn tại"));
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
 
-        // 5. Xóa token sau khi dùng xong
         tokenRepository.delete(resetToken);
     }
 }

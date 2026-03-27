@@ -2,7 +2,9 @@ package com.example.finalproject.ui.screens.theory
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.webkit.WebSettings
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,20 +19,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.finalproject.R
 import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.viewmodel.TheoryDetailViewModel
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,7 +97,7 @@ fun TheoryDetailScreen(
                         // 1. Tiêu đề
                         item {
                             Text(
-                                text = data.title ?: "Chưa cập nhật tiêu đề", // BỔ SUNG ?:
+                                text = data.title ?: "Chưa cập nhật tiêu đề",
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = PrimaryBlue,
@@ -103,7 +105,7 @@ fun TheoryDetailScreen(
                             )
                         }
 
-                        // 2. VIDEO (SỬ DỤNG NATIVE YOUTUBE PLAYER LIBRARY)
+                        // 2. VIDEO
                         if (!data.videoUrl.isNullOrEmpty()) {
                             item {
                                 Text(
@@ -138,22 +140,13 @@ fun TheoryDetailScreen(
                         items(data.contents) { content ->
                             when (content.contentType) {
                                 "TEXT" -> {
-                                    // Thêm ?: "" để nếu Backend trả về null thì truyền chuỗi rỗng vào
-                                    LatexWebView(content = content.contentValue ?: "")
+                                    LatexMathView(latex = content.contentValue ?: "")
                                 }
                                 "IMAGE" -> {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(200.dp)
-                                            .background(MaterialTheme.colorScheme.surfaceVariant),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(stringResource(id = R.string.theory_detail_image_placeholder), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    }
+                                    LessonImage(imageUrl = content.contentValue ?: "")
                                 }
                             }
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
                         }
 
                         item {
@@ -196,97 +189,78 @@ fun TheoryDetailScreen(
     }
 }
 
-// --- COMPONENT CHƠI VIDEO NATIVE (FIX LỖI 152 & UPDATE V13.0.0) ---
+// --- COMPONENT CHƠI VIDEO QUA WEBVIEW IFRAME (Hoạt động cả trên Emulator & máy thật) ---
+@SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun NativeYouTubePlayer(videoId: String) {
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
+    val iframeHtml = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body { margin:0; padding:0; background:#000; }
+                .video-container { position:relative; padding-bottom:56.25%; height:0; overflow:hidden; }
+                .video-container iframe { position:absolute; top:0; left:0; width:100%; height:100%; border:0; }
+            </style>
+        </head>
+        <body>
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/$videoId?playsinline=1&rel=0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+                </iframe>
+            </div>
+        </body>
+        </html>
+    """.trimIndent()
 
-    var youtubePlayerRef by remember { mutableStateOf<YouTubePlayer?>(null) }
-    var hasError by remember { mutableStateOf(false) }
-
-    if (hasError) {
-        // Fallback: Hiển thị nút mở trên YouTube nếu video bị lỗi
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(16f / 9f)
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFF1A1A1A)),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Không thể phát video trong ứng dụng", color = Color.White, fontSize = 14.sp)
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = {
-                        val intent = android.content.Intent(
-                            android.content.Intent.ACTION_VIEW,
-                            Uri.parse("https://www.youtube.com/watch?v=$videoId")
-                        )
-                        context.startActivity(intent)
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF0000))
-                ) {
-                    Text("▶ Mở trên YouTube", color = Color.White)
-                }
-            }
-        }
-    } else {
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .aspectRatio(16f / 9f)
+        .clip(RoundedCornerShape(8.dp))
+        .background(Color.Black)
+    ) {
         AndroidView(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(16f / 9f)
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color.Black),
-            factory = { ctx -> // ctx (Context) được cung cấp ở đây
-                YouTubePlayerView(ctx).apply {
-                    enableAutomaticInitialization = false
-                    lifecycleOwner.lifecycle.addObserver(this)
-
-                    // ĐÃ FIX: Truyền ctx vào Builder() theo yêu cầu của thư viện v13.0.0
-                    val iFrameOptions = com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions.Builder(ctx)
-                        .controls(1)
-                        .rel(0)
-                        .build()
-
-                    val listener = object : AbstractYouTubePlayerListener() {
-                        override fun onReady(youTubePlayer: YouTubePlayer) {
-                            youtubePlayerRef = youTubePlayer
-                            youTubePlayer.cueVideo(videoId, 0f)
-                        }
-
-                        override fun onError(youTubePlayer: YouTubePlayer, error: com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants.PlayerError) {
-                            hasError = true
-                        }
-                    }
-
-                    initialize(listener, iFrameOptions)
+            modifier = Modifier.fillMaxSize(),
+            factory = { ctx ->
+                WebView(ctx).apply {
+                    settings.javaScriptEnabled = true
+                    settings.domStorageEnabled = true
+                    settings.mediaPlaybackRequiresUserGesture = false
+                    settings.loadWithOverviewMode = true
+                    settings.useWideViewPort = true
+                    setBackgroundColor(android.graphics.Color.BLACK)
+                    webViewClient = WebViewClient()
                 }
             },
-            update = { _ ->
-                youtubePlayerRef?.cueVideo(videoId, 0f)
+            update = { webView ->
+                webView.loadDataWithBaseURL("https://www.youtube.com", iframeHtml, "text/html", "UTF-8", null)
             }
         )
     }
 }
+
+
 /**
  * Hàm tách ID Youtube
  */
 fun extractYoutubeVideoId(url: String): String {
+    if (url.isBlank()) return ""
     return try {
         val uri = Uri.parse(url)
-        val host = uri.host ?: return ""
+        val host = uri.host ?: ""
 
         when {
             host.contains("youtu.be") -> uri.lastPathSegment ?: ""
             host.contains("youtube.com") -> {
-                val path = uri.path ?: ""
-                when {
-                    path.startsWith("/shorts/") -> uri.lastPathSegment ?: ""
-                    path.startsWith("/embed/") -> uri.lastPathSegment ?: ""
-                    else -> uri.getQueryParameter("v") ?: ""
-                }
+                val vParam = uri.getQueryParameter("v")
+                if (vParam != null) return vParam
+                val pathSegments = uri.pathSegments
+                if (pathSegments.contains("shorts") || pathSegments.contains("embed") || pathSegments.contains("live")) {
+                    uri.lastPathSegment ?: ""
+                } else ""
             }
             else -> ""
         }
@@ -295,93 +269,116 @@ fun extractYoutubeVideoId(url: String): String {
     }
 }
 
-// --- COMPOSABLE LATEX (GIỮ NGUYÊN) ---
+// --- COMPONENT HIỂN THỊ ẢNH ---
+@Composable
+fun LessonImage(imageUrl: String) {
+    // Ảnh được lưu trên Firebase Storage với URL đầy đủ (https://...)
+    // Nếu là path tương đối, thêm base URL (chỉ dùng cho ảnh lưu trên server backend nội bộ)
+    val fullUrl = when {
+        imageUrl.startsWith("https://") || imageUrl.startsWith("http://") -> imageUrl
+        imageUrl.isNotBlank() -> "http://10.0.2.2:8080$imageUrl"
+        else -> ""
+    }
+
+    if (fullUrl.isNotEmpty()) {
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(fullUrl)
+                .crossfade(true)
+                .build(),
+            contentDescription = "Lesson Image",
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(0xFFF1F5F9)),
+            contentScale = ContentScale.FillWidth
+        )
+    } else {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp)
+                .background(Color(0xFFF1F5F9), RoundedCornerShape(12.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Không thể tải ảnh", color = Color.Gray)
+        }
+    }
+}
+
+// --- COMPOSABLE LATEX - SỬ DỤNG KATEX TỪ LOCAL ASSETS ---
+// KaTeX files phải được tải về và để trong: app/src/main/assets/katex/
+// - katex.min.js
+// - katex.min.css
+// - auto-render.min.js
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun LatexWebView(content: String) {
-    val textColorHex = if (androidx.compose.foundation.isSystemInDarkTheme()) "#FAFAFA" else "#333333"
+fun LatexMathView(latex: String, modifier: Modifier = Modifier) {
+    val textColorHex = if (androidx.compose.foundation.isSystemInDarkTheme()) "#FAFAFA" else "#1E293B"
+    val dollarSign = "${'$'}"
 
     val htmlContent = """
         <!DOCTYPE html>
         <html>
         <head>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-            
-            <script>
-            MathJax = {
-              tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']],
-                processEscapes: true
-              },
-              svg: {
-                fontCache: 'global'
-              }
-            };
-            </script>
-
-            <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-            
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+            <link rel="stylesheet" href="file:///android_asset/katex/katex.min.css">
+            <script src="file:///android_asset/katex/katex.min.js"></script>
+            <script src="file:///android_asset/katex/auto-render.min.js"></script>
             <style>
-                html, body {
-                    margin: 0;
-                    padding: 0;
-                    width: 100%;
+                body {
+                    font-size: 16px;
+                    color: $textColorHex;
+                    font-family: sans-serif;
+                    margin: 8px; padding: 0;
+                    background-color: transparent;
+                    line-height: 1.7;
                 }
-
-                body { 
-                    font-family: 'Roboto', sans-serif; 
-                    font-size: 16px; 
-                    color: ${'$'}textColorHex; 
-                    line-height: 1.6;
-                    
-                    overflow-wrap: break-word;
-                    word-wrap: break-word;
-                    word-break: break-word;
-                }
-                
-                img { 
-                    max-width: 100%; 
-                    height: auto; 
-                    border-radius: 8px; 
-                    display: block;
-                    margin: 10px auto;
-                }
-                
-                p { margin: 0 0 10px 0; }
-                
-                mjx-container {
-                    display: inline-block !important; 
-                    vertical-align: middle;
-                    overflow-x: auto;
-                    overflow-y: hidden;
-                    max-width: 100%;
-                }
+                .katex { font-size: 1.1em; }
+                .katex-display { overflow-x: auto; }
             </style>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    if (typeof renderMathInElement !== 'undefined') {
+                        renderMathInElement(document.body, {
+                            delimiters: [
+                                {left: "$dollarSign$dollarSign", right: "$dollarSign$dollarSign", display: true},
+                                {left: "$dollarSign", right: "$dollarSign", display: false},
+                                {left: "\\(", right: "\\)", display: false},
+                                {left: "\\[", right: "\\]", display: true}
+                            ],
+                            throwOnError : false
+                        });
+                    }
+                });
+            </script>
         </head>
         <body>
-            $content
+            $latex
         </body>
         </html>
     """.trimIndent()
 
     AndroidView(
+        modifier = modifier
+            .fillMaxWidth()
+            .defaultMinSize(minHeight = 10.dp),
         factory = { context ->
             WebView(context).apply {
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
-                settings.loadWithOverviewMode = false
+                settings.loadWithOverviewMode = true
                 settings.useWideViewPort = false
+                settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.TEXT_AUTOSIZING
+                settings.allowFileAccess = true
+                setBackgroundColor(android.graphics.Color.TRANSPARENT)
                 isVerticalScrollBarEnabled = false
                 isHorizontalScrollBarEnabled = false
-                setBackgroundColor(android.graphics.Color.TRANSPARENT)
             }
         },
         update = { webView ->
-            webView.loadDataWithBaseURL(null, htmlContent, "text/html", "UTF-8", null)
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
+            webView.loadDataWithBaseURL("file:///android_asset/", htmlContent, "text/html", "UTF-8", null)
+        }
     )
 }
