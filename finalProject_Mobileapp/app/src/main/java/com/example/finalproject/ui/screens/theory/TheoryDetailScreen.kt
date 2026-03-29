@@ -13,6 +13,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -28,11 +31,17 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.example.finalproject.R
 import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.viewmodel.TheoryDetailViewModel
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+import java.util.regex.Pattern
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -105,7 +114,7 @@ fun TheoryDetailScreen(
                             )
                         }
 
-                        // 2. VIDEO
+                        // 2. VIDEO YOUTUBE (SỬ DỤNG THƯ VIỆN BÊN THỨ 3)
                         if (!data.videoUrl.isNullOrEmpty()) {
                             item {
                                 Text(
@@ -189,81 +198,111 @@ fun TheoryDetailScreen(
     }
 }
 
-// --- COMPONENT CHƠI VIDEO QUA WEBVIEW IFRAME (Hoạt động cả trên Emulator & máy thật) ---
-@SuppressLint("SetJavaScriptEnabled")
+// --- COMPONENT CHƠI VIDEO YOUTUBE (DÙNG THƯ VIỆN PIERFRANCESCOSOFFRITTI) ---
 @Composable
 fun NativeYouTubePlayer(videoId: String) {
     val context = LocalContext.current
-    val iframeHtml = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <style>
-                body { margin:0; padding:0; background:#000; }
-                .video-container { position:relative; padding-bottom:56.25%; height:0; overflow:hidden; }
-                .video-container iframe { position:absolute; top:0; left:0; width:100%; height:100%; border:0; }
-            </style>
-        </head>
-        <body>
-            <div class="video-container">
-                <iframe src="https://www.youtube.com/embed/$videoId?playsinline=1&rel=0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen>
-                </iframe>
-            </div>
-        </body>
-        </html>
-    """.trimIndent()
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .aspectRatio(16f / 9f)
-        .clip(RoundedCornerShape(8.dp))
-        .background(Color.Black)
-    ) {
-        AndroidView(
-            modifier = Modifier.fillMaxSize(),
-            factory = { ctx ->
-                WebView(ctx).apply {
-                    settings.javaScriptEnabled = true
-                    settings.domStorageEnabled = true
-                    settings.mediaPlaybackRequiresUserGesture = false
-                    settings.loadWithOverviewMode = true
-                    settings.useWideViewPort = true
-                    setBackgroundColor(android.graphics.Color.BLACK)
-                    webViewClient = WebViewClient()
+    var hasError by remember { mutableStateOf(false) }
+
+    Column {
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(16f / 9f)
+            .clip(RoundedCornerShape(8.dp))
+            .background(Color.Black)
+        ) {
+            if (hasError) {
+                // Nếu video thật sự bị chặn bản quyền (không cho nhúng), hiển thị thông báo
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(Icons.Default.Info, contentDescription = null, tint = Color.White)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Video bị giới hạn phát trên ứng dụng ngoài.", color = Color.White, fontSize = 12.sp)
                 }
-            },
-            update = { webView ->
-                webView.loadDataWithBaseURL("https://www.youtube.com", iframeHtml, "text/html", "UTF-8", null)
+            } else {
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { ctx ->
+                        YouTubePlayerView(ctx).apply {
+                            // Liên kết vòng đời để giải phóng bộ nhớ khi tắt màn hình
+                            lifecycleOwner.lifecycle.addObserver(this)
+                            enableAutomaticInitialization = false
+
+                            // Cấu hình thư viện bản 13.0.0 (bắt buộc truyền ctx vào Builder)
+                            val options = IFramePlayerOptions.Builder(ctx)
+                                .controls(1)
+                                .rel(0)
+                                .build()
+
+                            initialize(object : AbstractYouTubePlayerListener() {
+                                override fun onReady(youTubePlayer: YouTubePlayer) {
+                                    // cueVideo giúp tải video sẵn nhưng không tự động phát (tránh chói tai)
+                                    youTubePlayer.cueVideo(videoId, 0f)
+                                }
+
+                                override fun onError(
+                                    youTubePlayer: YouTubePlayer,
+                                    error: PlayerConstants.PlayerError
+                                ) {
+                                    // Bắt lỗi nếu video bị khóa vùng/bản quyền
+                                    hasError = true
+                                }
+                            }, options)
+                        }
+                    }
+                )
             }
-        )
+        }
+
+        // NÚT FALLBACK (DÀNH CHO NHỮNG VIDEO BỊ CHỦ KÊNH ĐÁNH BẢN QUYỀN/CẤM NHÚNG)
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedButton(
+            onClick = {
+                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/watch?v=$videoId"))
+                context.startActivity(intent)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFD32F2F)),
+            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFD32F2F).copy(alpha = 0.5f))
+        ) {
+            Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Xem trên ứng dụng YouTube (Nếu video lỗi)", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        }
     }
 }
 
-
 /**
- * Hàm tách ID Youtube
+ * Hàm tách ID Youtube (Bắt chuẩn xác 11 ký tự, loại bỏ mọi rác &list=...)
  */
 fun extractYoutubeVideoId(url: String): String {
     if (url.isBlank()) return ""
     return try {
-        val uri = Uri.parse(url)
-        val host = uri.host ?: ""
-
-        when {
-            host.contains("youtu.be") -> uri.lastPathSegment ?: ""
-            host.contains("youtube.com") -> {
-                val vParam = uri.getQueryParameter("v")
-                if (vParam != null) return vParam
-                val pathSegments = uri.pathSegments
-                if (pathSegments.contains("shorts") || pathSegments.contains("embed") || pathSegments.contains("live")) {
-                    uri.lastPathSegment ?: ""
-                } else ""
-            }
-            else -> ""
+        val pattern = "(?<=v=|v\\/|vi=|vi\\/|youtu.be\\/|embed\\/)[a-zA-Z0-9_-]{11}"
+        val compiledPattern = Pattern.compile(pattern)
+        val matcher = compiledPattern.matcher(url)
+        if (matcher.find()) {
+            return matcher.group() ?: ""
         }
+
+        val uri = Uri.parse(url)
+        val vParam = uri.getQueryParameter("v")
+        if (vParam != null && vParam.length >= 11) {
+            return vParam.substring(0, 11)
+        }
+
+        val host = uri.host ?: ""
+        if (host.contains("youtu.be")) {
+            val lastPath = uri.lastPathSegment ?: ""
+            if (lastPath.length >= 11) return lastPath.substring(0, 11)
+        }
+
+        ""
     } catch (e: Exception) {
         ""
     }
@@ -272,16 +311,16 @@ fun extractYoutubeVideoId(url: String): String {
 // --- COMPONENT HIỂN THỊ ẢNH ---
 @Composable
 fun LessonImage(imageUrl: String) {
-    // Ảnh được lưu trên Firebase Storage với URL đầy đủ (https://...)
-    // Nếu là path tương đối, thêm base URL (chỉ dùng cho ảnh lưu trên server backend nội bộ)
     val fullUrl = when {
-        imageUrl.startsWith("https://") || imageUrl.startsWith("http://") -> imageUrl
-        imageUrl.isNotBlank() -> "http://10.0.2.2:8080$imageUrl"
-        else -> ""
+        imageUrl.isBlank() -> ""
+        imageUrl.startsWith("http://") || imageUrl.startsWith("https://") -> imageUrl
+        imageUrl.startsWith("firebasestorage.googleapis.com") -> "https://$imageUrl"
+        imageUrl.startsWith("/") -> "http://10.0.2.2:8080$imageUrl"
+        else -> imageUrl
     }
 
     if (fullUrl.isNotEmpty()) {
-        AsyncImage(
+        SubcomposeAsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(fullUrl)
                 .crossfade(true)
@@ -290,9 +329,36 @@ fun LessonImage(imageUrl: String) {
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFFF1F5F9)),
-            contentScale = ContentScale.FillWidth
+                .clip(RoundedCornerShape(12.dp)),
+            contentScale = ContentScale.FillWidth,
+
+            loading = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .background(Color(0xFFF1F5F9)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = PrimaryBlue)
+                }
+            },
+
+            error = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .background(Color(0xFFF1F5F9)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(Icons.Default.Info, contentDescription = null, tint = Color.Gray)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("Không thể tải ảnh", color = Color.Gray, fontSize = 14.sp)
+                    }
+                }
+            }
         )
     } else {
         Box(
@@ -302,16 +368,12 @@ fun LessonImage(imageUrl: String) {
                 .background(Color(0xFFF1F5F9), RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Text("Không thể tải ảnh", color = Color.Gray)
+            Text("Hình ảnh không khả dụng", color = Color.Gray)
         }
     }
 }
 
-// --- COMPOSABLE LATEX - SỬ DỤNG KATEX TỪ LOCAL ASSETS ---
-// KaTeX files phải được tải về và để trong: app/src/main/assets/katex/
-// - katex.min.js
-// - katex.min.css
-// - auto-render.min.js
+// --- COMPOSABLE LATEX ---
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun LatexMathView(latex: String, modifier: Modifier = Modifier) {
