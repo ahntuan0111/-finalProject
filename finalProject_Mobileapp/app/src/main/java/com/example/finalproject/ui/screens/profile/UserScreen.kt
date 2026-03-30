@@ -23,11 +23,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.finalproject.R
 import coil.compose.AsyncImage
 import com.example.finalproject.ui.navigation.AppRoutes
 import com.example.finalproject.ui.theme.PrimaryBlue
@@ -121,7 +123,7 @@ fun UserScreen(
                             }
                         }
                         Text(
-                            "Hồ sơ của tôi",
+                            stringResource(id = R.string.user_profile_title),
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -159,7 +161,7 @@ fun UserScreen(
                             Box(contentAlignment = Alignment.BottomEnd) {
                                 AsyncImage(
                                     model = profile?.avatarUrl ?: "https://api.dicebear.com/7.x/avataaars/png?seed=${profile?.username}",
-                                    contentDescription = "Avatar",
+                                    contentDescription = stringResource(id = R.string.user_avatar_desc),
                                     modifier = Modifier
                                         .size(85.dp)
                                         .clip(CircleShape)
@@ -175,7 +177,7 @@ fun UserScreen(
                                         .clickable { showEditSheet = true },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.White, modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Default.Edit, contentDescription = stringResource(id = R.string.user_edit_desc), tint = Color.White, modifier = Modifier.size(16.dp))
                                 }
                             }
 
@@ -183,7 +185,7 @@ fun UserScreen(
 
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = profile?.username ?: "Người dùng",
+                                    text = profile?.username ?: stringResource(id = R.string.user_default_name),
                                     color = MaterialTheme.colorScheme.onSurface,
                                     fontSize = 22.sp,
                                     fontWeight = FontWeight.ExtraBold
@@ -195,7 +197,7 @@ fun UserScreen(
                                         shape = RoundedCornerShape(8.dp)
                                     ) {
                                         Text(
-                                            text = "Lớp $currentGrade",
+                                            text = stringResource(id = R.string.user_grade_format, currentGrade),
                                             color = PrimaryBlue,
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.Bold,
@@ -203,7 +205,7 @@ fun UserScreen(
                                         )
                                     }
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("ID: #${profile?.username?.take(4)?.uppercase()}", color = Color.Gray, fontSize = 12.sp)
+                                    Text(stringResource(id = R.string.user_id_format, profile?.username?.take(4)?.uppercase() ?: "NONE"), color = Color.Gray, fontSize = 12.sp)
                                 }
                             }
                         }
@@ -220,16 +222,16 @@ fun UserScreen(
                         .padding(horizontal = 24.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    PremiumStatItem("42", "Bài học", Icons.Outlined.AutoStories, Color(0xFF3B82F6), Modifier.weight(1f))
-                    PremiumStatItem("9.2", "Điểm TB", Icons.Outlined.Insights, Color(0xFF10B981), Modifier.weight(1f))
-                    PremiumStatItem("128h", "Giờ học", Icons.Outlined.Timer, Color(0xFFF59E0B), Modifier.weight(1f))
+                    PremiumStatItem("42", stringResource(id = R.string.user_stat_lessons), Icons.Outlined.AutoStories, Color(0xFF3B82F6), Modifier.weight(1f))
+                    PremiumStatItem("9.2", stringResource(id = R.string.user_stat_gpa), Icons.Outlined.Insights, Color(0xFF10B981), Modifier.weight(1f))
+                    PremiumStatItem("128h", stringResource(id = R.string.user_stat_hours), Icons.Outlined.Timer, Color(0xFFF59E0B), Modifier.weight(1f))
                 }
                 Spacer(modifier = Modifier.height(32.dp))
             }
 
             // ================== PERSONAL INFORMATION ==================
             item {
-                SectionLabel("Thông tin cá nhân")
+                SectionLabel(stringResource(id = R.string.user_section_info))
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -239,11 +241,12 @@ fun UserScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(modifier = Modifier.padding(8.dp)) {
-                        ProfileInfoRow(Icons.Outlined.Email, "Email", profile?.email ?: "Chưa cập nhật")
+                        val missingText = stringResource(id = R.string.user_info_missing)
+                        ProfileInfoRow(Icons.Outlined.Email, stringResource(id = R.string.user_info_email), profile?.email ?: missingText)
                         Divider(modifier = Modifier.padding(horizontal = 16.dp), color = Color.LightGray.copy(alpha = 0.1f))
-                        ProfileInfoRow(Icons.Outlined.Person, "Tên hiển thị", profile?.username ?: "Chưa cập nhật")
+                        ProfileInfoRow(Icons.Outlined.Person, stringResource(id = R.string.user_info_name), profile?.username ?: missingText)
                         Divider(modifier = Modifier.padding(horizontal = 16.dp), color = Color.LightGray.copy(alpha = 0.1f))
-                        ProfileInfoRow(Icons.Outlined.Cake, "Ngày sinh", profile?.dateOfBirth ?: "Chưa cập nhật")
+                        ProfileInfoRow(Icons.Outlined.Cake, stringResource(id = R.string.user_info_dob), profile?.dateOfBirth ?: missingText)
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
@@ -251,7 +254,7 @@ fun UserScreen(
 
             // ================== GRADE SELECTION ==================
             item {
-                SectionLabel("Khối lớp học tập")
+                SectionLabel(stringResource(id = R.string.user_section_grade))
                 PremiumGradeGroup(
                     currentGrade = currentGrade,
                     onGradeSelected = { viewModel.saveGrade(it) }
@@ -261,7 +264,7 @@ fun UserScreen(
 
             // ================== PREFERENCES SECTION ==================
             item {
-                SectionLabel("Cài đặt hệ thống")
+                SectionLabel(stringResource(id = R.string.user_section_settings))
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -272,7 +275,7 @@ fun UserScreen(
                 ) {
                     Column(modifier = Modifier.padding(8.dp)) {
                         // Language
-                        PreferenceRow(Icons.Outlined.Translate, "Ngôn ngữ hiển thị") {
+                        PreferenceRow(Icons.Outlined.Translate, stringResource(id = R.string.user_setting_lang)) {
                             PremiumLanguagePicker(
                                 currentLang = currentLanguage,
                                 onLanguageSelect = { viewModel.changeLanguage(it) }
@@ -283,7 +286,7 @@ fun UserScreen(
 
                         // Dark Mode
                         val isDark = isDarkThemePref ?: androidx.compose.foundation.isSystemInDarkTheme()
-                        PreferenceRow(if (isDark) Icons.Outlined.DarkMode else Icons.Outlined.LightMode, "Chế độ tối cảnh") {
+                        PreferenceRow(if (isDark) Icons.Outlined.DarkMode else Icons.Outlined.LightMode, stringResource(id = R.string.user_setting_darkmode)) {
                             Switch(
                                 checked = isDark,
                                 onCheckedChange = { viewModel.toggleDarkMode(it) },
@@ -318,7 +321,7 @@ fun UserScreen(
                     ) {
                         Icon(Icons.Default.Logout, contentDescription = null, tint = Color.Red)
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text("Đăng xuất tài khoản", color = Color.Red, fontWeight = FontWeight.Bold)
+                        Text(stringResource(id = R.string.user_action_logout), color = Color.Red, fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -495,7 +498,7 @@ fun PremiumGradeGroup(currentGrade: Int, onGradeSelected: (Int) -> Unit) {
                 Box(contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            "Lớp",
+                            stringResource(id = R.string.class_selection_grade_format).replace("%1\$d", "").trim().ifEmpty { "Lớp" },
                             fontSize = 11.sp,
                             color = if (selected) Color.White.copy(alpha = 0.8f) else Color.Gray
                         )
@@ -538,8 +541,8 @@ fun EditProfileSheetContent(
             .navigationBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Thông tin cá nhân", fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
-        Text("Thay đổi ảnh đại diện và ngày sinh của bạn", fontSize = 14.sp, color = Color.Gray)
+        Text(stringResource(id = R.string.user_edit_title), fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+        Text(stringResource(id = R.string.user_edit_subtitle), fontSize = 14.sp, color = Color.Gray)
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -560,7 +563,7 @@ fun EditProfileSheetContent(
                 // Biểu tượng máy ảnh nhạt để gợi ý bấm vào
                 Icon(
                     Icons.Default.PhotoCamera,
-                    contentDescription = "Chọn ảnh",
+                    contentDescription = stringResource(id = R.string.user_edit_select_image),
                     tint = Color.White.copy(alpha = 0.7f),
                     modifier = Modifier.size(32.dp).background(Color.Black.copy(alpha = 0.3f), CircleShape).padding(4.dp)
                 )
@@ -573,8 +576,8 @@ fun EditProfileSheetContent(
         OutlinedTextField(
             value = avatar,
             onValueChange = { avatar = it },
-            label = { Text("Link ảnh Avatar") },
-            placeholder = { Text("Chạm vào ảnh trên để chọn từ thư viện") },
+            label = { Text(stringResource(id = R.string.user_edit_avatar_label)) },
+            placeholder = { Text(stringResource(id = R.string.user_edit_avatar_hint)) },
             readOnly = true, // Khóa nhập tay để dùng thư viện
             modifier = Modifier.fillMaxWidth().clickable { launcher.launch("image/*") },
             shape = RoundedCornerShape(16.dp),
@@ -589,8 +592,8 @@ fun EditProfileSheetContent(
         OutlinedTextField(
             value = dob,
             onValueChange = { dob = it },
-            label = { Text("Ngày sinh (YYYY-MM-DD)") },
-            placeholder = { Text("Ví dụ: 2010-05-20") },
+            label = { Text(stringResource(id = R.string.user_edit_dob_label)) },
+            placeholder = { Text(stringResource(id = R.string.user_edit_dob_hint)) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             leadingIcon = { Icon(Icons.Default.Event, contentDescription = null) },
@@ -609,7 +612,7 @@ fun EditProfileSheetContent(
                 shape = RoundedCornerShape(16.dp),
                 border = BorderStroke(1.5.dp, PrimaryBlue)
             ) {
-                Text("Hủy bỏ", color = PrimaryBlue, fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.user_edit_btn_cancel), color = PrimaryBlue, fontWeight = FontWeight.Bold)
             }
             Button(
                 onClick = { onSave(avatar, dob) },
@@ -617,7 +620,7 @@ fun EditProfileSheetContent(
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
             ) {
-                Text("Cập nhật", fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.user_edit_btn_update), fontWeight = FontWeight.Bold)
             }
         }
         Spacer(modifier = Modifier.height(16.dp))

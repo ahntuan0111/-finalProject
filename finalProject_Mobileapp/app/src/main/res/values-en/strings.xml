@@ -233,4 +233,76 @@
     <string name="doc_list_error_encode">Error reading path!</string>
     <string name="doc_list_fallback_title">Document</string>
     <string name="doc_list_item_meta">%1$s • %2$s</string>
+
+    <!-- User Screen -->
+    <string name="user_profile_title">My Profile</string>
+    <string name="user_avatar_desc">Avatar</string>
+    <string name="user_edit_desc">Edit</string>
+    <string name="user_default_name">User</string>
+    <string name="user_grade_format">Grade %1$d</string>
+    <string name="user_id_format">ID: #%1$s</string>
+    <string name="user_stat_lessons">Lessons</string>
+    <string name="user_stat_gpa">GPA</string>
+    <string name="user_stat_hours">Hours</string>
+    <string name="user_section_info">Personal Information</string>
+    <string name="user_info_email">Email</string>
+    <string name="user_info_name">Display Name</string>
+    <string name="user_info_dob">Date of Birth</string>
+    <string name="user_info_missing">Not updated</string>
+    <string name="user_section_grade">Learning Grade</string>
+    <string name="user_section_settings">System Settings</string>
+    <string name="user_setting_lang">Display Language</string>
+    <string name="user_setting_darkmode">Dark Mode</string>
+    <string name="user_action_logout">Logout Account</string>
+    <string name="user_edit_title">Personal Information</string>
+    <string name="user_edit_subtitle">Change your avatar and date of birth</string>
+    <string name="user_edit_select_image">Select Image</string>
+    <string name="user_edit_avatar_label">Avatar Link</string>
+    <string name="user_edit_avatar_hint">Tap the image above to select from gallery</string>
+    <string name="user_edit_dob_label">Date of Birth (YYYY-MM-DD)</string>
+    <string name="user_edit_dob_hint">Example: 2010-05-20</string>
+    <string name="user_edit_btn_cancel">Cancel</string>
+    <string name="user_edit_btn_update">Update</string>
+
+    <!-- Reminder Screen -->
+    <string name="reminder_title">Study Plan</string>
+    <string name="reminder_error_prefix">Error: %1$s</string>
+    <string name="reminder_goal_default">Important Exam</string>
+    <string name="reminder_study_title">My Study Schedule</string>
+    <string name="reminder_study_desc">Spend 15 minutes a day reviewing</string>
+    <string name="reminder_streak_title">Streak Warning!</string>
+    <string name="reminder_streak_prefix">Remind me if not studying by </string>
+    <string name="reminder_streak_suffix"> tonight</string>
+    <string name="reminder_goal_title">Upcoming Goal</string>
+    <string name="reminder_goal_select">Select exam date / goal</string>
+    <string name="reminder_goal_days_left">%1$d days left</string>
+    <string name="reminder_goal_today">Today!</string>
+    <string name="reminder_goal_passed">Passed</string>
+    <string name="reminder_goal_invalid">Invalid Date</string>
+    <string name="reminder_goal_remaining">Only about</string>
+    <string name="reminder_goal_until">Until %1$s</string>
+
+    <!-- Theory Detail Screen -->
+    <string name="theory_detail_no_title">Title not updated</string>
+    <string name="theory_detail_video_restricted">Video playback is restricted in external apps.</string>
+    <string name="theory_detail_watch_on_youtube">Watch on YouTube App (If video fails)</string>
+    <string name="theory_detail_image_error">Failed to load image</string>
+    <string name="theory_detail_image_unavailable">Image unavailable</string>
+
+    <string name="theory_screen_no_chapter_title">Chapter (Unnamed)</string>
+    <string name="theory_screen_no_lesson_title">Lesson (Unnamed)</string>
+
+    <string name="subject_detail_no_lessons_unlocked">ℹ️ No lessons unlocked in this chapter yet</string>
+
+    <string name="placeholder_dashboard">Dashboard Screen</string>
+    <string name="placeholder_ai_chat">AI Chat Screen</string>
+    <string name="placeholder_user">User Profile Screen</string>
+
+    <string name="search_placeholder">Enter lesson, quiz name...</string>
+    <string name="search_recent_title">Recent searches</string>
+    <string name="search_clear_history">Clear history</string>
+    <string name="search_no_results">No results found for \"%1$s\"</string>
+    <string name="search_type_lesson">Theory</string>
+    <string name="search_type_quiz">Quiz</string>
+    <string name="search_type_document">Document</string>
 </resources>

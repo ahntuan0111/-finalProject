@@ -17,11 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.finalproject.R
 import com.example.finalproject.data.remote.model.ReminderSettingRequest
 import com.example.finalproject.ui.viewmodel.ReminderViewModel
 import java.util.Calendar
@@ -40,7 +42,7 @@ fun ReminderScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Kế hoạch Học tập", fontWeight = FontWeight.Bold, fontSize = 22.sp) },
+                title = { Text(stringResource(id = R.string.reminder_title), fontWeight = FontWeight.Bold, fontSize = 22.sp) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onBackground
@@ -54,7 +56,7 @@ fun ReminderScreen(
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else if (error != null && settings == null) {
                 Text(
-                    text = "Lỗi: $error",
+                    text = stringResource(id = R.string.reminder_error_prefix, error ?: "Unknown error"),
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.align(Alignment.Center)
                 )
@@ -112,7 +114,7 @@ fun ReminderScreen(
                     GoalCard(
                         isEnabled = currentSettings.isGoalReminderEnabled,
                         targetDate = currentSettings.targetDate,
-                        targetName = currentSettings.targetName ?: "Kỳ thi quan trọng",
+                        targetName = currentSettings.targetName ?: stringResource(id = R.string.reminder_goal_default),
                         onUpdate = { enabled, date, name ->
                             updateSettings(
                                 ReminderSettingRequest(
@@ -143,7 +145,15 @@ fun StudyPlanCard(
 ) {
     val context = LocalContext.current
     val daysOfWeek = listOf("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN")
-    val dayLabels = listOf("T2", "T3", "T4", "T5", "T6", "T7", "CN")
+    val dayLabels = listOf(
+        stringResource(id = R.string.dashboard_day_mon),
+        stringResource(id = R.string.dashboard_day_tue),
+        stringResource(id = R.string.dashboard_day_wed),
+        stringResource(id = R.string.dashboard_day_thu),
+        stringResource(id = R.string.dashboard_day_fri),
+        stringResource(id = R.string.dashboard_day_sat),
+        stringResource(id = R.string.dashboard_day_sun)
+    )
     val selectedDays = studyDays.split(",").toSet()
 
     Card(
@@ -155,8 +165,8 @@ fun StudyPlanCard(
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Lịch học của tôi", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Text("Dành 15 phút mỗi ngày để ôn tập", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(id = R.string.reminder_study_title), fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text(stringResource(id = R.string.reminder_study_desc), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Switch(
                     checked = isEnabled,
@@ -231,7 +241,7 @@ fun StreakCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Rounded.LocalFireDepartment, contentDescription = null, tint = Color(0xFFFA8C16), modifier = Modifier.size(28.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Cảnh báo mất lửa!", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color(0xFFD4380D), modifier = Modifier.weight(1f))
+                Text(stringResource(id = R.string.reminder_streak_title), fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color(0xFFD4380D), modifier = Modifier.weight(1f))
                 Switch(
                     checked = isEnabled,
                     onCheckedChange = { onUpdate(it, streakTime) },
@@ -240,7 +250,7 @@ fun StreakCard(
             }
             Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Nhắc tôi nếu đến ", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                Text(stringResource(id = R.string.reminder_streak_prefix), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                 Surface(
                     shape = RoundedCornerShape(8.dp),
                     color = MaterialTheme.colorScheme.surface,
@@ -256,7 +266,7 @@ fun StreakCard(
                 ) {
                     Text(streakTime, color = Color(0xFFD4380D), fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
                 }
-                Text(" tối chưa học", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                Text(stringResource(id = R.string.reminder_streak_suffix), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
             }
         }
     }
@@ -286,7 +296,7 @@ fun GoalCard(
                     Icon(Icons.Rounded.CalendarMonth, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(6.dp))
                 }
                 Spacer(modifier = Modifier.width(12.dp))
-                Text("Mục tiêu sắp tới", fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.weight(1f))
+                Text(stringResource(id = R.string.reminder_goal_title), fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.weight(1f))
                 Switch(
                     checked = isEnabled,
                     onCheckedChange = { onUpdate(it, targetDate, targetName) },
@@ -308,7 +318,7 @@ fun GoalCard(
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text(text = targetDate ?: "Chọn ngày thi / mục tiêu", fontWeight = FontWeight.Bold)
+                    Text(text = targetDate ?: stringResource(id = R.string.reminder_goal_select), fontWeight = FontWeight.Bold)
                 }
 
                 if (targetDate != null) {
@@ -337,7 +347,7 @@ fun GoalCard(
                             val diff = targetCal.time - today.time
                             val daysLeft = java.util.concurrent.TimeUnit.DAYS.convert(diff, java.util.concurrent.TimeUnit.MILLISECONDS)
                             
-                            daysText = if (daysLeft > 0) "$daysLeft ngày nữa" else if (daysLeft == 0L) "Hôm nay!" else "Đã qua"
+                            daysText = if (daysLeft > 0) context.getString(R.string.reminder_goal_days_left, daysLeft) else if (daysLeft == 0L) context.getString(R.string.reminder_goal_today) else context.getString(R.string.reminder_goal_passed)
                         } else {
                             isInvalid = true
                         }
@@ -346,7 +356,7 @@ fun GoalCard(
                     }
                     
                     if (isInvalid) {
-                        Text("Ngày không hợp lệ", color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(id = R.string.reminder_goal_invalid), color = MaterialTheme.colorScheme.error)
                     } else {
                         Box(
                             modifier = Modifier
@@ -356,9 +366,9 @@ fun GoalCard(
                             contentAlignment = Alignment.Center
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("Chỉ còn khoảng", color = Color(0xFF137333), fontSize = 14.sp)
+                                Text(stringResource(id = R.string.reminder_goal_remaining), color = Color(0xFF137333), fontSize = 14.sp)
                                 Text(daysText, color = Color(0xFF137333), fontSize = 28.sp, fontWeight = FontWeight.Bold)
-                                Text("Đến $targetName", color = Color(0xFF137333), fontSize = 14.sp)
+                                Text(stringResource(id = R.string.reminder_goal_until, targetName), color = Color(0xFF137333), fontSize = 14.sp)
                             }
                         }
                     }

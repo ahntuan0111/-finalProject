@@ -1,49 +1,33 @@
 package vn.anhtuan.finalProject.service;
 
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import vn.anhtuan.finalProject.dto.request.DocumentRequest;
 import vn.anhtuan.finalProject.dto.response.DocumentResponse;
 import vn.anhtuan.finalProject.entity.Document;
 import vn.anhtuan.finalProject.repository.DocumentRepository;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class DocumentService {
 
-    private final Path fileStorageLocation = Paths.get("uploads").toAbsolutePath().normalize();
     private final DocumentRepository documentRepository;
+    private final FirebaseStorageService firebaseStorageService;
 
-    public DocumentService(DocumentRepository documentRepository) {
+    public DocumentService(DocumentRepository documentRepository, FirebaseStorageService firebaseStorageService) {
         this.documentRepository = documentRepository;
-        try {
-            Files.createDirectories(this.fileStorageLocation);
-        } catch (Exception ex) {
-            throw new RuntimeException("Không thể tạo thư mục upload.", ex);
-        }
+        this.firebaseStorageService = firebaseStorageService;
     }
 
     public Document uploadDocument(MultipartFile file, String titleVi, String titleEn,
                                    String descriptionVi, String descriptionEn,
                                    String subjectCode, Integer grade,
                                    String examTypeVi, String examTypeEn) {
-        String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
-        String fileName = UUID.randomUUID().toString() + "_" + originalFileName;
-
         try {
-            Path targetLocation = this.fileStorageLocation.resolve(fileName);
-            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-
-            String fileDownloadUri = "/api/documents/files/" + fileName;
+            // Upload lên Firebase Storage thay vì lưu local
+            String firebaseUrl = firebaseStorageService.uploadPdfToFirebase(file);
 
             Document doc = new Document();
             doc.setTitleVi(titleVi);
@@ -53,7 +37,8 @@ public class DocumentService {
             doc.setExamTypeVi(examTypeVi);
             doc.setExamTypeEn(examTypeEn);
 
-            doc.setFilePath(fileDownloadUri);
+            // Lưu URL của Firebase vào filePath
+            doc.setFilePath(firebaseUrl);
             doc.setFileType(file.getContentType());
             doc.setFileSize(file.getSize());
             doc.setSubjectCode(subjectCode);
@@ -61,13 +46,36 @@ public class DocumentService {
 
             return documentRepository.save(doc);
 
-        } catch (IOException ex) {
-            throw new RuntimeException("Không thể lưu file " + fileName, ex);
+        } catch (Exception ex) {
+            throw new RuntimeException("Không thể upload file lên Firebase: " + ex.getMessage(), ex);
         }
     }
 
+    // Map các mã ngắn (mobile gửi lên) sang giá trị trong DB (web admin lưu)
+    private static final java.util.Map<String, List<String>> SUBJECT_CODE_ALIASES;
+    static {
+        SUBJECT_CODE_ALIASES = new java.util.HashMap<>();
+        SUBJECT_CODE_ALIASES.put("toan", java.util.Arrays.asList("toan", "Toán", "Toan", "TOAN", "math"));
+        SUBJECT_CODE_ALIASES.put("khtn", java.util.Arrays.asList("khtn", "Khoa học tự nhiên", "KHTN", "science"));
+        SUBJECT_CODE_ALIASES.put("ngu-van", java.util.Arrays.asList("ngu-van", "Ngữ văn", "ngu_van"));
+        SUBJECT_CODE_ALIASES.put("tieng-anh", java.util.Arrays.asList("tieng-anh", "Tiếng Anh", "english"));
+    }
+
     public List<DocumentResponse> getDocuments(String subjectCode, Integer grade, String lang) {
-        List<Document> docs = documentRepository.findBySubjectCodeAndGrade(subjectCode, grade);
+        // Dùng query linh hoạt để hỗ trợ cả mã nắn ("toan") và tên đầy đủ ("Toán")
+        List<Document> docs = documentRepository.findBySubjectCodeFlexibleAndGrade(subjectCode, grade);
+
+        // Nếu không tìm thấy, thử tìm theo alias
+        if (docs.isEmpty()) {
+            List<String> aliases = SUBJECT_CODE_ALIASES.getOrDefault(subjectCode.toLowerCase(), java.util.Collections.emptyList());
+            for (String alias : aliases) {
+                if (!alias.equals(subjectCode)) {
+                    docs = documentRepository.findBySubjectCodeFlexibleAndGrade(alias, grade);
+                    if (!docs.isEmpty()) break;
+                }
+            }
+        }
+
         return docs.stream()
                 .map(doc -> DocumentResponse.fromEntity(doc, lang))
                 .collect(Collectors.toList());
@@ -99,14 +107,8 @@ public class DocumentService {
         Document doc = documentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tài liệu với ID: " + id));
 
-        try {
-            String[] pathParts = doc.getFilePath().split("/");
-            String fileName = pathParts[pathParts.length - 1];
-            Path filePath = this.fileStorageLocation.resolve(fileName).normalize();
-            Files.deleteIfExists(filePath);
-        } catch (IOException ex) {
-            System.err.println("Lỗi khi xóa file vật lý: " + ex.getMessage());
-        }
+        // Xóa file trên Firebase Storage nếu URL là Firebase URL
+        firebaseStorageService.deleteFileFromFirebase(doc.getFilePath());
 
         documentRepository.delete(doc);
     }

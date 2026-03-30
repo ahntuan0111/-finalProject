@@ -144,4 +144,10 @@ interface ApiService {
 
     @PUT("notifications/read-all")
     suspend fun markAllNotificationsAsRead(): Response<BaseResponse<Any>>
+
+    @GET("student/search")
+    suspend fun searchContent(
+        @Query("keyword") keyword: String,
+        @Query("grade") grade: Int
+    ): Response<ApiResponse<List<SearchResponse>>>
 }

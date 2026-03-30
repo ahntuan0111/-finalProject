@@ -39,4 +39,8 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
     // ======================================================
     @Query("SELECT s.nameVi, COUNT(l.id) FROM Lesson l JOIN l.chapter c JOIN c.subject s GROUP BY s.nameVi")
     List<Object[]> countLessonsGroupedBySubject();
+
+    @Query("SELECT l FROM Lesson l JOIN l.chapter c JOIN c.subject s WHERE s.grade.id = :gradeId " +
+           "AND (LOWER(l.titleVi) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(l.titleEn) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    List<Lesson> searchByKeywordAndGrade(@Param("keyword") String keyword, @Param("gradeId") Integer gradeId);
 }

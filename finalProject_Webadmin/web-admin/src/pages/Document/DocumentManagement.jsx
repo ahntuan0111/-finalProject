@@ -50,7 +50,7 @@ const DocumentManagement = () => {
         setFileList([]);
         form.resetFields();
         form.setFieldsValue({ 
-            subjectCode: 'Toán', 
+            subjectCode: 'toan', 
             grade: 6, 
             examTypeCode: 'MID_TERM' 
         });
@@ -174,10 +174,14 @@ const DocumentManagement = () => {
             render: (_, record) => {
                 // SỬA: Lấy titleVi, nếu BE chưa cập nhật thì lấy title cũ
                 const text = record.titleVi || record.title; 
+                // filePath bây giờ là Firebase URL đầy đủ hoặc đường dẫn cũ
+                const href = record.filePath && record.filePath.startsWith('http')
+                    ? record.filePath 
+                    : `http://localhost:8080${record.filePath}`;
                 return (
                     <Space>
                         <FilePdfOutlined style={{ color: '#ff4d4f', fontSize: '18px' }} />
-                        <a href={`http://localhost:8080${record.filePath}`} target="_blank" rel="noreferrer" style={{ color: '#1f1f1f', fontWeight: 500 }}>
+                        <a href={href} target="_blank" rel="noreferrer" style={{ color: '#1f1f1f', fontWeight: 500 }}>
                             {text || "Chưa có tên"}
                         </a>
                     </Space>
@@ -229,7 +233,7 @@ const DocumentManagement = () => {
                     <Button type="text" icon={<EditOutlined style={{ color: '#1677ff' }} />} onClick={() => handleOpenEdit(record)} />
                     <Popconfirm 
                         title="Xóa tài liệu này?" 
-                        description="File PDF vật lý cũng sẽ bị xóa vĩnh viễn."
+                        description="File PDF sẽ bị xóa vĩnh viễn khỏi Firebase Storage."
                         onConfirm={() => handleDelete(record.id)}
                         okText="Xóa"
                         cancelText="Hủy"
@@ -280,8 +284,8 @@ const DocumentManagement = () => {
                                 value={filterSubject}
                                 onChange={setFilterSubject}
                             >
-                                <Select.Option value="Toán">Toán học</Select.Option>
-                                <Select.Option value="Khoa học tự nhiên">Khoa học Tự nhiên</Select.Option>
+                                <Select.Option value="toan">Toán học</Select.Option>
+                                <Select.Option value="khtn">Khoa học Tự nhiên</Select.Option>
                             </Select>
                         </Col>
                         <Col xs={12} md={5}>
@@ -352,8 +356,8 @@ const DocumentManagement = () => {
                         <Col span={8}>
                             <Form.Item name="subjectCode" label={<Text strong>Môn học <span style={{color:'red'}}>*</span></Text>} rules={[{ required: true }]}>
                                 <Select size="large" placeholder="Chọn môn học">
-                                    <Select.Option value="Toán">Toán học</Select.Option>
-                                    <Select.Option value="Khoa học tự nhiên">Khoa học Tự nhiên</Select.Option>
+                                    <Select.Option value="toan">Toán học</Select.Option>
+                                    <Select.Option value="khtn">Khoa học Tự nhiên</Select.Option>
                                 </Select>
                             </Form.Item>
                         </Col>

@@ -41,6 +41,7 @@ import com.example.finalproject.ui.screens.quizes.QuizListScreen
 import com.example.finalproject.ui.viewmodel.QuizViewModel
 import com.example.finalproject.ui.screens.ai.ChatBoxAIScreen
 import com.example.finalproject.ui.screens.profile.UserScreen
+import com.example.finalproject.ui.screens.search.SearchScreen
 
 /**
  * Định nghĩa các đường dẫn (Route) trong App
@@ -60,6 +61,7 @@ object AppRoutes {
     const val FORGOT_PASSWORD = "forgot_password"
     const val RESET_PASSWORD = "reset_password/{email}"
     const val CLASS_SELECTION = "class_selection"
+    const val SEARCH = "search"
 
     const val SUBJECT_CODE = "subjectCode"
     const val SUBJECT_NAME = "subjectName"
@@ -151,6 +153,9 @@ fun AppNavHost(
         composable(AppRoutes.CLASS_SELECTION) { ClassSelectionScreen(navController = navController) }
         composable(AppRoutes.DASHBOARD) {
             DashboardScreen(navController = navController)
+        }
+        composable(AppRoutes.SEARCH) {
+            SearchScreen(navController = navController)
         }
         composable(AppRoutes.AI_CHAT) { ChatBoxAIScreen() }
         composable(AppRoutes.REMINDER) { ReminderScreen(navController = navController) }
@@ -270,11 +275,18 @@ fun AppNavHost(
                 navArgument("title") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            val encodedUrl = backStackEntry.arguments?.getString("url") ?: ""
-            val encodedTitle = backStackEntry.arguments?.getString("title") ?: ""
-
-            val url = URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8.toString())
-            val title = URLDecoder.decode(encodedTitle, StandardCharsets.UTF_8.toString())
+            // Giải mã Base64 URL Safe để tránh việc Navigation tự decode mất %2F của Firebase
+            val b64url = backStackEntry.arguments?.getString("url") ?: ""
+            val b64title = backStackEntry.arguments?.getString("title") ?: ""
+            
+            var url = ""
+            var title = ""
+            try {
+                url = String(android.util.Base64.decode(b64url, android.util.Base64.URL_SAFE or android.util.Base64.NO_WRAP), StandardCharsets.UTF_8)
+                title = String(android.util.Base64.decode(b64title, android.util.Base64.URL_SAFE or android.util.Base64.NO_WRAP), StandardCharsets.UTF_8)
+            } catch (e: Exception) {
+                // Ignore fallback to empty
+            }
 
             PdfViewerScreen(
                 navController = navController,

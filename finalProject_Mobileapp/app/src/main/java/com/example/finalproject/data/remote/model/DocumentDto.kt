@@ -7,11 +7,11 @@ import java.time.format.DateTimeFormatter
 
 data class DocumentDto(
     val id: Long,
-    val title: String,
+    val title: String?,
     val description: String?,
-    @SerializedName("filePath") val filePath: String?, // "/api/documents/files/..."
-    @SerializedName("file_size") val fileSize: Long?,
-    @SerializedName("created_at") val createdAt: String? // Chuỗi ISO date
+    @SerializedName("filePath") val filePath: String?,
+    @SerializedName("fileSize") val fileSize: Long?,
+    @SerializedName("createdAt") val createdAt: String? // JSON từ BE trả camelCase
 ) {
     // Helper: Format dung lượng file (VD: 1024 -> "1 KB")
     fun getFormattedSize(): String {

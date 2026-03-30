@@ -106,7 +106,7 @@ fun TheoryDetailScreen(
                         // 1. Tiêu đề
                         item {
                             Text(
-                                text = data.title ?: "Chưa cập nhật tiêu đề",
+                                text = data.title ?: stringResource(id = R.string.theory_detail_no_title),
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = PrimaryBlue,
@@ -222,7 +222,7 @@ fun NativeYouTubePlayer(videoId: String) {
                 ) {
                     Icon(Icons.Default.Info, contentDescription = null, tint = Color.White)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Video bị giới hạn phát trên ứng dụng ngoài.", color = Color.White, fontSize = 12.sp)
+                    Text(stringResource(id = R.string.theory_detail_video_restricted), color = Color.White, fontSize = 12.sp)
                 }
             } else {
                 AndroidView(
@@ -272,7 +272,7 @@ fun NativeYouTubePlayer(videoId: String) {
         ) {
             Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Xem trên ứng dụng YouTube (Nếu video lỗi)", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            Text(stringResource(id = R.string.theory_detail_watch_on_youtube), fontSize = 13.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -355,7 +355,7 @@ fun LessonImage(imageUrl: String) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(Icons.Default.Info, contentDescription = null, tint = Color.Gray)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Không thể tải ảnh", color = Color.Gray, fontSize = 14.sp)
+                        Text(stringResource(id = R.string.theory_detail_image_error), color = Color.Gray, fontSize = 14.sp)
                     }
                 }
             }
@@ -368,7 +368,7 @@ fun LessonImage(imageUrl: String) {
                 .background(Color(0xFFF1F5F9), RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Text("Hình ảnh không khả dụng", color = Color.Gray)
+            Text(stringResource(id = R.string.theory_detail_image_unavailable), color = Color.Gray)
         }
     }
 }

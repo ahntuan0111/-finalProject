@@ -1,13 +1,11 @@
 package com.example.finalproject.ui.screens.auth
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -15,6 +13,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finalproject.R
+import com.example.finalproject.ui.components.AppNotificationManager
 import com.example.finalproject.ui.components.CustomTextField
 import com.example.finalproject.ui.components.PrimaryButton
 import com.example.finalproject.ui.theme.PrimaryBlue
@@ -29,15 +28,14 @@ fun ForgotPasswordScreen(
 ) {
     var email by remember { mutableStateOf("") }
     val state by viewModel.forgotPassState.collectAsState()
-    val context = LocalContext.current
 
     LaunchedEffect(state) {
         if (state is AuthState.Success) {
-            Toast.makeText(context, context.getString(R.string.forgot_toast_otp_sent), Toast.LENGTH_LONG).show()
+            AppNotificationManager.info("📧 Mã OTP đã gửi, hãy kiểm tra email nhé!")
             viewModel.resetForgotStates()
             navController.navigate("reset_password/$email")
         } else if (state is AuthState.Error) {
-            Toast.makeText(context, (state as AuthState.Error).message, Toast.LENGTH_SHORT).show()
+            AppNotificationManager.error((state as AuthState.Error).message)
         }
     }
 
@@ -75,7 +73,7 @@ fun ForgotPasswordScreen(
             text = stringResource(id = R.string.forgot_btn_send_otp),
             onClick = {
                 if (email.isNotBlank()) viewModel.forgotPassword(email)
-                else Toast.makeText(context, context.getString(R.string.forgot_toast_empty_email), Toast.LENGTH_SHORT).show()
+                else AppNotificationManager.error("Vui lòng nhập địa chỉ email")
             },
             isLoading = state is AuthState.Loading
         )

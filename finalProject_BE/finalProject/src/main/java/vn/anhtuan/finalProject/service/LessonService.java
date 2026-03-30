@@ -25,38 +25,36 @@ public class LessonService {
     // THÊM MỚI: Dành riêng cho Mobile, trả về Response DTO đã lọc ngôn ngữ
     public List<LessonResponse> getLessonsForMobile(Long chapterId, String lang) {
         List<Lesson> lessons = lessonRepository.findByChapterIdOrderByOrderNoAsc(chapterId);
+        return lessons.stream().map(l -> mapToResponse(l, lang)).collect(Collectors.toList());
+    }
 
-        return lessons.stream().map(lesson -> {
-            LessonResponse response = new LessonResponse();
-            response.setId(lesson.getId());
+    public LessonResponse getLessonByIdForMobile(Long id, String lang) {
+        Lesson lesson = lessonRepository.findById(id)
+                .orElseThrow(() -> new vn.anhtuan.finalProject.exception.ResourceNotFoundException("Bài học không tồn tại"));
+        return mapToResponse(lesson, lang);
+    }
+
+    private LessonResponse mapToResponse(Lesson lesson, String lang) {
+        LessonResponse response = new LessonResponse();
+        response.setId(lesson.getId());
+        if (lesson.getChapter() != null) {
             response.setChapterId(lesson.getChapter().getId());
-            response.setOrderNo(lesson.getOrderNo());
-            response.setVideoUrl(lesson.getVideoUrl());
+        }
+        response.setOrderNo(lesson.getOrderNo());
+        response.setVideoUrl(lesson.getVideoUrl());
+        response.setTitle(QuizResponse.getLocalizedText(lesson.getTitleVi(), lesson.getTitleEn(), lang));
 
-            // Lọc Title
-            String title = QuizResponse.getLocalizedText(lesson.getTitleVi(), lesson.getTitleEn(), lang);
-            response.setTitle(title);
-
-            // Map danh sách Contents
-            if (lesson.getContents() != null) {
-                List<LessonContentResponse> contentResponses = lesson.getContents().stream().map(content -> {
-                    LessonContentResponse cRes = new LessonContentResponse();
-                    cRes.setId(content.getId());
-                    cRes.setContentType(content.getContentType().name());
-                    cRes.setContentOrder(content.getContentOrder());
-
-                    // Lọc Content Value
-                    String value = QuizResponse.getLocalizedText(content.getContentValueVi(), content.getContentValueEn(), lang);
-                    cRes.setContentValue(value);
-
-                    return cRes;
-                }).collect(Collectors.toList());
-                response.setContents(contentResponses);
-            }
-
-            // Nếu có include Bài tập tự luyện, map Exercises ở đây (Tùy logic Controller của bạn)
-
-            return response;
-        }).collect(Collectors.toList());
+        if (lesson.getContents() != null) {
+            List<LessonContentResponse> contents = lesson.getContents().stream().map(c -> {
+                LessonContentResponse cRes = new LessonContentResponse();
+                cRes.setId(c.getId());
+                cRes.setContentType(c.getContentType().name());
+                cRes.setContentOrder(c.getContentOrder());
+                cRes.setContentValue(QuizResponse.getLocalizedText(c.getContentValueVi(), c.getContentValueEn(), lang));
+                return cRes;
+            }).collect(Collectors.toList());
+            response.setContents(contents);
+        }
+        return response;
     }
 }

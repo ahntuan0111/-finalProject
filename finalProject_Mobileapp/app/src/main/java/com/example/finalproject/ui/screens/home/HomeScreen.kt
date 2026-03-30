@@ -89,7 +89,7 @@ fun HomeScreen(
 
         // 2. Thanh tìm kiếm
         HomeSearchBar(onSearchClick = {
-            // TODO: Navigate to Search Screen
+            navController.navigate(AppRoutes.SEARCH)
         })
 
         Spacer(modifier = Modifier.height(24.dp))

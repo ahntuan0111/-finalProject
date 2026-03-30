@@ -249,4 +249,76 @@
     <string name="doc_list_error_encode">Lỗi đọc đường dẫn!</string>
     <string name="doc_list_fallback_title">Tai_lieu</string>
     <string name="doc_list_item_meta">%1$s • %2$s</string>
+
+    <!-- User Screen -->
+    <string name="user_profile_title">Hồ sơ của tôi</string>
+    <string name="user_avatar_desc">Ảnh đại diện</string>
+    <string name="user_edit_desc">Chỉnh sửa</string>
+    <string name="user_default_name">Người dùng</string>
+    <string name="user_grade_format">Lớp %1$d</string>
+    <string name="user_id_format">ID: #%1$s</string>
+    <string name="user_stat_lessons">Bài học</string>
+    <string name="user_stat_gpa">Điểm TB</string>
+    <string name="user_stat_hours">Giờ học</string>
+    <string name="user_section_info">Thông tin cá nhân</string>
+    <string name="user_info_email">Email</string>
+    <string name="user_info_name">Tên hiển thị</string>
+    <string name="user_info_dob">Ngày sinh</string>
+    <string name="user_info_missing">Chưa cập nhật</string>
+    <string name="user_section_grade">Khối lớp học tập</string>
+    <string name="user_section_settings">Cài đặt hệ thống</string>
+    <string name="user_setting_lang">Ngôn ngữ hiển thị</string>
+    <string name="user_setting_darkmode">Chế độ tối cảnh</string>
+    <string name="user_action_logout">Đăng xuất tài khoản</string>
+    <string name="user_edit_title">Thông tin cá nhân</string>
+    <string name="user_edit_subtitle">Thay đổi ảnh đại diện và ngày sinh của bạn</string>
+    <string name="user_edit_select_image">Chọn ảnh</string>
+    <string name="user_edit_avatar_label">Link ảnh Avatar</string>
+    <string name="user_edit_avatar_hint">Chạm vào ảnh trên để chọn từ thư viện</string>
+    <string name="user_edit_dob_label">Ngày sinh (YYYY-MM-DD)</string>
+    <string name="user_edit_dob_hint">Ví dụ: 2010-05-20</string>
+    <string name="user_edit_btn_cancel">Hủy bỏ</string>
+    <string name="user_edit_btn_update">Cập nhật</string>
+
+    <!-- Reminder Screen -->
+    <string name="reminder_title">Kế hoạch Học tập</string>
+    <string name="reminder_error_prefix">Lỗi: %1$s</string>
+    <string name="reminder_goal_default">Kỳ thi quan trọng</string>
+    <string name="reminder_study_title">Lịch học của tôi</string>
+    <string name="reminder_study_desc">Dành 15 phút mỗi ngày để ôn tập</string>
+    <string name="reminder_streak_title">Cảnh báo mất lửa!</string>
+    <string name="reminder_streak_prefix">Nhắc tôi nếu đến </string>
+    <string name="reminder_streak_suffix"> tối chưa học</string>
+    <string name="reminder_goal_title">Mục tiêu sắp tới</string>
+    <string name="reminder_goal_select">Chọn ngày thi / mục tiêu</string>
+    <string name="reminder_goal_days_left">%1$d ngày nữa</string>
+    <string name="reminder_goal_today">Hôm nay!</string>
+    <string name="reminder_goal_passed">Đã qua</string>
+    <string name="reminder_goal_invalid">Ngày không hợp lệ</string>
+    <string name="reminder_goal_remaining">Chỉ còn khoảng</string>
+    <string name="reminder_goal_until">Đến %1$s</string>
+
+    <!-- Theory Detail Screen -->
+    <string name="theory_detail_no_title">Chưa cập nhật tiêu đề</string>
+    <string name="theory_detail_video_restricted">Video bị giới hạn phát trên ứng dụng ngoài.</string>
+    <string name="theory_detail_watch_on_youtube">Xem trên ứng dụng YouTube (Nếu video lỗi)</string>
+    <string name="theory_detail_image_error">Không thể tải ảnh</string>
+    <string name="theory_detail_image_unavailable">Hình ảnh không khả dụng</string>
+
+    <string name="theory_screen_no_chapter_title">Chương (Chưa có tên)</string>
+    <string name="theory_screen_no_lesson_title">Bài học (Chưa có tên)</string>
+
+    <string name="subject_detail_no_lessons_unlocked">ℹ️ Chưa có bài học nào được mở khoá trong chương này</string>
+
+    <string name="placeholder_dashboard">Màn hình Thống kê (Dashboard)</string>
+    <string name="placeholder_ai_chat">Màn hình AI Chat</string>
+    <string name="placeholder_user">Màn hình Cá nhân (User)</string>
+
+    <string name="search_placeholder">Nhập tên bài học, bài tập...</string>
+    <string name="search_recent_title">Tìm kiếm gần đây</string>
+    <string name="search_clear_history">Xóa lịch sử</string>
+    <string name="search_no_results">Không tìm thấy kết quả phù hợp cho \"%1$s\"</string>
+    <string name="search_type_lesson">Lý thuyết</string>
+    <string name="search_type_quiz">Bài tập / Đề thi</string>
+    <string name="search_type_document">Tài liệu tham khảo</string>
 </resources>

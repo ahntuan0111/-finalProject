@@ -183,7 +183,7 @@ fun ChapterItem(
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Text(
-                    text = chapter.title ?: "Chương (Chưa có tên)", // BỔ SUNG ?:
+                    text = chapter.title ?: stringResource(id = R.string.theory_screen_no_chapter_title), // BỔ SUNG ?:
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -243,7 +243,7 @@ fun LessonItem(lesson: LessonDto, onClick: () -> Unit, mode: String) {
         Spacer(modifier = Modifier.width(16.dp))
 
         Text(
-            text = lesson.title ?: "Bài học (Chưa có tên)", // BỔ SUNG ?:
+            text = lesson.title ?: stringResource(id = R.string.theory_screen_no_lesson_title), // BỔ SUNG ?:
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
             modifier = Modifier.weight(1f)

@@ -1,6 +1,5 @@
 package com.example.finalproject.ui.screens.auth
 
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -35,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finalproject.R
+import com.example.finalproject.ui.components.AppNotificationManager
 import com.example.finalproject.ui.components.CustomTextField
 import com.example.finalproject.ui.components.PrimaryButton
 import com.example.finalproject.ui.components.SocialButton
@@ -48,14 +47,17 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel = hiltVie
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
+    // Inline validation errors
+    var usernameError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+
     val state by viewModel.loginState.collectAsState()
-    val context = LocalContext.current
 
     LaunchedEffect(state) {
         when (state) {
             is AuthState.LoginSuccess -> {
                 val hasGrade = (state as AuthState.LoginSuccess).hasGrade
-                Toast.makeText(context, context.getString(R.string.login_toast_success), Toast.LENGTH_SHORT).show()
+                AppNotificationManager.success("Chào mừng trở lại! 🎉")
                 if (hasGrade) {
                     navController.navigate("home") { popUpTo("welcome") { inclusive = true } }
                 } else {
@@ -63,7 +65,7 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel = hiltVie
                 }
             }
             is AuthState.Error -> {
-                Toast.makeText(context, (state as AuthState.Error).message, Toast.LENGTH_SHORT).show()
+                AppNotificationManager.error((state as AuthState.Error).message)
                 viewModel.resetState()
             }
             else -> {}
@@ -124,33 +126,43 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel = hiltVie
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Form fields with leading icons
+        // --- Username field ---
         CustomTextField(
             value = username,
-            onValueChange = { username = it },
+            onValueChange = {
+                username = it
+                usernameError = null
+            },
             label = stringResource(id = R.string.login_username_hint),
             showLabelOutside = false,
             leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = null,
-                    tint = PrimaryBlue
-                )
+                Icon(imageVector = Icons.Default.Person, contentDescription = null, tint = PrimaryBlue)
             },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            isError = usernameError != null
         )
+        if (usernameError != null) {
+            Text(
+                text = "⚠ $usernameError",
+                color = Color(0xFFFF4D4F),
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 4.dp, bottom = 6.dp)
+            )
+        }
 
+        // --- Password field ---
         CustomTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = {
+                password = it
+                passwordError = null
+            },
             label = stringResource(id = R.string.login_password_hint),
             showLabelOutside = false,
             leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Lock,
-                    contentDescription = null,
-                    tint = PrimaryBlue
-                )
+                Icon(imageVector = Icons.Default.Lock, contentDescription = null, tint = PrimaryBlue)
             },
             trailingIcon = {
                 val image = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
@@ -159,8 +171,19 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel = hiltVie
                 }
             },
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done)
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+            isError = passwordError != null
         )
+        if (passwordError != null) {
+            Text(
+                text = "⚠ $passwordError",
+                color = Color(0xFFFF4D4F),
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 4.dp, bottom = 6.dp)
+            )
+        }
 
         Text(
             text = stringResource(id = R.string.login_forgot_password),
@@ -175,7 +198,20 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel = hiltVie
 
         PrimaryButton(
             text = stringResource(id = R.string.login_title),
-            onClick = { viewModel.login(username, password) },
+            onClick = {
+                var hasError = false
+                if (username.isBlank()) {
+                    usernameError = "Vui lòng nhập tên đăng nhập"
+                    hasError = true
+                }
+                if (password.isBlank()) {
+                    passwordError = "Vui lòng nhập mật khẩu"
+                    hasError = true
+                }
+                if (!hasError) {
+                    viewModel.login(username, password)
+                }
+            },
             isLoading = state is AuthState.Loading
         )
 
@@ -196,7 +232,7 @@ fun LoginScreen(navController: NavController, viewModel: AuthViewModel = hiltVie
 
         SocialButton(
             text = stringResource(id = R.string.social_login_google),
-            icon = R.drawable.ic_launcher_foreground, // Replace with Google icon in drawable
+            icon = R.drawable.ic_launcher_foreground,
             onClick = { /* Handle Google Login */ }
         )
 

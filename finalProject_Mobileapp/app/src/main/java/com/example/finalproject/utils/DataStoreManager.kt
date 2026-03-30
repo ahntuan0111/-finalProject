@@ -35,6 +35,9 @@ class DataStoreManager @Inject constructor(
         val REMINDER_STREAK_HOUR = intPreferencesKey("reminder_streak_hour")
         val REMINDER_STREAK_MINUTE = intPreferencesKey("reminder_streak_minute")
         val REMINDER_EXAM_ENABLED = androidx.datastore.preferences.core.booleanPreferencesKey("reminder_exam_enabled")
+
+        // SEARCH HISTORY
+        val SEARCH_HISTORY_KEY = stringPreferencesKey("search_history")
     }
 
     // --- Xử lý Grade ---
@@ -108,6 +111,37 @@ class DataStoreManager @Inject constructor(
 
     fun getReminderExamEnabledFlow() = context.dataStore.data.map { it[REMINDER_EXAM_ENABLED] ?: false }
     suspend fun saveReminderExamEnabled(enabled: Boolean) = context.dataStore.edit { it[REMINDER_EXAM_ENABLED] = enabled }
+
+    // --- Xử lý Lịch sử Tìm Kiếm ---
+    fun getSearchHistoryFlow(): Flow<List<String>> {
+        return context.dataStore.data.map { preferences ->
+            val historyString = preferences[SEARCH_HISTORY_KEY] ?: ""
+            if (historyString.isBlank()) emptyList() else historyString.split(",,,")
+        }
+    }
+
+    suspend fun saveSearchKeyword(keyword: String) {
+        if (keyword.isBlank()) return
+        context.dataStore.edit { preferences ->
+            val currentHistory = preferences[SEARCH_HISTORY_KEY] ?: ""
+            val historyList = if (currentHistory.isBlank()) mutableListOf() else currentHistory.split(",,,").toMutableList()
+            
+            // Bỏ từ khoá cũ nếu bị trùng và thêm vào đầu
+            historyList.remove(keyword)
+            historyList.add(0, keyword)
+            
+            // Giữ lại 10 từ khóa mới nhất
+            if (historyList.size > 10) {
+                historyList.removeAt(historyList.size - 1)
+            }
+            
+            preferences[SEARCH_HISTORY_KEY] = historyList.joinToString(",,,")
+        }
+    }
+
+    suspend fun clearSearchHistory() {
+        context.dataStore.edit { it.remove(SEARCH_HISTORY_KEY) }
+    }
 
     // --- Reset ---
     suspend fun clearData() {

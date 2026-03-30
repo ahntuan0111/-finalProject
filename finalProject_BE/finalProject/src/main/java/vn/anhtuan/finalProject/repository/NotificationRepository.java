@@ -19,7 +19,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     int countByUserAndIsReadFalse(User user);
 
     // Đánh dấu tất cả là đã đọc cho 1 user
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Notification n SET n.isRead = true WHERE n.user = :user AND n.isRead = false")
     void markAllAsReadByUser(User user);
 }

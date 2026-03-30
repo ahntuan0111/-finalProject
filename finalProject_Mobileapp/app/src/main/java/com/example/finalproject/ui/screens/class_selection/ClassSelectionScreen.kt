@@ -1,6 +1,5 @@
 package com.example.finalproject.ui.screens.class_selection
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finalproject.R
+import com.example.finalproject.ui.components.AppNotificationManager
 import com.example.finalproject.ui.components.PrimaryButton
 import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.theme.TextGray
@@ -33,7 +33,6 @@ fun ClassSelectionScreen(
 ) {
     var selectedGrade by remember { mutableIntStateOf(0) }
     val state by viewModel.state.collectAsState()
-    val context = LocalContext.current
 
     LaunchedEffect(state) {
         if (state is ClassSelectionState.Success) {
@@ -42,11 +41,7 @@ fun ClassSelectionScreen(
                 popUpTo("login") { inclusive = true }
             }
         } else if (state is ClassSelectionState.Error) {
-            Toast.makeText(
-                context,
-                (state as ClassSelectionState.Error).message,
-                Toast.LENGTH_SHORT
-            ).show()
+            AppNotificationManager.error((state as ClassSelectionState.Error).message)
         }
     }
 
@@ -111,11 +106,7 @@ fun ClassSelectionScreen(
                 if (selectedGrade != 0) {
                     viewModel.selectGrade(selectedGrade)
                 } else {
-                    Toast.makeText(
-                        context,
-                        context.getString(R.string.class_selection_toast_empty),
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    AppNotificationManager.error("Vui lòng chọn lớp học của bạn")
                 }
             },
             isLoading = state is ClassSelectionState.Loading

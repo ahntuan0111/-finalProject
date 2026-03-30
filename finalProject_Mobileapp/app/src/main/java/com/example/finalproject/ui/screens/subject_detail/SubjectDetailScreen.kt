@@ -1,6 +1,5 @@
 package com.example.finalproject.ui.screens.subject_detail
 
-import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalIndication
@@ -35,6 +34,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finalproject.R
 import com.example.finalproject.di.TheoryMode
+import com.example.finalproject.ui.components.AppNotificationManager
 import com.example.finalproject.ui.navigation.AppRoutes
 import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.viewmodel.SubjectDetailViewModel
@@ -129,7 +129,7 @@ fun SubjectDetailScreen(
                     if (nextLessonId != -1L) {
                         navController.navigate(AppRoutes.createLessonDetailRoute(nextLessonId))
                     } else {
-                        Toast.makeText(context, context.getString(R.string.subject_detail_no_content_toast), Toast.LENGTH_SHORT).show()
+                        AppNotificationManager.info(context.getString(R.string.subject_detail_no_lessons_unlocked))
                     }
                 }
             )

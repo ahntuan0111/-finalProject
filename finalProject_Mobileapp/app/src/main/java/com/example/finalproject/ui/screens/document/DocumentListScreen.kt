@@ -1,6 +1,5 @@
 package com.example.finalproject.ui.screens.document
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -27,8 +26,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finalproject.R
 import com.example.finalproject.data.remote.model.DocumentDto
+import com.example.finalproject.ui.components.AppNotificationManager
 import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.viewmodel.DocumentViewModel
+import com.example.finalproject.utils.AppLogger
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
@@ -42,7 +43,6 @@ fun DocumentListScreen(
 ) {
     val documents by viewModel.documents.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    val context = LocalContext.current
 
     LaunchedEffect(subjectCode, grade) {
         viewModel.fetchDocuments(subjectCode, grade)
@@ -91,17 +91,22 @@ fun DocumentListScreen(
                             val safeTitle = doc.title ?: fallbackTitleStr
 
                             if (safeUrl.isEmpty()) {
-                                Toast.makeText(context, errorEmptyUrlStr, Toast.LENGTH_SHORT).show()
+                                AppLogger.w("DocumentList", "Doc URL empty for: $safeTitle")
+                                AppNotificationManager.error("⚠️ Tài liệu này chưa có file, vui lòng thử lại sau")
                                 return@DocumentItemCard
                             }
 
                             try {
-                                val encodedUrl = URLEncoder.encode(safeUrl, StandardCharsets.UTF_8.toString())
-                                val encodedTitle = URLEncoder.encode(safeTitle, StandardCharsets.UTF_8.toString())
-
-                                navController.navigate("pdf_viewer/$encodedUrl/$encodedTitle")
+                                val urlBytes = safeUrl.toByteArray(StandardCharsets.UTF_8)
+                                val base64Url = android.util.Base64.encodeToString(urlBytes, android.util.Base64.URL_SAFE or android.util.Base64.NO_WRAP)
+                                
+                                val titleBytes = safeTitle.toByteArray(StandardCharsets.UTF_8)
+                                val base64Title = android.util.Base64.encodeToString(titleBytes, android.util.Base64.URL_SAFE or android.util.Base64.NO_WRAP)
+                                
+                                navController.navigate("pdf_viewer/$base64Url/$base64Title")
                             } catch (e: Exception) {
-                                Toast.makeText(context, errorEncodeStr, Toast.LENGTH_SHORT).show()
+                                AppLogger.e("DocumentList", "Encode URL failed", e)
+                                AppNotificationManager.error("⚠️ Không thể mở tài liệu, vui lòng thử lại")
                             }
                         }
                     }

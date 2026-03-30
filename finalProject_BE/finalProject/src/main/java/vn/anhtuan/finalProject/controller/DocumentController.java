@@ -101,16 +101,17 @@ public class DocumentController {
         return ResponseEntity.ok(ApiResponse.success(null, "Xóa tài liệu thành công"));
     }
 
-    // API Download/View File (Để App load PDF - Không ảnh hưởng ngôn ngữ)
+    // API Download/View File - Giữ lại để tương thích ngược với các file cũ đã lưu trên disk (trước khi migrate sang Firebase)
+    // File mới đã được lưu trên Firebase và có thể truy cập trực tiếp qua Firebase URL.
     @GetMapping("/files/{fileName:.+}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileName, HttpServletRequest request) {
         try {
             Path filePath = Paths.get("uploads").resolve(fileName).normalize();
             Resource resource = new UrlResource(filePath.toUri());
 
-            if(resource.exists()) {
+            if (resource.exists()) {
                 String contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
-                if(contentType == null) contentType = "application/octet-stream";
+                if (contentType == null) contentType = "application/pdf";
 
                 return ResponseEntity.ok()
                         .contentType(MediaType.parseMediaType(contentType))

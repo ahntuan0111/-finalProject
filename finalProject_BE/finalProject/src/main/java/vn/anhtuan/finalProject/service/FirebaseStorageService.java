@@ -65,6 +65,56 @@ public class FirebaseStorageService {
     }
 
     /**
+     * Upload trực tiếp file PDF lên Firebase Storage (dành riêng cho tài liệu)
+     */
+    public String uploadPdfToFirebase(MultipartFile file) throws IOException {
+        Storage storage = StorageClient.getInstance().bucket().getStorage();
+        String bucketName = StorageClient.getInstance().bucket().getName();
+
+        // Tạo tên file an toàn, prefix theo folder documents/
+        String originalFilename = file.getOriginalFilename() != null
+                ? file.getOriginalFilename().replaceAll("[^a-zA-Z0-9.-]", "_")
+                : "document.pdf";
+        String fileName = "documents/" + UUID.randomUUID().toString() + "_" + originalFilename;
+
+        BlobId blobId = BlobId.of(bucketName, fileName);
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+                .setContentType("application/pdf")
+                .build();
+
+        // Tải file lên Firebase
+        storage.create(blobInfo, file.getBytes());
+
+        // Trả về URL public
+        return String.format(
+                "https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media",
+                bucketName,
+                fileName.replace("/", "%2F")
+        );
+    }
+
+    /**
+     * Xóa file trên Firebase Storage theo public URL
+     */
+    public void deleteFileFromFirebase(String publicUrl) {
+        try {
+            if (publicUrl == null || !publicUrl.contains("firebasestorage.googleapis.com")) return;
+
+            Storage storage = StorageClient.getInstance().bucket().getStorage();
+            String bucketName = StorageClient.getInstance().bucket().getName();
+
+            // Tách fileName từ URL: /o/documents%2F.../o?alt=media
+            String encodedPath = publicUrl.split("/o/")[1].split("\\?")[0];
+            String filePath = java.net.URLDecoder.decode(encodedPath, "UTF-8");
+
+            BlobId blobId = BlobId.of(bucketName, filePath);
+            storage.delete(blobId);
+        } catch (Exception e) {
+            System.err.println("Không thể xóa file Firebase: " + e.getMessage());
+        }
+    }
+
+    /**
      * Upload trực tiếp file lên Firebase Storage (sử dụng cho Web-Admin)
      */
     public String uploadImageToFirebase(MultipartFile file, String folderName) throws IOException {

@@ -27,7 +27,8 @@ fun CustomTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     singleLine: Boolean = true,
-    showLabelOutside: Boolean = true
+    showLabelOutside: Boolean = true,
+    isError: Boolean = false
 ) {
     Column(modifier = modifier.padding(bottom = 16.dp)) {
         if (showLabelOutside) {
@@ -49,11 +50,14 @@ fun CustomTextField(
             leadingIcon = leadingIcon,
             trailingIcon = trailingIcon,
             shape = RoundedCornerShape(12.dp),
+            isError = isError,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = PrimaryBlue,
                 unfocusedBorderColor = Color(0xFFE2E8F0),
                 focusedContainerColor = Color(0xFFF8FAFC),
-                unfocusedContainerColor = Color(0xFFF8FAFC)
+                unfocusedContainerColor = Color(0xFFF8FAFC),
+                errorBorderColor = Color(0xFFFF4D4F),
+                errorContainerColor = Color(0xFFFFF2F0)
             ),
             singleLine = singleLine,
             keyboardOptions = keyboardOptions,

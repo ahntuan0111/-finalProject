@@ -1,13 +1,11 @@
 package com.example.finalproject.ui.screens.auth
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -17,6 +15,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.finalproject.R
+import com.example.finalproject.ui.components.AppNotificationManager
 import com.example.finalproject.ui.components.CustomTextField
 import com.example.finalproject.ui.components.PrimaryButton
 import com.example.finalproject.ui.theme.PrimaryBlue
@@ -34,15 +33,14 @@ fun ResetPasswordScreen(
     var confirmPassword by remember { mutableStateOf("") }
 
     val state by viewModel.resetPassState.collectAsState()
-    val context = LocalContext.current
 
     LaunchedEffect(state) {
         if (state is AuthState.Success) {
-            Toast.makeText(context, context.getString(R.string.reset_toast_success), Toast.LENGTH_LONG).show()
+            AppNotificationManager.success("✅ Đặt lại mật khẩu thành công!")
             viewModel.resetForgotStates()
             navController.navigate("login") { popUpTo("auth_selection") { inclusive = false } }
         } else if (state is AuthState.Error) {
-            Toast.makeText(context, (state as AuthState.Error).message, Toast.LENGTH_SHORT).show()
+            AppNotificationManager.error((state as AuthState.Error).message)
         }
     }
 
@@ -90,9 +88,9 @@ fun ResetPasswordScreen(
             text = stringResource(id = R.string.reset_btn_confirm),
             onClick = {
                 if (otp.isBlank() || newPassword.isBlank()) {
-                    Toast.makeText(context, context.getString(R.string.reset_toast_empty), Toast.LENGTH_SHORT).show()
+                    AppNotificationManager.error("Vui lòng nhập đầy đủ thông tin")
                 } else if (newPassword != confirmPassword) {
-                    Toast.makeText(context, context.getString(R.string.reset_toast_pass_mismatch), Toast.LENGTH_SHORT).show()
+                    AppNotificationManager.error("Mật khẩu xác nhận không khớp")
                 } else {
                     viewModel.resetPassword(email, otp, newPassword)
                 }

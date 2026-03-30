@@ -26,12 +26,19 @@ class DocumentViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
+                android.util.Log.d("DocumentVM", "Fetching documents: subjectCode=$subjectCode, grade=$grade")
                 val response = apiService.getDocuments(subjectCode, grade)
+                android.util.Log.d("DocumentVM", "HTTP Status: ${response.code()}, Body: ${response.body()?.success}, Count: ${response.body()?.data?.size}")
                 if (response.isSuccessful && response.body()?.success == true) {
-                    _documents.value = response.body()?.data ?: emptyList()
+                    val items = response.body()?.data ?: emptyList()
+                    _documents.value = items
+                    android.util.Log.d("DocumentVM", "Documents loaded: ${items.size} items")
+                } else {
+                    android.util.Log.w("DocumentVM", "Response not successful or success=false")
+                    _documents.value = emptyList()
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                android.util.Log.e("DocumentVM", "Error fetching documents", e)
             } finally {
                 _isLoading.value = false
             }

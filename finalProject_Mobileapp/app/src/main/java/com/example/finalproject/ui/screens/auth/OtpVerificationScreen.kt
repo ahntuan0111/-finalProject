@@ -1,6 +1,5 @@
 package com.example.finalproject.ui.screens.auth
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,7 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.finalproject.ui.components.AppNotificationManager
 import com.example.finalproject.ui.components.PrimaryButton
 import com.example.finalproject.ui.theme.PrimaryBlue
 import com.example.finalproject.ui.viewmodel.AuthState
@@ -40,21 +40,20 @@ fun OtpVerificationScreen(
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val state by viewModel.registerState.collectAsState()
-    val context = LocalContext.current
     val otpValues = remember { mutableStateListOf("", "", "", "", "", "") }
     val focusRequesters = remember { List(6) { FocusRequester() } }
 
     LaunchedEffect(state) {
         when (state) {
             is AuthState.Success -> {
-                Toast.makeText(context, "Đăng ký thành công!", Toast.LENGTH_LONG).show()
+                AppNotificationManager.achievement("🏆 Tạo tài khoản thành công! Chào mừng bạn!")
                 viewModel.resetState()
                 navController.navigate("login") {
                     popUpTo("welcome") { inclusive = false }
                 }
             }
             is AuthState.Error -> {
-                Toast.makeText(context, (state as AuthState.Error).message, Toast.LENGTH_SHORT).show()
+                AppNotificationManager.error((state as AuthState.Error).message)
                 viewModel.resetState()
             }
             else -> {}
@@ -74,7 +73,7 @@ fun OtpVerificationScreen(
             onClick = { navController.popBackStack() },
             modifier = Modifier.align(Alignment.Start)
         ) {
-            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color(0xFF1E293B))
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color(0xFF1E293B))
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -135,7 +134,7 @@ fun OtpVerificationScreen(
                 if (fullOtp.length == 6) {
                     viewModel.verifyRegisterOtp(email, fullOtp)
                 } else {
-                    Toast.makeText(context, "Vui lòng nhập đủ 6 số", Toast.LENGTH_SHORT).show()
+                    AppNotificationManager.error("Vui lòng nhập đủ 6 số")
                 }
             },
             isLoading = state is AuthState.Loading
@@ -151,7 +150,7 @@ fun OtpVerificationScreen(
                 color = PrimaryBlue,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable {
-                    Toast.makeText(context, "Đã gửi lại yêu cầu", Toast.LENGTH_SHORT).show()
+                    AppNotificationManager.info("📧 Đã gửi lại mã OTP đến email của bạn")
                 }
             )
         }
