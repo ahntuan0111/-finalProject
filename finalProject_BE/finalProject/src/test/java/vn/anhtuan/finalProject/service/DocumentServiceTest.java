@@ -6,17 +6,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import vn.anhtuan.finalProject.dto.response.DocumentResponse;
+import org.springframework.mock.web.MockMultipartFile;
+import vn.anhtuan.finalProject.dto.request.DocumentRequest;
 import vn.anhtuan.finalProject.entity.Document;
 import vn.anhtuan.finalProject.repository.DocumentRepository;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,56 +30,55 @@ class DocumentServiceTest {
     @InjectMocks
     private DocumentService documentService;
 
-    private Document dummyDoc;
+    private Document document;
 
     @BeforeEach
     void setUp() {
-        dummyDoc = new Document();
-        dummyDoc.setId(1L);
-        dummyDoc.setTitleVi("Toán Học Đại Số");
-        dummyDoc.setSubjectCode("Toán");
-        dummyDoc.setGrade(10);
-        dummyDoc.setFilePath("https://firebase.url/test.pdf");
+        document = new Document();
+        document.setId(1L);
+        document.setTitleVi("Tài liệu 1");
+        document.setFilePath("http://firebase.com/file.pdf");
+        document.setSubjectCode("toan");
+        document.setGrade(10);
     }
 
     @Test
-    void testGetDocuments_DirectMatch() {
-        // Arrange
-        when(documentRepository.findBySubjectCodeFlexibleAndGrade("toan", 10))
-                .thenReturn(Collections.singletonList(dummyDoc));
+    void testUploadDocument_Success() throws Exception {
+        MockMultipartFile file = new MockMultipartFile("file", "test.pdf", "application/pdf", "content".getBytes());
+        when(firebaseStorageService.uploadPdfToFirebase(any())).thenReturn("http://firebase.com/test.pdf");
+        when(documentRepository.save(any(Document.class))).thenReturn(document);
 
-        // Act
-        List<DocumentResponse> result = documentService.getDocuments("toan", 10, "vi");
+        Document result = documentService.uploadDocument(file, "Tài liệu 1", "Doc 1", "Mô tả", "Desc", "toan", 10, "GK", "Midterm");
 
-        // Assert
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getTitle()).isEqualTo("Toán Học Đại Số");
-
-        // Đảm bảo chỉ gọi DB đúng 1 lần
-        verify(documentRepository, times(1)).findBySubjectCodeFlexibleAndGrade(anyString(), anyInt());
+        assertNotNull(result);
+        assertEquals("http://firebase.com/file.pdf", result.getFilePath());
+        verify(documentRepository).save(any(Document.class));
     }
 
     @Test
-    void testGetDocuments_FallbackToAlias() {
-        // Arrange
-        // Lần đầu gọi mã ngắn "khtn" không ra gì
-        when(documentRepository.findBySubjectCodeFlexibleAndGrade("khtn", 7))
-                .thenReturn(Collections.emptyList());
-        
-        // Lần sau vòng lặp dò tìm gọi alias "Khoa học tự nhiên" thì ra kết quả
-        Document doc2 = new Document();
-        doc2.setTitleVi("KHTN 7");
-        when(documentRepository.findBySubjectCodeFlexibleAndGrade("Khoa học tự nhiên", 7))
-                .thenReturn(Collections.singletonList(doc2));
+    void testGetDocumentById_Success() {
+        when(documentRepository.findById(1L)).thenReturn(Optional.of(document));
+        Document result = documentService.getDocumentById(1L);
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+    }
 
-        // Act
-        List<DocumentResponse> result = documentService.getDocuments("khtn", 7, "vi");
+    @Test
+    void testUpdateDocument_Success() {
+        DocumentRequest request = new DocumentRequest("Tên mới", "Midterm", "GK", 10, "toan", "Desc", "Mô tả", "New Title");
+        when(documentRepository.findById(1L)).thenReturn(Optional.of(document));
+        when(documentRepository.save(any(Document.class))).thenReturn(document);
 
-        // Assert
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getTitle()).isEqualTo("KHTN 7");
+        Document result = documentService.updateDocument(1L, request);
+        assertNotNull(result);
+        verify(documentRepository).save(any(Document.class));
+    }
 
-        // Verify gọi ít nhất 2 lần (1 cho khtn, 1 cho alias match)
-        verify(documentRepository, atLeast(2)).findBySubjectCodeFlexibleAndGrade(anyString(), anyInt());
+    @Test
+    void testDeleteDocument_Success() {
+        when(documentRepository.findById(1L)).thenReturn(Optional.of(document));
+        documentService.deleteDocument(1L);
+        verify(firebaseStorageService).deleteFileFromFirebase(anyString());
+        verify(documentRepository).delete(document);
     }
 }

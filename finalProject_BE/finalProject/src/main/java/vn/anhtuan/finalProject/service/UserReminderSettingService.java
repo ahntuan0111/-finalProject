@@ -36,14 +36,14 @@ public class UserReminderSettingService {
             setting.setUser(user);
         }
 
-        setting.setIsStudyReminderEnabled(request.getIsStudyReminderEnabled() != null ? request.getIsStudyReminderEnabled() : false);
+        setting.setStudyReminderEnabled(request.getStudyReminderEnabled() != null ? request.getStudyReminderEnabled() : false);
         setting.setStudyDays(request.getStudyDays());
         setting.setStudyTime(request.getStudyTime());
         
-        setting.setIsStreakReminderEnabled(request.getIsStreakReminderEnabled() != null ? request.getIsStreakReminderEnabled() : false);
+        setting.setStreakReminderEnabled(request.getStreakReminderEnabled() != null ? request.getStreakReminderEnabled() : false);
         setting.setStreakTime(request.getStreakTime());
         
-        setting.setIsGoalReminderEnabled(request.getIsGoalReminderEnabled() != null ? request.getIsGoalReminderEnabled() : false);
+        setting.setGoalReminderEnabled(request.getGoalReminderEnabled() != null ? request.getGoalReminderEnabled() : false);
         setting.setTargetDate(request.getTargetDate());
         setting.setTargetName(request.getTargetName());
 
@@ -54,28 +54,28 @@ public class UserReminderSettingService {
     private UserReminderSetting createDefaultSetting(User user) {
         UserReminderSetting defaultSetting = new UserReminderSetting();
         defaultSetting.setUser(user);
-        defaultSetting.setIsStudyReminderEnabled(false);
+        defaultSetting.setStudyReminderEnabled(false);
         defaultSetting.setStudyDays("MON,TUE,WED,THU,FRI,SAT,SUN");
         defaultSetting.setStudyTime("20:00");
         
-        defaultSetting.setIsStreakReminderEnabled(false);
+        defaultSetting.setStreakReminderEnabled(false);
         defaultSetting.setStreakTime("21:00");
         
-        defaultSetting.setIsGoalReminderEnabled(false);
+        defaultSetting.setGoalReminderEnabled(false);
         return defaultSetting; // Không save vào DB vội cho đến khi User tự sửa
     }
 
     private ReminderSettingResponse mapToResponse(UserReminderSetting setting) {
-        return ReminderSettingResponse.builder()
-                .id(setting.getId())
-                .isStudyReminderEnabled(setting.getIsStudyReminderEnabled())
-                .studyDays(setting.getStudyDays())
-                .studyTime(setting.getStudyTime())
-                .isStreakReminderEnabled(setting.getIsStreakReminderEnabled())
-                .streakTime(setting.getStreakTime())
-                .isGoalReminderEnabled(setting.getIsGoalReminderEnabled())
-                .targetDate(setting.getTargetDate())
-                .targetName(setting.getTargetName())
-                .build();
+        ReminderSettingResponse response = new ReminderSettingResponse();
+        response.setId(setting.getId());
+        response.setStudyReminderEnabled(setting.getStudyReminderEnabled());
+        response.setStudyDays(setting.getStudyDays());
+        response.setStudyTime(setting.getStudyTime());
+        response.setStreakReminderEnabled(setting.getStreakReminderEnabled());
+        response.setStreakTime(setting.getStreakTime());
+        response.setGoalReminderEnabled(setting.getGoalReminderEnabled());
+        response.setTargetDate(setting.getTargetDate());
+        response.setTargetName(setting.getTargetName());
+        return response;
     }
 }

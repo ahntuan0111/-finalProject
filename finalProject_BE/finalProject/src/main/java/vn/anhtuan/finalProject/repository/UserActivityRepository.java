@@ -13,7 +13,8 @@ public interface UserActivityRepository extends JpaRepository<UserActivity, Long
 
     Optional<UserActivity> findByUserIdAndActivityDate(Long userId, LocalDate date);
 
-    // CHỈ LẤY NHỮNG NGÀY TRONG KHOẢNG THỜI GIAN NHẤT ĐỊNH (Ví dụ: 60 ngày gần đây để vẽ Lịch)
+    List<UserActivity> findByUserIdAndActivityDateAfterOrderByActivityDateAsc(Long userId, LocalDate startDate);
+
     @Query("SELECT u.activityDate FROM UserActivity u WHERE u.user.id = :userId AND u.activityDate >= :startDate ORDER BY u.activityDate DESC")
     List<LocalDate> findRecentActivityDates(@Param("userId") Long userId, @Param("startDate") LocalDate startDate);
 

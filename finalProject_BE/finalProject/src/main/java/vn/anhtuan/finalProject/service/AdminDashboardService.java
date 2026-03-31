@@ -2,17 +2,19 @@ package vn.anhtuan.finalProject.service;
 
 import org.springframework.stereotype.Service;
 import vn.anhtuan.finalProject.dto.response.admin.AdminDashboardResponse;
+import vn.anhtuan.finalProject.dto.response.admin.StudentProfileResponse;
 import vn.anhtuan.finalProject.entity.Lesson;
+import vn.anhtuan.finalProject.entity.QuizResult;
 import vn.anhtuan.finalProject.entity.User;
-import vn.anhtuan.finalProject.repository.LessonRepository;
-import vn.anhtuan.finalProject.repository.QuizRepository;
-import vn.anhtuan.finalProject.repository.UserRepository;
+import vn.anhtuan.finalProject.repository.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminDashboardService {
@@ -20,11 +22,22 @@ public class AdminDashboardService {
     private final UserRepository userRepository;
     private final LessonRepository lessonRepository;
     private final QuizRepository quizRepository;
+    private final QuizResultRepository quizResultRepository;
+    private final LessonCompletionRepository lessonCompletionRepository;
+    private final UserActivityRepository userActivityRepository;
 
-    public AdminDashboardService(UserRepository userRepository, LessonRepository lessonRepository, QuizRepository quizRepository) {
+    public AdminDashboardService(UserRepository userRepository,
+                                 LessonRepository lessonRepository,
+                                 QuizRepository quizRepository,
+                                 QuizResultRepository quizResultRepository,
+                                 LessonCompletionRepository lessonCompletionRepository,
+                                 UserActivityRepository userActivityRepository) {
         this.userRepository = userRepository;
         this.lessonRepository = lessonRepository;
         this.quizRepository = quizRepository;
+        this.quizResultRepository = quizResultRepository;
+        this.lessonCompletionRepository = lessonCompletionRepository;
+        this.userActivityRepository = userActivityRepository;
     }
 
 
@@ -139,6 +152,76 @@ public class AdminDashboardService {
     }
 
     // --- CÁC HÀM PHỤ TRỢ (HELPER METHODS) ---
+    // --- THÊM HÀM LẤY CHI TIẾT HỌC SINH ---
+    public StudentProfileResponse getStudentProfile(Long studentId, String lang) {
+        User user = userRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy học sinh ID: " + studentId));
+
+        StudentProfileResponse response = new StudentProfileResponse();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+        // 1. Header
+        StudentProfileResponse.HeaderInfo header = new StudentProfileResponse.HeaderInfo();
+        header.setUsername(user.getUsername());
+        header.setEmail(user.getEmail());
+        header.setJoinDate(user.getCreatedAt().format(formatter));
+        header.setStatus(user.getLastActiveDate().isAfter(LocalDate.now().minusDays(7)) ? "Hoạt động" : "Ngoại tuyến");
+        response.setHeader(header);
+
+        // 2. Metrics
+        StudentProfileResponse.MetricsSummary metrics = new StudentProfileResponse.MetricsSummary();
+        metrics.setCurrentStreak(user.getCurrentStreak());
+        metrics.setTotalMinutes(user.getTotalMinutes());
+        metrics.setCompletedLessons(lessonCompletionRepository.countByUserIdAndCompletedAtIsNotNull(studentId));
+        Double avgQuiz = quizResultRepository.findAvgScoreByUserId(studentId);
+        metrics.setAverageQuizScore(avgQuiz != null ? Math.round(avgQuiz * 10.0) / 10.0 : 0.0);
+        response.setMetrics(metrics);
+
+        // 3. Charts (Radar & Weekly Activity)
+        StudentProfileResponse.ChartData charts = new StudentProfileResponse.ChartData();
+        List<Object[]> rawRadar = "en".equals(lang) ?
+                quizResultRepository.findAvgScoreGroupBySubjectEn(studentId) :
+                quizResultRepository.findAvgScoreGroupBySubjectVi(studentId);
+        charts.setRadarSkills(rawRadar.stream()
+                .map(row -> new StudentProfileResponse.RadarSkill((String) row[0], ((Number) row[1]).doubleValue()))
+                .collect(Collectors.toList()));
+
+        List<vn.anhtuan.finalProject.entity.UserActivity> activities7Days =
+                userActivityRepository.findByUserIdAndActivityDateAfterOrderByActivityDateAsc(studentId, LocalDate.now().minusDays(7));
+        charts.setWeeklyActivity(activities7Days.stream()
+                .map(ua -> new StudentProfileResponse.WeeklyActivity(ua.getActivityDate().format(DateTimeFormatter.ofPattern("dd/MM")), ua.getMinutesUsed()))
+                .collect(Collectors.toList()));
+        response.setCharts(charts);
+
+        // 4. Timeline (Hoạt động gần đây)
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm dd/MM");
+        List<QuizResult> recentQuizzes = quizResultRepository.findTop10ByUserIdOrderByCompletedAtDesc(studentId);
+        response.setActivities(recentQuizzes.stream().map(qr -> {
+            boolean isPassing = qr.getScore() != null && qr.getScore().doubleValue() >= 5.0;
+            return new StudentProfileResponse.RecentActivity(
+                    "QUIZ",
+                    "Hoàn thành bài Quiz",
+                    getLocalizedText(qr.getQuiz().getTitleVi(), qr.getQuiz().getTitleEn(), lang) + " (Điểm: " + qr.getScore() + ")",
+                    qr.getCompletedAt().format(timeFormatter),
+                    isPassing ? "success" : "warning"
+            );
+        }).collect(Collectors.toList()));
+
+        // 5. Assessments (Lịch sử làm bài)
+        response.setAssessments(recentQuizzes.stream().map(qr -> {
+            StudentProfileResponse.AssessmentHistory h = new StudentProfileResponse.AssessmentHistory();
+            h.setId(qr.getId());
+            h.setTitle(getLocalizedText(qr.getQuiz().getTitleVi(), qr.getQuiz().getTitleEn(), lang));
+            h.setType("TRẮC NGHIỆM");
+            h.setSubmittedAt(qr.getCompletedAt().format(timeFormatter));
+            h.setScore(qr.getScore() != null ? qr.getScore().doubleValue() : 0.0);
+            h.setStatus(qr.getScore() != null && qr.getScore().doubleValue() >= 5.0 ? "ĐẠT" : "CHƯA ĐẠT");
+            return h;
+        }).collect(Collectors.toList()));
+
+        return response;
+    }
+
     private String calculateGrowthPercent(long current, long previous) {
         if (previous == 0) {
             return current > 0 ? "+100%" : "0%";

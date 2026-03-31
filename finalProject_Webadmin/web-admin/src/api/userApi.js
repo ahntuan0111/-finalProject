@@ -9,6 +9,11 @@ const userApi = {
   // Xóa user (Optional)
   delete: (id) => {
     return axiosClient.delete(`/admin/users/${id}`);
+  },
+
+  // Lấy hồ sơ chi tiết (Mới thêm cho Dashboard)
+  getProfile: (id) => {
+    return axiosClient.get(`/admin/dashboard/student/${id}`);
   }
 };
 

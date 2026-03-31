@@ -1,29 +1,32 @@
 package vn.anhtuan.finalProject.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import vn.anhtuan.finalProject.dto.response.admin.AdminDashboardResponse;
+import vn.anhtuan.finalProject.dto.response.admin.StudentProfileResponse;
 import vn.anhtuan.finalProject.dto.response.ApiResponse;
 import vn.anhtuan.finalProject.service.AdminDashboardService;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api/admin/dashboard")
 public class AdminDashboardController {
 
-    private final AdminDashboardService dashboardService;
+    private final AdminDashboardService adminDashboardService;
 
-    public AdminDashboardController(AdminDashboardService dashboardService) {
-        this.dashboardService = dashboardService;
+    public AdminDashboardController(AdminDashboardService adminDashboardService) {
+        this.adminDashboardService = adminDashboardService;
     }
 
-    @GetMapping("/dashboard")
-    public ResponseEntity<?> getDashboard(
-            @RequestHeader(name = "Accept-Language", defaultValue = "vi") String lang
-    ) {
-        AdminDashboardResponse data = dashboardService.getDashboardData(lang);
-        return ResponseEntity.ok(ApiResponse.success(data, "Lấy dữ liệu Dashboard thành công"));
+    @GetMapping
+    public ResponseEntity<ApiResponse<AdminDashboardResponse>> getDashboardData(
+            @RequestHeader(value = "Accept-Language", defaultValue = "vi") String lang) {
+        return ResponseEntity.ok(ApiResponse.success(adminDashboardService.getDashboardData(lang), "Lấy dữ liệu Dashboard thành công"));
+    }
+
+    @GetMapping("/student/{id}")
+    public ResponseEntity<ApiResponse<StudentProfileResponse>> getStudentProfile(
+            @PathVariable Long id,
+            @RequestHeader(value = "Accept-Language", defaultValue = "vi") String lang) {
+        return ResponseEntity.ok(ApiResponse.success(adminDashboardService.getStudentProfile(id, lang), "Lấy hồ sơ học tập thành công"));
     }
 }

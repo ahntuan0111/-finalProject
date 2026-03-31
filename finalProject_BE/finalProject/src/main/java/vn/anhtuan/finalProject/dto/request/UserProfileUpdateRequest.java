@@ -1,6 +1,7 @@
 package vn.anhtuan.finalProject.dto.request;
 
 import lombok.Data;
+
 import java.time.LocalDate;
 
 @Data
@@ -9,6 +10,8 @@ public class UserProfileUpdateRequest {
     private LocalDate dateOfBirth;
     // Có thể thêm phone, fullname... nếu sau này Entity User của bạn cập nhật thêm
 
+    public UserProfileUpdateRequest() {
+    }
 
     public UserProfileUpdateRequest(String avatarUrl, LocalDate dateOfBirth) {
         this.avatarUrl = avatarUrl;

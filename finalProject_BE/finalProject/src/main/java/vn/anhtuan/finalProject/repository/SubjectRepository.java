@@ -12,8 +12,8 @@ public interface SubjectRepository extends JpaRepository<Subject, Integer> {
     // Tìm môn học theo khối (Ví dụ: Lấy tất cả môn của khối 6)
     List<Subject> findByGradeId(Integer gradeId);
 
-    // Tìm theo mã môn (ví dụ: 'toan')
-    Subject findByCode(String code);
+    // Tìm theo mã môn (ví dụ: 'toan'). Có thể có nhiều khối cùng mã môn này.
+    List<Subject> findByCode(String code);
 
     // Tìm Subject dựa vào mã (vd: "toan") và khối (vd: 7)
     Optional<Subject> findByCodeAndGradeId(String code, Integer gradeId);

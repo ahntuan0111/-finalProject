@@ -11,7 +11,9 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.anhtuan.finalProject.entity.Chapter;
+import vn.anhtuan.finalProject.entity.Grade;
 import vn.anhtuan.finalProject.entity.Lesson;
+import vn.anhtuan.finalProject.entity.Subject;
 import vn.anhtuan.finalProject.repository.ChapterRepository;
 import vn.anhtuan.finalProject.repository.LessonRepository;
 import vn.anhtuan.finalProject.repository.SubjectRepository;
@@ -19,7 +21,7 @@ import vn.anhtuan.finalProject.repository.SubjectRepository;
 import java.util.Collections;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -69,5 +71,30 @@ class TheoryUserControllerTest {
                 .header("Accept-Language", "en"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.title").value("Lesson 1"));
+    }
+
+    @Test
+    @WithMockUser
+    void testGetChaptersByCodeAndGrade_Success() throws Exception {
+        Subject subject = new Subject();
+        subject.setId(100);
+        subject.setCode("TOAN");
+        Grade grade = new Grade();
+        grade.setId(7);
+        subject.setGrade(grade);
+
+        Chapter chapter = new Chapter();
+        chapter.setId(1L);
+        chapter.setTitleVi("Chương 1");
+        chapter.setSubject(subject);
+
+        when(subjectRepository.findByCodeAndGradeId("TOAN", 7)).thenReturn(Optional.of(subject));
+        when(chapterRepository.findBySubjectIdOrderByOrderNoAsc(100)).thenReturn(Collections.singletonList(chapter));
+
+        mockMvc.perform(get("/api/student/chapters")
+                        .param("code", "TOAN")
+                        .param("grade", "7"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].title").value("Chương 1"));
     }
 }

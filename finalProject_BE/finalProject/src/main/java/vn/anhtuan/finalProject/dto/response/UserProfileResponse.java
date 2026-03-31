@@ -1,12 +1,9 @@
 package vn.anhtuan.finalProject.dto.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 @Data
-
 public class UserProfileResponse {
     private Long id;
     private String username;
@@ -15,6 +12,10 @@ public class UserProfileResponse {
     private LocalDate dateOfBirth;
     // Tạm thời các chỉ số Stats (Điểm TB, Số giờ học) sẽ được tính toán sau,
     // hiện tại trả về thông tin cơ bản trước.
+
+
+    public UserProfileResponse() {
+    }
 
     public UserProfileResponse(Long id, String username, String email, String avatarUrl, LocalDate dateOfBirth) {
         this.id = id;

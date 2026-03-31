@@ -29,4 +29,12 @@ public class PasswordChangeRequest {
     public void setNewPassword(String newPassword) {
         this.newPassword = newPassword;
     }
+
+    public PasswordChangeRequest() {
+    }
+
+    public PasswordChangeRequest(String oldPassword, String newPassword) {
+        this.oldPassword = oldPassword;
+        this.newPassword = newPassword;
+    }
 }

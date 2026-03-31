@@ -11,8 +11,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "ai_chat_sessions")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class AiChatSession {
 
     @Id
@@ -29,4 +27,46 @@ public class AiChatSession {
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    public AiChatSession() {
+    }
+
+    public AiChatSession(Long id, LocalDateTime createdAt, Long exerciseId, User user) {
+        this.id = id;
+        this.createdAt = createdAt;
+        this.exerciseId = exerciseId;
+        this.user = user;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Long getExerciseId() {
+        return exerciseId;
+    }
+
+    public void setExerciseId(Long exerciseId) {
+        this.exerciseId = exerciseId;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 }

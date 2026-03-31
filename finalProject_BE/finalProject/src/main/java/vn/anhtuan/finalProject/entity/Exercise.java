@@ -125,4 +125,52 @@ public class Exercise {
     public void setOrderNo(Integer orderNo) { this.orderNo = orderNo; }
     public List<ExerciseSolution> getSolutions() { return solutions; }
     public void setSolutions(List<ExerciseSolution> solutions) { this.solutions = solutions; }
+
+    public String getHint1Vi() {
+        return hint1Vi;
+    }
+
+    public void setHint1Vi(String hint1Vi) {
+        this.hint1Vi = hint1Vi;
+    }
+
+    public String getHint3En() {
+        return hint3En;
+    }
+
+    public void setHint3En(String hint3En) {
+        this.hint3En = hint3En;
+    }
+
+    public String getHint3Vi() {
+        return hint3Vi;
+    }
+
+    public void setHint3Vi(String hint3Vi) {
+        this.hint3Vi = hint3Vi;
+    }
+
+    public String getHint2En() {
+        return hint2En;
+    }
+
+    public void setHint2En(String hint2En) {
+        this.hint2En = hint2En;
+    }
+
+    public String getHint2Vi() {
+        return hint2Vi;
+    }
+
+    public void setHint2Vi(String hint2Vi) {
+        this.hint2Vi = hint2Vi;
+    }
+
+    public String getHint1En() {
+        return hint1En;
+    }
+
+    public void setHint1En(String hint1En) {
+        this.hint1En = hint1En;
+    }
 }

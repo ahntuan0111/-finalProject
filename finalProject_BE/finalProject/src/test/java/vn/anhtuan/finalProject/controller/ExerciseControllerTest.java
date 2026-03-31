@@ -82,7 +82,7 @@ class ExerciseControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.isValid").value(true));
+                .andExpect(jsonPath("$.data.isValid").value(true)); // GeminiValidationResult still uses isValid
     }
 
     @Test

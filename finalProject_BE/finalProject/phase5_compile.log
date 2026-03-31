@@ -1,0 +1,90 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< vn.anhtuan.:finalProject >----------------------
+[INFO] Building finalProject 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ finalProject ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ finalProject ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ finalProject ---
+[INFO] Copying 1 resource from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ finalProject ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 49 source files with javac [debug release 17] to target\test-classes
+[INFO] Some messages have been simplified; recompile with -Xdiags:verbose to get full output
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /E:/Final_Project/finalProject_BE/finalProject/src/test/java/vn/anhtuan/finalProject/service/impl/AuthServiceTest.java:[142,41] constructor ForgotPasswordRequest in class vn.anhtuan.finalProject.dto.request.ForgotPasswordRequest cannot be applied to given types;
+  required: no arguments
+  found:    java.lang.String
+  reason: actual and formal argument lists differ in length
+[ERROR] /E:/Final_Project/finalProject_BE/finalProject/src/test/java/vn/anhtuan/finalProject/service/impl/AuthServiceTest.java:[153,40] constructor ResetPasswordRequest in class vn.anhtuan.finalProject.dto.request.ResetPasswordRequest cannot be applied to given types;
+  required: no arguments
+  found:    java.lang.String,java.lang.String,java.lang.String
+  reason: actual and formal argument lists differ in length
+[ERROR] /E:/Final_Project/finalProject_BE/finalProject/src/test/java/vn/anhtuan/finalProject/controller/TheoryUserControllerTest.java:[79,23] incompatible types: long cannot be converted to java.lang.Integer
+[ERROR] /E:/Final_Project/finalProject_BE/finalProject/src/test/java/vn/anhtuan/finalProject/controller/TheoryUserControllerTest.java:[81,16] cannot find symbol
+  symbol:   method setGradeId(int)
+  location: variable subject of type vn.anhtuan.finalProject.entity.Subject
+[ERROR] /E:/Final_Project/finalProject_BE/finalProject/src/test/java/vn/anhtuan/finalProject/controller/TheoryUserControllerTest.java:[89,65] incompatible types: long cannot be converted to java.lang.Integer
+[ERROR] /E:/Final_Project/finalProject_BE/finalProject/src/test/java/vn/anhtuan/finalProject/controller/AuthControllerTest.java:[103,41] constructor VerifyRegisterRequest in class vn.anhtuan.finalProject.dto.request.VerifyRegisterRequest cannot be applied to given types;
+  required: no arguments
+  found:    java.lang.String,java.lang.String
+  reason: actual and formal argument lists differ in length
+[ERROR] /E:/Final_Project/finalProject_BE/finalProject/src/test/java/vn/anhtuan/finalProject/controller/AuthControllerTest.java:[116,41] constructor ForgotPasswordRequest in class vn.anhtuan.finalProject.dto.request.ForgotPasswordRequest cannot be applied to given types;
+  required: no arguments
+  found:    java.lang.String
+  reason: actual and formal argument lists differ in length
+[ERROR] /E:/Final_Project/finalProject_BE/finalProject/src/test/java/vn/anhtuan/finalProject/controller/AuthControllerTest.java:[128,40] constructor ResetPasswordRequest in class vn.anhtuan.finalProject.dto.request.ResetPasswordRequest cannot be applied to given types;
+  required: no arguments
+  found:    java.lang.String,java.lang.String,java.lang.String
+  reason: actual and formal argument lists differ in length
+[INFO] 8 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  20.406 s
+[INFO] Finished at: 2026-03-31T15:46:07+07:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.11.0:testCompile (default-testCompile) on project finalProject: Compilation failure: Compilation failure: 
+[ERROR] /E:/Final_Project/finalProject_BE/finalProject/src/test/java/vn/anhtuan/finalProject/service/impl/AuthServiceTest.java:[142,41] constructor ForgotPasswordRequest in class vn.anhtuan.finalProject.dto.request.ForgotPasswordRequest cannot be applied to given types;
+[ERROR]   required: no arguments
+[ERROR]   found:    java.lang.String
+[ERROR]   reason: actual and formal argument lists differ in length
+[ERROR] /E:/Final_Project/finalProject_BE/finalProject/src/test/java/vn/anhtuan/finalProject/service/impl/AuthServiceTest.java:[153,40] constructor ResetPasswordRequest in class vn.anhtuan.finalProject.dto.request.ResetPasswordRequest cannot be applied to given types;
+[ERROR]   required: no arguments
+[ERROR]   found:    java.lang.String,java.lang.String,java.lang.String
+[ERROR]   reason: actual and formal argument lists differ in length
+[ERROR] /E:/Final_Project/finalProject_BE/finalProject/src/test/java/vn/anhtuan/finalProject/controller/TheoryUserControllerTest.java:[79,23] incompatible types: long cannot be converted to java.lang.Integer
+[ERROR] /E:/Final_Project/finalProject_BE/finalProject/src/test/java/vn/anhtuan/finalProject/controller/TheoryUserControllerTest.java:[81,16] cannot find symbol
+[ERROR]   symbol:   method setGradeId(int)
+[ERROR]   location: variable subject of type vn.anhtuan.finalProject.entity.Subject
+[ERROR] /E:/Final_Project/finalProject_BE/finalProject/src/test/java/vn/anhtuan/finalProject/controller/TheoryUserControllerTest.java:[89,65] incompatible types: long cannot be converted to java.lang.Integer
+[ERROR] /E:/Final_Project/finalProject_BE/finalProject/src/test/java/vn/anhtuan/finalProject/controller/AuthControllerTest.java:[103,41] constructor VerifyRegisterRequest in class vn.anhtuan.finalProject.dto.request.VerifyRegisterRequest cannot be applied to given types;
+[ERROR]   required: no arguments
+[ERROR]   found:    java.lang.String,java.lang.String
+[ERROR]   reason: actual and formal argument lists differ in length
+[ERROR] /E:/Final_Project/finalProject_BE/finalProject/src/test/java/vn/anhtuan/finalProject/controller/AuthControllerTest.java:[116,41] constructor ForgotPasswordRequest in class vn.anhtuan.finalProject.dto.request.ForgotPasswordRequest cannot be applied to given types;
+[ERROR]   required: no arguments
+[ERROR]   found:    java.lang.String
+[ERROR]   reason: actual and formal argument lists differ in length
+[ERROR] /E:/Final_Project/finalProject_BE/finalProject/src/test/java/vn/anhtuan/finalProject/controller/AuthControllerTest.java:[128,40] constructor ResetPasswordRequest in class vn.anhtuan.finalProject.dto.request.ResetPasswordRequest cannot be applied to given types;
+[ERROR]   required: no arguments
+[ERROR]   found:    java.lang.String,java.lang.String,java.lang.String
+[ERROR]   reason: actual and formal argument lists differ in length
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

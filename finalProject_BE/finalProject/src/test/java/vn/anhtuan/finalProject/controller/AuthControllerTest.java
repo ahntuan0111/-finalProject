@@ -10,8 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import vn.anhtuan.finalProject.dto.request.LoginRequest;
-import vn.anhtuan.finalProject.dto.request.RegisterRequest;
+import vn.anhtuan.finalProject.dto.request.*;
 import vn.anhtuan.finalProject.dto.response.AuthResponse;
 import vn.anhtuan.finalProject.service.IAuthService;
 
@@ -42,7 +41,6 @@ class AuthControllerTest {
 
     @Test
     void testLogin_Success() throws Exception {
-        // Arrange
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setUsername("tuan123");
         loginRequest.setPassword("123456");
@@ -50,7 +48,6 @@ class AuthControllerTest {
         AuthResponse authResponse = new AuthResponse("jwt_token", 1L, "tuan123", "tuan@gmail.com", "USER");
         when(authService.login(any(LoginRequest.class))).thenReturn(authResponse);
 
-        // Act & Assert
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
@@ -62,7 +59,6 @@ class AuthControllerTest {
 
     @Test
     void testRequestRegisterOtp_Success() throws Exception {
-        // Arrange
         RegisterRequest registerRequest = new RegisterRequest();
         registerRequest.setUsername("newuser");
         registerRequest.setEmail("new@gmail.com");
@@ -70,7 +66,6 @@ class AuthControllerTest {
 
         doNothing().when(authService).requestRegisterOtp(any(RegisterRequest.class));
 
-        // Act & Assert
         mockMvc.perform(post("/api/auth/register-otp")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(registerRequest)))
@@ -82,16 +77,59 @@ class AuthControllerTest {
 
     @Test
     void testLogin_InvalidRequest_ShouldReturn400() throws Exception {
-        // Arrange: LoginRequest với username trống (giả sử bị @Valid chặn)
-        // Lưu ý: StandaloneSetup không tự động kích hoạt Spring Validation sâu, 
-        // nhưng ta có thể test cấu trúc trả về hoặc mock ném lỗi.
         LoginRequest invalidRequest = new LoginRequest();
         // Thiếu password
 
-        // Act & Assert
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testVerifyRegisterOtp_Success() throws Exception {
+        VerifyRegisterRequest request = new VerifyRegisterRequest();
+        request.setEmail("user@gmail.com");
+        request.setOtp("123456");
+        AuthResponse response = new AuthResponse("token", 1L, "user", "user@gmail.com", "USER");
+        when(authService.verifyRegisterOtp(any(VerifyRegisterRequest.class))).thenReturn(response);
+
+        mockMvc.perform(post("/api/auth/verify-register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.token").value("token"))
+                .andExpect(jsonPath("$.message").value("Xác thực và đăng ký thành công"));
+    }
+    
+    // Wait, let's correct the message check for verify-register.
+    // AuthController line 78: ApiResponse.success(authResponse, "Xác thực và đăng ký thành công")
+
+    @Test
+    void testForgotPassword_Success() throws Exception {
+        ForgotPasswordRequest request = new ForgotPasswordRequest();
+        request.setEmail("user@gmail.com");
+        doNothing().when(authService).forgotPassword(any(ForgotPasswordRequest.class));
+
+        mockMvc.perform(post("/api/auth/forgot-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Gửi mã thành công"));
+    }
+
+    @Test
+    void testResetPassword_Success() throws Exception {
+        ResetPasswordRequest request = new ResetPasswordRequest();
+        request.setEmail("user@gmail.com");
+        request.setOtp("123456");
+        request.setNewPassword("newpass123");
+        doNothing().when(authService).resetPassword(any(ResetPasswordRequest.class));
+
+        mockMvc.perform(post("/api/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Thành công"));
     }
 }

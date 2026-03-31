@@ -7,6 +7,7 @@ import vn.anhtuan.finalProject.dto.request.ExerciseRequest;
 import vn.anhtuan.finalProject.dto.request.SolutionRequest;
 import vn.anhtuan.finalProject.dto.response.ExerciseResponse;
 import vn.anhtuan.finalProject.dto.response.ExerciseSolutionResponse;
+import vn.anhtuan.finalProject.dto.response.ExerciseSubmissionResponse;
 import vn.anhtuan.finalProject.dto.response.QuizResponse; // Import Helper class
 import vn.anhtuan.finalProject.entity.*;
 import vn.anhtuan.finalProject.exception.ResourceNotFoundException;
@@ -88,20 +89,20 @@ public class ExerciseService {
         submission.setUser(user);
         submission.setExercise(exercise);
         submission.setImageUrl(request.getFirebaseImageUrl());
-        submission.setIsValid(true);
+        submission.setValid(true);
         submission.setAiReason(request.getAiReason());
         
         submissionRepository.save(submission);
         
-        return vn.anhtuan.finalProject.dto.response.ExerciseSubmissionResponse.builder()
-                .id(submission.getId())
-                .userId(user.getId())
-                .exerciseId(exercise.getId())
-                .imageUrl(submission.getImageUrl())
-                .isValid(submission.getIsValid())
-                .aiReason(submission.getAiReason())
-                .submittedAt(submission.getSubmittedAt())
-                .build();
+        ExerciseSubmissionResponse res = new ExerciseSubmissionResponse();
+        res.setId(submission.getId());
+        res.setUserId(user.getId());
+        res.setExerciseId(exercise.getId());
+        res.setImageUrl(submission.getImageUrl());
+        res.setValid(submission.getValid());
+        res.setAiReason(submission.getAiReason());
+        res.setSubmittedAt(submission.getSubmittedAt());
+        return res;
     }
 
     // ========================================================================
@@ -164,7 +165,7 @@ public class ExerciseService {
         exercise.setQuestionValueVi(request.getQuestionValueVi());
         exercise.setQuestionValueEn(request.getQuestionValueEn());
         
-        exercise.setHint1Vi(request.getHint1Vi());
+        exercise.setHint1Vi(request.getHint1En());
         exercise.setHint1En(request.getHint1En());
         exercise.setHint2Vi(request.getHint2Vi());
         exercise.setHint2En(request.getHint2En());

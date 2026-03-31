@@ -86,10 +86,7 @@ public class AiTutorService {
         aiMsg.setContent(aiReply);
         messageRepository.save(aiMsg);
 
-        return AiChatResponse.builder()
-                .reply(aiReply)
-                .sessionId(session.getId())
-                .build();
+        return new AiChatResponse(aiReply, session.getId());
     }
 
     public List<AiChatMessageResponse> getHistory() {
@@ -98,12 +95,12 @@ public class AiTutorService {
                 .findTopByUserAndExerciseIdOrderByCreatedAtDesc(currentUser, 0L)
                 .map(session -> messageRepository.findBySessionOrderByCreatedAtAsc(session)
                         .stream()
-                        .map(msg -> AiChatMessageResponse.builder()
-                                .id(msg.getId())
-                                .role(msg.getRole())
-                                .content(msg.getContent())
-                                .createdAt(msg.getCreatedAt())
-                                .build())
+                        .map(msg -> new AiChatMessageResponse(
+                                msg.getId(),
+                                msg.getRole(),
+                                msg.getContent(),
+                                msg.getCreatedAt()
+                        ))
                         .collect(Collectors.toList()))
                 .orElse(new ArrayList<>());
     }

@@ -16,4 +16,15 @@ public interface QuizResultRepository extends JpaRepository<QuizResult, Long> {
 
     // Lấy 5 bài Quiz ĐÃ HOÀN THÀNH gần đây nhất của user, sắp xếp từ mới nhất -> cũ nhất
     List<QuizResult> findTop5ByUserIdAndStatusOrderByCompletedAtDesc(Long userId, QuizStatus status);
+
+    @Query("SELECT AVG(q.score) FROM QuizResult q WHERE q.userId = :userId")
+    Double findAvgScoreByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT q.quiz.chapter.subject.nameVi, AVG(q.score) FROM QuizResult q WHERE q.userId = :userId GROUP BY q.quiz.chapter.subject.nameVi")
+    List<Object[]> findAvgScoreGroupBySubjectVi(@Param("userId") Long userId);
+
+    @Query("SELECT q.quiz.chapter.subject.nameEn, AVG(q.score) FROM QuizResult q WHERE q.userId = :userId GROUP BY q.quiz.chapter.subject.nameEn")
+    List<Object[]> findAvgScoreGroupBySubjectEn(@Param("userId") Long userId);
+
+    List<QuizResult> findTop10ByUserIdOrderByCompletedAtDesc(Long userId);
 }

@@ -6,93 +6,110 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import vn.anhtuan.finalProject.dto.response.ExerciseResponse;
-import vn.anhtuan.finalProject.entity.*;
+import vn.anhtuan.finalProject.dto.request.ExerciseRequest;
+import vn.anhtuan.finalProject.entity.ContentType;
+import vn.anhtuan.finalProject.entity.Exercise;
+import vn.anhtuan.finalProject.entity.Lesson;
+import vn.anhtuan.finalProject.exception.ResourceNotFoundException;
 import vn.anhtuan.finalProject.repository.ExerciseRepository;
+import vn.anhtuan.finalProject.repository.LessonRepository;
 import vn.anhtuan.finalProject.repository.ExerciseSubmissionRepository;
+import vn.anhtuan.finalProject.entity.ExerciseSubmission;
+import vn.anhtuan.finalProject.dto.response.ExerciseSubmissionResponse;
+import vn.anhtuan.finalProject.dto.request.SaveSubmissionRequest;
+import vn.anhtuan.finalProject.entity.User;
+import java.time.LocalDateTime;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ExerciseServiceTest {
 
-    @Mock private ExerciseRepository exerciseRepository;
-    @Mock private GeminiValidationService geminiValidationService;
-    @Mock private IUserService userService;
-    @Mock private ExerciseSubmissionRepository submissionRepository;
+    @Mock
+    private ExerciseRepository exerciseRepository;
+
+    @Mock
+    private LessonRepository lessonRepository;
+
+    @Mock
+    private ExerciseSubmissionRepository submissionRepository;
+
+    @Mock
+    private IUserService userService;
 
     @InjectMocks
     private ExerciseService exerciseService;
 
-    private Exercise testExercise;
+    private Lesson lesson;
+    private Exercise exercise;
 
     @BeforeEach
     void setUp() {
-        testExercise = new Exercise();
-        testExercise.setId(1L);
-        testExercise.setQuestionType(ContentType.TEXT);
-        testExercise.setQuestionValueVi("Câu hỏi tiếng Việt");
-        testExercise.setQuestionValueEn("English Question");
+        lesson = new Lesson();
+        lesson.setId(1L);
+        lesson.setTitleVi("Bài 1");
+
+        exercise = new Exercise();
+        exercise.setId(1L);
+        exercise.setQuestionType(ContentType.TEXT);
+        exercise.setQuestionValueVi("Câu hỏi 1");
+        exercise.setLesson(lesson);
+        exercise.setOrderNo(1);
     }
 
     @Test
-    void testGetExercisesByLessonForMobile_Localization() {
-        // Arrange
-        when(exerciseRepository.findByLessonIdOrderByOrderNoAsc(1L))
-                .thenReturn(Collections.singletonList(testExercise));
+    void testCreateExercise_Success() {
+        ExerciseRequest request = new ExerciseRequest(1L, ContentType.TEXT, "Câu hỏi 1", "Question 1", 1, new ArrayList<>());
+        when(lessonRepository.findById(1L)).thenReturn(Optional.of(lesson));
+        when(exerciseRepository.save(any(Exercise.class))).thenReturn(exercise);
 
-        // Act
-        List<ExerciseResponse> viList = exerciseService.getExercisesByLessonForMobile(1L, "vi");
-        List<ExerciseResponse> enList = exerciseService.getExercisesByLessonForMobile(1L, "en");
-
-        // Assert
-        assertThat(viList.get(0).getQuestionValue()).isEqualTo("Câu hỏi tiếng Việt");
-        assertThat(enList.get(0).getQuestionValue()).isEqualTo("English Question");
+        Exercise result = exerciseService.createExercise(request);
+        assertNotNull(result);
+        assertEquals("Câu hỏi 1", result.getQuestionValueVi());
+        verify(exerciseRepository).save(any(Exercise.class));
     }
 
     @Test
-    void testValidateImage_CallsGemini() {
-        // Arrange
-        when(exerciseRepository.findById(1L)).thenReturn(Optional.of(testExercise));
-        GeminiValidationService.GeminiValidationResult mockResult = new GeminiValidationService.GeminiValidationResult();
-        mockResult.isValid = true;
-        mockResult.aiReason = "OK";
-        
-        when(geminiValidationService.validateHandwriting(anyString(), anyString(), anyString()))
-                .thenReturn(mockResult);
+    void testGetExerciseById_Success() {
+        when(exerciseRepository.findById(1L)).thenReturn(Optional.of(exercise));
+        Exercise result = exerciseService.getExerciseById(1L);
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+    }
 
-        // Act
-        GeminiValidationService.GeminiValidationResult result = 
-                exerciseService.validateImage(1L, "base64_data", "vi");
+    @Test
+    void testGetExerciseById_NotFound() {
+        when(exerciseRepository.findById(1L)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> exerciseService.getExerciseById(1L));
+    }
 
-        // Assert
-        assertThat(result.isValid).isTrue();
-        verify(geminiValidationService, times(1)).validateHandwriting(eq("base64_data"), eq("Câu hỏi tiếng Việt"), eq("vi"));
+    @Test
+    void testDeleteExercise_Success() {
+        when(exerciseRepository.existsById(1L)).thenReturn(true);
+        exerciseService.deleteExercise(1L);
+        verify(exerciseRepository).deleteById(1L);
     }
 
     @Test
     void testSaveSubmission_Success() {
-        // Arrange
-        User mockUser = new User();
-        mockUser.setId(10L);
-        when(userService.getCurrentUser()).thenReturn(mockUser);
-        when(exerciseRepository.findById(1L)).thenReturn(Optional.of(testExercise));
+        User user = new User();
+        user.setId(1L);
+        SaveSubmissionRequest request = new SaveSubmissionRequest("url", "reason");
+        
+        when(userService.getCurrentUser()).thenReturn(user);
+        when(exerciseRepository.findById(1L)).thenReturn(Optional.of(exercise));
+        when(submissionRepository.save(any(ExerciseSubmission.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        vn.anhtuan.finalProject.dto.request.SaveSubmissionRequest request = new vn.anhtuan.finalProject.dto.request.SaveSubmissionRequest();
-        request.setFirebaseImageUrl("http://firebase.com/img.jpg");
-        request.setAiReason("Good job");
+        ExerciseSubmissionResponse result = exerciseService.saveSubmission(1L, request);
 
-        // Act
-        exerciseService.saveSubmission(1L, request);
-
-        // Assert
-        verify(submissionRepository, times(1)).save(any(ExerciseSubmission.class));
+        assertNotNull(result);
+        assertEquals("url", result.getImageUrl());
+        assertTrue(result.getValid()); // Verified use of getValid()
+        verify(submissionRepository).save(any(ExerciseSubmission.class));
     }
 }

@@ -14,4 +14,6 @@ public interface LessonCompletionRepository extends JpaRepository<LessonCompleti
     @Query("SELECT COUNT(lc) FROM LessonCompletion lc WHERE lc.user.id = :userId " +
             "AND lc.lesson.chapter.subject.id = :subjectId AND lc.completedAt IS NOT NULL")
     int countCompletedLessonsByUserAndSubject(@Param("userId") Long userId, @Param("subjectId") Integer subjectId);
+
+    long countByUserIdAndCompletedAtIsNotNull(Long userId);
 }

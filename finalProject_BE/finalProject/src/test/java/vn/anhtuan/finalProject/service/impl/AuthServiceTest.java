@@ -10,10 +10,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import vn.anhtuan.finalProject.dto.request.LoginRequest;
-import vn.anhtuan.finalProject.dto.request.RegisterRequest;
-import vn.anhtuan.finalProject.dto.request.VerifyRegisterRequest;
+import vn.anhtuan.finalProject.dto.request.*;
 import vn.anhtuan.finalProject.dto.response.AuthResponse;
+import vn.anhtuan.finalProject.entity.PasswordResetToken;
 import vn.anhtuan.finalProject.entity.RegistrationOtp;
 import vn.anhtuan.finalProject.entity.Role;
 import vn.anhtuan.finalProject.entity.User;
@@ -73,10 +72,7 @@ class AuthServiceTest {
 
     @Test
     void testRequestRegisterOtp_WhenUserExists_ShouldThrowException() {
-        // Arrange
         when(userRepository.existsByUsername(anyString())).thenReturn(true);
-
-        // Act & Assert
         assertThatThrownBy(() -> authService.requestRegisterOtp(registerRequest))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessage("Username đã tồn tại!");
@@ -84,22 +80,18 @@ class AuthServiceTest {
 
     @Test
     void testRequestRegisterOtp_Success() {
-        // Arrange
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("hashed_password");
 
-        // Act
         authService.requestRegisterOtp(registerRequest);
 
-        // Assert
         verify(registrationOtpRepository, times(1)).save(any(RegistrationOtp.class));
         verify(emailService, times(1)).sendOtpEmail(eq("tuan@gmail.com"), anyString());
     }
 
     @Test
     void testVerifyRegisterOtp_Success() {
-        // Arrange
         RegistrationOtp otp = new RegistrationOtp("tuan123", "tuan@gmail.com", "hash", "123456", LocalDateTime.now().plusMinutes(5));
         VerifyRegisterRequest verifyRequest = new VerifyRegisterRequest();
         verifyRequest.setEmail("tuan@gmail.com");
@@ -108,10 +100,8 @@ class AuthServiceTest {
         when(registrationOtpRepository.findByEmailAndOtp(anyString(), anyString())).thenReturn(Optional.of(otp));
         when(jwtTokenProvider.generateToken(any(User.class))).thenReturn("fake_jwt_token");
 
-        // Act
         AuthResponse response = authService.verifyRegisterOtp(verifyRequest);
 
-        // Assert
         assertThat(response.getToken()).isEqualTo("fake_jwt_token");
         verify(userRepository, times(1)).save(any(User.class));
         verify(registrationOtpRepository, times(1)).delete(otp);
@@ -119,7 +109,6 @@ class AuthServiceTest {
 
     @Test
     void testLogin_Success() {
-        // Arrange
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setUsername("tuan123");
         loginRequest.setPassword("123456");
@@ -129,11 +118,39 @@ class AuthServiceTest {
         when(userRepository.findByUsername("tuan123")).thenReturn(Optional.of(testUser));
         when(jwtTokenProvider.generateToken(testUser)).thenReturn("jwt_token");
 
-        // Act
         AuthResponse response = authService.login(loginRequest);
 
-        // Assert
         assertThat(response.getToken()).isEqualTo("jwt_token");
         assertThat(response.getUsername()).isEqualTo("tuan123");
+    }
+
+    @Test
+    void testForgotPassword_Success() {
+        ForgotPasswordRequest request = new ForgotPasswordRequest();
+        request.setEmail("tuan@gmail.com");
+        when(userRepository.existsByEmail("tuan@gmail.com")).thenReturn(true);
+
+        authService.forgotPassword(request);
+
+        verify(tokenRepository, times(1)).save(any(PasswordResetToken.class));
+        verify(emailService, times(1)).sendOtpEmail(eq("tuan@gmail.com"), anyString());
+    }
+
+    @Test
+    void testResetPassword_Success() {
+        ResetPasswordRequest request = new ResetPasswordRequest();
+        request.setEmail("tuan@gmail.com");
+        request.setOtp("123456");
+        request.setNewPassword("newpass123");
+        PasswordResetToken token = new PasswordResetToken("123456", "tuan@gmail.com", LocalDateTime.now().plusMinutes(15));
+
+        when(tokenRepository.findByToken("123456")).thenReturn(Optional.of(token));
+        when(userRepository.findByEmail("tuan@gmail.com")).thenReturn(Optional.of(testUser));
+        when(passwordEncoder.encode("newpass123")).thenReturn("new_hash");
+
+        authService.resetPassword(request);
+
+        assertThat(testUser.getPassword()).isEqualTo("new_hash");
+        verify(tokenRepository, times(1)).delete(token);
     }
 }
