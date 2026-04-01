@@ -21,8 +21,9 @@ public class AiChatSession {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     
-    @Column(name = "exercise_id", nullable = false)
-    private Long exerciseId = 0L;
+    // NULL = chat chung, có giá trị = chat gắn với bài tập cụ thể
+    @Column(name = "exercise_id", nullable = true)
+    private Long exerciseId;
 
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp

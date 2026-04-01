@@ -3,6 +3,8 @@ package vn.anhtuan.finalProject.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import java.sql.Types;
 
 @Entity
 @Table(name = "student_profiles")
@@ -19,7 +21,9 @@ public class StudentProfile {
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private User user;
 
-    @Column(name = "current_grade")
+    // DB: student_profiles.current_grade là TINYINT(4)
+    @JdbcTypeCode(Types.TINYINT)
+    @Column(name = "current_grade", columnDefinition = "TINYINT")
     private Integer currentGrade; // Lưu lớp học hiện tại (6, 7, 8, 9)
 
     // Có thể thêm trường khác sau này: trường học, sở thích, v.v.

@@ -88,7 +88,7 @@ fun DocumentListScreen(
                     items(documents) { doc ->
                         DocumentItemCard(doc) {
                             val safeUrl = doc.filePath ?: ""
-                            val safeTitle = doc.title ?: fallbackTitleStr
+                            val safeTitle = doc.getTitle("vi") // Dùng titleVi, fallback sang titleEn
 
                             if (safeUrl.isEmpty()) {
                                 AppLogger.w("DocumentList", "Doc URL empty for: $safeTitle")
@@ -148,15 +148,16 @@ fun DocumentItemCard(document: DocumentDto, onClick: () -> Unit) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = document.title ?: "",
+                    text = document.getTitle("vi"),  // titleVi từ BE
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-                if (!document.description.isNullOrEmpty()) {
+                val desc = document.getDescription("vi")
+                if (!desc.isNullOrEmpty()) {
                     Text(
-                        text = document.description,
+                        text = desc,
                         fontSize = 12.sp,
                         color = Color.Gray,
                         maxLines = 1,

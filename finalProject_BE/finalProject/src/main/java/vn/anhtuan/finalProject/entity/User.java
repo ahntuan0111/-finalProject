@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
-@Data // Sử dụng Lombok để tự sinh Getter/Setter, toString...
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {

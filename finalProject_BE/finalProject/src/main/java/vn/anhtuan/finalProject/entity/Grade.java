@@ -1,6 +1,8 @@
 package vn.anhtuan.finalProject.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import java.sql.Types;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -13,7 +15,9 @@ import lombok.AllArgsConstructor;
 public class Grade {
 
     @Id
-    // Lưu ý: Trong SQL id là TINYINT, Java dùng Integer là an toàn nhất
+    // Hibernate 6: @JdbcTypeCode(TINYINT) báo cho validator dùng TINYINT, không phải INTEGER
+    @JdbcTypeCode(Types.TINYINT)
+    @Column(columnDefinition = "TINYINT")
     private Integer id;
 
     @Column(name = "name_vi", nullable = false, length = 20)

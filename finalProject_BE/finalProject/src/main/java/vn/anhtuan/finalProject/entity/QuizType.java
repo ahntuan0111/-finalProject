@@ -1,6 +1,8 @@
 package vn.anhtuan.finalProject.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import java.sql.Types;
 import lombok.*;
 
 @Entity
@@ -10,6 +12,8 @@ import lombok.*;
 @AllArgsConstructor
 public class QuizType {
     @Id
+    @JdbcTypeCode(Types.TINYINT)               // Hibernate 6: expect TINYINT, not INTEGER
+    @Column(columnDefinition = "TINYINT")       // DB: quiz_types.id là TINYINT(4)
     private Integer id;
 
     @Column(name = "name_vi", nullable = false, length = 50)

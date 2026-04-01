@@ -10,7 +10,12 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "documents")
+@Table(
+    name = "documents",
+    indexes = {
+        @Index(name = "idx_doc_subject_grade", columnList = "subject_code, grade")
+    }
+)
 @Data
 public class Document {
 
@@ -44,8 +49,8 @@ public class Document {
     @Column(name = "subject_code", nullable = false)
     private String subjectCode; // VD: "math", "physics"
 
-    @Column(nullable = false)
-    private Integer grade;      // VD: 10, 11, 12
+    @Column(nullable = false, columnDefinition = "TINYINT")
+    private Integer grade;      // VD: 6, 7, 8, 9 — TINYINT khớp với grades.id
 
     @Column(name = "exam_type_vi", length = 50)
     private String examTypeVi;

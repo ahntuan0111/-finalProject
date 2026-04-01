@@ -10,8 +10,13 @@ import vn.anhtuan.finalProject.service.IUserService;
 import vn.anhtuan.finalProject.service.NotificationService;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+/**
+ * Controller thông báo.
+ *
+ * Nguyên tắc: Controller chỉ nhận Request → gọi Service → trả Response (DTO).
+ * Mapping entity → DTO được thực hiện trong NotificationService, không phải ở đây.
+ */
 @RestController
 @RequestMapping("/api/notifications")
 public class NotificationController {
@@ -20,57 +25,46 @@ public class NotificationController {
     private NotificationService notificationService;
 
     @Autowired
-    private IUserService userService; // Dùng hàm getCurrentUser() cực xịn của bạn
+    private IUserService userService;
 
-    // 1. Lấy danh sách lịch sử thông báo
+    /**
+     * GET /api/notifications
+     * Danh sách thông báo của user hiện tại.
+     */
     @GetMapping
-    public ResponseEntity<?> getMyNotifications() {
+    public ResponseEntity<ApiResponse<List<NotificationResponse>>> getMyNotifications() {
         User user = userService.getCurrentUser();
-
-        List<NotificationResponse> responses = notificationService.getUserNotifications(user)
-                .stream()
-                .map(notif -> {
-                    // Khởi tạo Object theo cách truyền thống và dùng Setter
-                    NotificationResponse response = new NotificationResponse();
-                    response.setId(notif.getId());
-                    response.setTitle(notif.getTitle());
-                    response.setMessage(notif.getMessage());
-                    response.setType(notif.getType());
-                    response.setRead(notif.isRead()); // Lưu ý: Lombok tự sinh hàm setRead() cho biến boolean isRead
-                    response.setActionUrl(notif.getActionUrl());
-                    response.setCreatedAt(notif.getCreatedAt());
-
-                    return response;
-                })
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(ApiResponse.success(
-                responses,
-                "Thành công"
-        ));
+        List<NotificationResponse> responses = notificationService.getUserNotificationsAsDto(user);
+        return ResponseEntity.ok(ApiResponse.success(responses, "Thành công"));
     }
 
-    // 2. Lấy số lượng thông báo chưa đọc (để hiển thị số trên cái Chuông)
+    /**
+     * GET /api/notifications/unread-count
+     * Số lượng thông báo chưa đọc (hiển thị badge trên chuông).
+     */
     @GetMapping("/unread-count")
-    public ResponseEntity<?> getUnreadCount() {
+    public ResponseEntity<ApiResponse<Integer>> getUnreadCount() {
         User user = userService.getCurrentUser();
-        return ResponseEntity.ok(ApiResponse.success(
-                notificationService.getUnreadCount(user),
-                "Thành công"
-        ));
+        return ResponseEntity.ok(ApiResponse.success(notificationService.getUnreadCount(user), "Thành công"));
     }
 
-    // 3. Đánh dấu 1 thông báo là đã đọc (Khi user click vào xem)
+    /**
+     * PUT /api/notifications/{id}/read
+     * Đánh dấu 1 thông báo đã đọc.
+     */
     @PutMapping("/{id}/read")
-    public ResponseEntity<?> markAsRead(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> markAsRead(@PathVariable Long id) {
         User user = userService.getCurrentUser();
         notificationService.markAsRead(id, user);
         return ResponseEntity.ok(ApiResponse.success(null, "Đã đánh dấu đọc"));
     }
 
-    // 4. Đánh dấu TẤT CẢ là đã đọc (Nút "Đánh dấu tất cả đã đọc" trên UI)
+    /**
+     * PUT /api/notifications/read-all
+     * Đánh dấu tất cả thông báo đã đọc.
+     */
     @PutMapping("/read-all")
-    public ResponseEntity<?> markAllAsRead() {
+    public ResponseEntity<ApiResponse<Void>> markAllAsRead() {
         User user = userService.getCurrentUser();
         notificationService.markAllAsRead(user);
         return ResponseEntity.ok(ApiResponse.success(null, "Đã đánh dấu tất cả đọc"));

@@ -12,10 +12,12 @@ import vn.anhtuan.finalProject.entity.Notification;
 import vn.anhtuan.finalProject.entity.NotificationType;
 import vn.anhtuan.finalProject.entity.Role;
 import vn.anhtuan.finalProject.entity.User;
+import vn.anhtuan.finalProject.dto.response.NotificationResponse;
 import vn.anhtuan.finalProject.repository.NotificationRepository;
 import vn.anhtuan.finalProject.repository.UserRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class NotificationService {
@@ -88,6 +90,17 @@ public class NotificationService {
         return notificationRepository.findByUserOrderByCreatedAtDesc(user);
     }
 
+    /**
+     * Trả DTO thay vì entity — dùng cho Controller.
+     * Mapping được thực hiện trong Service, không phải Controller.
+     */
+    public List<NotificationResponse> getUserNotificationsAsDto(User user) {
+        return notificationRepository.findByUserOrderByCreatedAtDesc(user)
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
     public int getUnreadCount(User user) {
         return notificationRepository.countByUserAndIsReadFalse(user);
     }
@@ -105,5 +118,19 @@ public class NotificationService {
     @Transactional
     public void markAllAsRead(User user) {
         notificationRepository.markAllAsReadByUser(user);
+    }
+
+    // ========== PRIVATE MAPPER ==========
+
+    private NotificationResponse toDto(Notification notif) {
+        NotificationResponse dto = new NotificationResponse();
+        dto.setId(notif.getId());
+        dto.setTitle(notif.getTitle());
+        dto.setMessage(notif.getMessage());
+        dto.setType(notif.getType());
+        dto.setRead(notif.isRead());
+        dto.setActionUrl(notif.getActionUrl());
+        dto.setCreatedAt(notif.getCreatedAt());
+        return dto;
     }
 }

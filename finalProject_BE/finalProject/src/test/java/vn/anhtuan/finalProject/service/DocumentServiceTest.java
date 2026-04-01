@@ -36,10 +36,10 @@ class DocumentServiceTest {
     void setUp() {
         document = new Document();
         document.setId(1L);
-        document.setTitleVi("Tài liệu 1");
+        document.setTitleVi("Tài liệu Toán lớp 7");
         document.setFilePath("http://firebase.com/file.pdf");
-        document.setSubjectCode("toan");
-        document.setGrade(10);
+        document.setSubjectCode("toan");  // Mã chuẩn hóa
+        document.setGrade(7);             // Chỉ 6-9 (FK → grades.id)
     }
 
     @Test
@@ -48,7 +48,8 @@ class DocumentServiceTest {
         when(firebaseStorageService.uploadPdfToFirebase(any())).thenReturn("http://firebase.com/test.pdf");
         when(documentRepository.save(any(Document.class))).thenReturn(document);
 
-        Document result = documentService.uploadDocument(file, "Tài liệu 1", "Doc 1", "Mô tả", "Desc", "toan", 10, "GK", "Midterm");
+        // subjectCode phải là mã chuẩn, grade phải là 6-9
+        Document result = documentService.uploadDocument(file, "Tài liệu Toán lớp 7", "Doc 1", "Mô tả", "Desc", "toan", 7, "Giữa kỳ", "Midterm");
 
         assertNotNull(result);
         assertEquals("http://firebase.com/file.pdf", result.getFilePath());
@@ -65,7 +66,8 @@ class DocumentServiceTest {
 
     @Test
     void testUpdateDocument_Success() {
-        DocumentRequest request = new DocumentRequest("Tên mới", "Midterm", "GK", 10, "toan", "Desc", "Mô tả", "New Title");
+        // grade phải là 6-9, examTypeVi phải là 'Giữa kỳ' / 'Cuối kỳ' (không phải code MID_TERM)
+        DocumentRequest request = new DocumentRequest("Tên mới", "Midterm", "Giữa kỳ", 7, "toan", "Desc", "Mô tả", "New Title");
         when(documentRepository.findById(1L)).thenReturn(Optional.of(document));
         when(documentRepository.save(any(Document.class))).thenReturn(document);
 

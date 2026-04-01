@@ -21,12 +21,15 @@ public class DocumentService {
         this.firebaseStorageService = firebaseStorageService;
     }
 
+    /**
+     * Upload tài liệu lên Firebase Storage và lưu metadata vào DB.
+     * Lưu ý: subjectCode phải là mã chuẩn (vd: "toan", "khtn") — đã validated ở tầng Controller.
+     */
     public Document uploadDocument(MultipartFile file, String titleVi, String titleEn,
                                    String descriptionVi, String descriptionEn,
                                    String subjectCode, Integer grade,
                                    String examTypeVi, String examTypeEn) {
         try {
-            // Upload lên Firebase Storage thay vì lưu local
             String firebaseUrl = firebaseStorageService.uploadPdfToFirebase(file);
 
             Document doc = new Document();
@@ -36,12 +39,11 @@ public class DocumentService {
             doc.setDescriptionEn(descriptionEn);
             doc.setExamTypeVi(examTypeVi);
             doc.setExamTypeEn(examTypeEn);
-
-            // Lưu URL của Firebase vào filePath
             doc.setFilePath(firebaseUrl);
             doc.setFileType(file.getContentType());
             doc.setFileSize(file.getSize());
-            doc.setSubjectCode(subjectCode);
+            // Lưu mã chuẩn hóa (lowercase, không dấu) — ví dụ: "toan", "khtn"
+            doc.setSubjectCode(subjectCode.toLowerCase().trim());
             doc.setGrade(grade);
 
             return documentRepository.save(doc);
@@ -51,42 +53,42 @@ public class DocumentService {
         }
     }
 
-    // Map các mã ngắn (mobile gửi lên) sang giá trị trong DB (web admin lưu)
-    private static final java.util.Map<String, List<String>> SUBJECT_CODE_ALIASES;
-    static {
-        SUBJECT_CODE_ALIASES = new java.util.HashMap<>();
-        SUBJECT_CODE_ALIASES.put("toan", java.util.Arrays.asList("toan", "Toán", "Toan", "TOAN", "math"));
-        SUBJECT_CODE_ALIASES.put("khtn", java.util.Arrays.asList("khtn", "Khoa học tự nhiên", "KHTN", "science"));
-        SUBJECT_CODE_ALIASES.put("ngu-van", java.util.Arrays.asList("ngu-van", "Ngữ văn", "ngu_van"));
-        SUBJECT_CODE_ALIASES.put("tieng-anh", java.util.Arrays.asList("tieng-anh", "Tiếng Anh", "english"));
-    }
-
+    /**
+     * Lấy danh sách tài liệu theo môn học và khối lớp.
+     * subjectCode phải là mã chuẩn (vd: "toan", "khtn").
+     * Dữ liệu đã được chuẩn hóa bởi migration script → không cần alias map.
+     */
     public List<DocumentResponse> getDocuments(String subjectCode, Integer grade, String lang) {
-        // Dùng query linh hoạt để hỗ trợ cả mã nắn ("toan") và tên đầy đủ ("Toán")
-        List<Document> docs = documentRepository.findBySubjectCodeFlexibleAndGrade(subjectCode, grade);
-
-        // Nếu không tìm thấy, thử tìm theo alias
-        if (docs.isEmpty()) {
-            List<String> aliases = SUBJECT_CODE_ALIASES.getOrDefault(subjectCode.toLowerCase(), java.util.Collections.emptyList());
-            for (String alias : aliases) {
-                if (!alias.equals(subjectCode)) {
-                    docs = documentRepository.findBySubjectCodeFlexibleAndGrade(alias, grade);
-                    if (!docs.isEmpty()) break;
-                }
-            }
-        }
-
+        List<Document> docs = documentRepository.findBySubjectCodeAndGrade(
+                subjectCode.toLowerCase().trim(), grade
+        );
         return docs.stream()
                 .map(doc -> DocumentResponse.fromEntity(doc, lang))
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Lấy tất cả tài liệu (dành cho Admin).
+     */
     public List<DocumentResponse> getAllDocuments(String lang) {
         return documentRepository.findAll().stream()
                 .map(doc -> DocumentResponse.fromEntity(doc, lang))
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Tìm kiếm tài liệu theo từ khóa và grade.
+     */
+    public List<DocumentResponse> searchDocuments(String keyword, Integer grade, String lang) {
+        List<Document> docs = documentRepository.searchByKeywordAndGrade(keyword, grade);
+        return docs.stream()
+                .map(doc -> DocumentResponse.fromEntity(doc, lang))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Cập nhật thông tin tài liệu.
+     */
     public Document updateDocument(Long id, DocumentRequest request) {
         Document existingDoc = documentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tài liệu với ID: " + id));
@@ -95,7 +97,8 @@ public class DocumentService {
         existingDoc.setTitleEn(request.getTitleEn());
         existingDoc.setDescriptionVi(request.getDescriptionVi());
         existingDoc.setDescriptionEn(request.getDescriptionEn());
-        existingDoc.setSubjectCode(request.getSubjectCode());
+        // Chuẩn hóa khi cập nhật
+        existingDoc.setSubjectCode(request.getSubjectCode().toLowerCase().trim());
         existingDoc.setGrade(request.getGrade());
         existingDoc.setExamTypeVi(request.getExamTypeVi());
         existingDoc.setExamTypeEn(request.getExamTypeEn());
@@ -103,13 +106,14 @@ public class DocumentService {
         return documentRepository.save(existingDoc);
     }
 
+    /**
+     * Xóa tài liệu và file trên Firebase Storage.
+     */
     public void deleteDocument(Long id) {
         Document doc = documentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tài liệu với ID: " + id));
 
-        // Xóa file trên Firebase Storage nếu URL là Firebase URL
         firebaseStorageService.deleteFileFromFirebase(doc.getFilePath());
-
         documentRepository.delete(doc);
     }
 

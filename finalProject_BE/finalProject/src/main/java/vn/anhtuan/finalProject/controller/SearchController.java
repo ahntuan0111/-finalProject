@@ -5,84 +5,39 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.anhtuan.finalProject.dto.response.ApiResponse;
 import vn.anhtuan.finalProject.dto.response.SearchItemDto;
-import vn.anhtuan.finalProject.entity.Document;
-import vn.anhtuan.finalProject.entity.Lesson;
-import vn.anhtuan.finalProject.entity.Quiz;
-import vn.anhtuan.finalProject.repository.DocumentRepository;
-import vn.anhtuan.finalProject.repository.LessonRepository;
-import vn.anhtuan.finalProject.repository.QuizRepository;
+import vn.anhtuan.finalProject.service.SearchService;
 
-import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Controller tìm kiếm toàn cục dành cho học sinh.
+ *
+ * Nguyên tắc: Controller chỉ nhận Request → gọi Service → trả Response.
+ * KHÔNG inject Repository trực tiếp, KHÔNG chứa logic business.
+ */
 @RestController
 @RequestMapping("/api/student/search")
 public class SearchController {
 
     @Autowired
-    private LessonRepository lessonRepository;
+    private SearchService searchService;
 
-    @Autowired
-    private QuizRepository quizRepository;
-
-    @Autowired
-    private DocumentRepository documentRepository;
-
+    /**
+     * GET /api/student/search?keyword=...&grade=7
+     * Tìm kiếm Lesson, Quiz, Document theo keyword và grade.
+     * Trả List<SearchItemDto> — không bao giờ trả entity thô.
+     */
     @GetMapping
     public ResponseEntity<ApiResponse<List<SearchItemDto>>> searchAll(
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "grade", required = false) Integer grade) {
 
-        List<SearchItemDto> results = new ArrayList<>();
-
+        // Validation: thiếu tham số → trả danh sách rỗng ngay, không vào service
         if (keyword == null || keyword.trim().isEmpty() || grade == null) {
-            // Đã fix: Thêm status code 200 vào tham số đầu tiên
-            return ResponseEntity.ok(new ApiResponse<>(200, true, "No keyword or grade provided", results));
+            return ResponseEntity.ok(new ApiResponse<>(200, true, "No keyword or grade provided", List.of()));
         }
 
-        // 1. Search Lessons
-        List<Lesson> lessons = lessonRepository.searchByKeywordAndGrade(keyword, grade);
-        for (Lesson l : lessons) {
-            // Sử dụng từ khóa new thay vì builder
-            results.add(new SearchItemDto(
-                    l.getId(),
-                    l.getTitleVi(),
-                    l.getTitleEn(),
-                    "LESSON",
-                    l.getChapter().getSubject().getCode(),
-                    l.getChapter().getId()
-            ));
-        }
-
-        // 2. Search Quizzes
-        List<Quiz> quizzes = quizRepository.searchByKeywordAndGrade(keyword, grade);
-        for (Quiz q : quizzes) {
-            // Sử dụng từ khóa new thay vì builder
-            results.add(new SearchItemDto(
-                    q.getId().longValue(),
-                    q.getTitleVi(),
-                    q.getTitleEn(),
-                    "QUIZ",
-                    q.getChapter().getSubject().getCode(),
-                    q.getChapter().getId()
-            ));
-        }
-
-        // 3. Search Documents
-        List<Document> docs = documentRepository.searchByKeywordAndGrade(keyword, grade);
-        for (Document d : docs) {
-            // Sử dụng từ khóa new thay vì builder (truyền null cho chapterId vì document không có)
-            results.add(new SearchItemDto(
-                    d.getId(),
-                    d.getTitleVi(),
-                    d.getTitleEn(),
-                    "DOCUMENT",
-                    d.getSubjectCode(),
-                    null
-            ));
-        }
-
-        // Đã fix: Thêm status code 200 vào tham số đầu tiên
+        List<SearchItemDto> results = searchService.searchAll(keyword.trim(), grade);
         return ResponseEntity.ok(new ApiResponse<>(200, true, "Search successful", results));
     }
 }

@@ -5,7 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-
+import org.hibernate.annotations.JdbcTypeCode;
+import java.sql.Types;
 import java.time.LocalDateTime;
 
 @Entity
@@ -28,8 +29,11 @@ public class Notification {
     @Column(nullable = false, length = 500)
     private String message;
 
+    // DB: notifications.type là varchar(50), không phải ENUM
+    // Hibernate 6: @Enumerated(STRING) mặc định kỳ vọng ENUM → dùng @JdbcTypeCode(VARCHAR) để khớp
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @JdbcTypeCode(Types.VARCHAR)
+    @Column(nullable = false, columnDefinition = "varchar(50)")
     private NotificationType type;
 
     @Column(name = "is_read", nullable = false)
