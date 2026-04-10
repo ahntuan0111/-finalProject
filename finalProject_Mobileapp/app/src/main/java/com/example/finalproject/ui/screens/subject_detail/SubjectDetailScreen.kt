@@ -122,9 +122,14 @@ fun SubjectDetailScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            val totalChapters = overview?.totalChapters ?: 0
+            val totalLessons = overview?.totalLessons ?: 0
+
             // 3. THẺ LÝ THUYẾT
             PrimaryTheoryCard(
                 progress = progressValue,
+                totalChapters = totalChapters,
+                totalLessons = totalLessons,
                 onContinueClick = {
                     if (nextLessonId != -1L) {
                         navController.navigate(AppRoutes.createLessonDetailRoute(nextLessonId))
@@ -287,7 +292,7 @@ fun HeroBanner(subjectName: String, grade: Int) {
 }
 
 @Composable
-fun PrimaryTheoryCard(progress: Float, onContinueClick: () -> Unit) {
+fun PrimaryTheoryCard(progress: Float, totalChapters: Int, totalLessons: Int, onContinueClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
@@ -314,7 +319,7 @@ fun PrimaryTheoryCard(progress: Float, onContinueClick: () -> Unit) {
                     Spacer(modifier = Modifier.width(16.dp))
                     Column {
                         Text(stringResource(id = R.string.subject_detail_theory_title), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-                        Text(stringResource(id = R.string.subject_detail_theory_subtitle), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(if (totalChapters > 0 || totalLessons > 0) "$totalChapters chương • $totalLessons bài học" else stringResource(id = R.string.subject_detail_theory_subtitle), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
 

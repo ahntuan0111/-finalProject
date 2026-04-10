@@ -24,12 +24,14 @@ public class LessonProgressServiceImpl implements ILessonProgressService {
     private final ProgressRepository progressRepository;
     private final LessonRepository lessonRepository;
     private final IUserService userService;
+    private final ChapterRepository chapterRepository;
 
-    public LessonProgressServiceImpl(LessonCompletionRepository lessonCompletionRepository, ProgressRepository progressRepository, LessonRepository lessonRepository, IUserService userService) {
+    public LessonProgressServiceImpl(LessonCompletionRepository lessonCompletionRepository, ProgressRepository progressRepository, LessonRepository lessonRepository, IUserService userService, ChapterRepository chapterRepository) {
         this.lessonCompletionRepository = lessonCompletionRepository;
         this.progressRepository = progressRepository;
         this.lessonRepository = lessonRepository;
         this.userService = userService;
+        this.chapterRepository = chapterRepository;
     }
 
     @Override
@@ -161,7 +163,11 @@ public class LessonProgressServiceImpl implements ILessonProgressService {
                 nextLessonId = allLessons.get(0);
             }
         }
-        return new SubjectOverviewResponse(progressPercent, nextLessonId);
+        
+        int totalChapters = chapterRepository.countBySubjectCodeAndGradeId(subjectCode, gradeId);
+        int totalLessons = lessonRepository.countBySubjectCodeAndGradeId(subjectCode, gradeId);
+
+        return new SubjectOverviewResponse(progressPercent, nextLessonId, totalChapters, totalLessons);
     }
 
 }

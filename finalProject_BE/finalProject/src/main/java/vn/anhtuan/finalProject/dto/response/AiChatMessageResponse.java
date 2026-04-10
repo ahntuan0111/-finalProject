@@ -6,13 +6,21 @@ import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class AiChatMessageResponse {
     private Long id;
     private String role;          // "USER" hoặc "ASSISTANT"
     private String content;
     private LocalDateTime createdAt;
+
+    public AiChatMessageResponse() {
+    }
+
+    public AiChatMessageResponse(Long id, LocalDateTime createdAt, String content, String role) {
+        this.id = id;
+        this.createdAt = createdAt;
+        this.content = content;
+        this.role = role;
+    }
 
     public Long getId() {
         return id;
@@ -45,4 +53,5 @@ public class AiChatMessageResponse {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
 }

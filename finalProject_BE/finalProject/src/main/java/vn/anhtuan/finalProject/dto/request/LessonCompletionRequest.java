@@ -8,6 +8,9 @@ public class LessonCompletionRequest {
     private Long lessonId;
     private CompletionType type; // THEORY hoặc EXERCISE
 
+    public LessonCompletionRequest() {
+    }
+
     public LessonCompletionRequest(Long lessonId, CompletionType type) {
         this.lessonId = lessonId;
         this.type = type;

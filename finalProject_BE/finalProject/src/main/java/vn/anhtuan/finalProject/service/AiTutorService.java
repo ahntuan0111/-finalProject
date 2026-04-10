@@ -97,9 +97,9 @@ public class AiTutorService {
                         .stream()
                         .map(msg -> new AiChatMessageResponse(
                                 msg.getId(),
-                                msg.getRole(),
+                                msg.getCreatedAt(),
                                 msg.getContent(),
-                                msg.getCreatedAt()
+                                msg.getRole()
                         ))
                         .collect(Collectors.toList()))
                 .orElse(new ArrayList<>());

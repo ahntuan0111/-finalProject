@@ -7,7 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.*
@@ -48,10 +48,7 @@ fun DocumentListScreen(
         viewModel.fetchDocuments(subjectCode, grade)
     }
 
-    // Lấy trước các chuỗi để dùng trong hàm onClick (vì onClick không phải môi trường Composable trực tiếp)
-    val errorEmptyUrlStr = stringResource(id = R.string.doc_list_error_empty_url)
-    val errorEncodeStr = stringResource(id = R.string.doc_list_error_encode)
-    val fallbackTitleStr = stringResource(id = R.string.doc_list_fallback_title)
+
 
     Scaffold(
         topBar = {
@@ -59,7 +56,7 @@ fun DocumentListScreen(
                 title = { Text(stringResource(id = R.string.doc_list_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(id = R.string.common_back))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(id = R.string.common_back))
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
@@ -88,7 +85,7 @@ fun DocumentListScreen(
                     items(documents) { doc ->
                         DocumentItemCard(doc) {
                             val safeUrl = doc.filePath ?: ""
-                            val safeTitle = doc.getTitle("vi") // Dùng titleVi, fallback sang titleEn
+                            val safeTitle = doc.getDisplayTitle()
 
                             if (safeUrl.isEmpty()) {
                                 AppLogger.w("DocumentList", "Doc URL empty for: $safeTitle")
@@ -148,13 +145,13 @@ fun DocumentItemCard(document: DocumentDto, onClick: () -> Unit) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = document.getTitle("vi"),  // titleVi từ BE
+                    text = document.getDisplayTitle(),
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-                val desc = document.getDescription("vi")
+                val desc = document.getDisplayDescription()
                 if (!desc.isNullOrEmpty()) {
                     Text(
                         text = desc,

@@ -52,12 +52,24 @@ fun CustomTextField(
             shape = RoundedCornerShape(12.dp),
             isError = isError,
             colors = OutlinedTextFieldDefaults.colors(
+                // Text luôn là màu tối trên nền sáng (hardcode theo container)
+                focusedTextColor = Color(0xFF1E293B),
+                unfocusedTextColor = Color(0xFF1E293B),
+                // Label/placeholder đi kèm container sáng
+                focusedLabelColor = PrimaryBlue,
+                unfocusedLabelColor = Color(0xFF64748B),
+                focusedPlaceholderColor = Color(0xFF94A3B8),
+                unfocusedPlaceholderColor = Color(0xFF94A3B8),
+                // Border
                 focusedBorderColor = PrimaryBlue,
                 unfocusedBorderColor = Color(0xFFE2E8F0),
+                // Container (nền của TextField)
                 focusedContainerColor = Color(0xFFF8FAFC),
                 unfocusedContainerColor = Color(0xFFF8FAFC),
+                // Error
                 errorBorderColor = Color(0xFFFF4D4F),
-                errorContainerColor = Color(0xFFFFF2F0)
+                errorContainerColor = Color(0xFFFFF2F0),
+                errorTextColor = Color(0xFF1E293B)
             ),
             singleLine = singleLine,
             keyboardOptions = keyboardOptions,

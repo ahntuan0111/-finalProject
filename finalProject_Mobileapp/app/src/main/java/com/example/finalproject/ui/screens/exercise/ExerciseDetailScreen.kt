@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -51,11 +52,11 @@ import kotlinx.coroutines.launch
 import androidx.compose.material.icons.Icons
 
 // IP máy chủ (Thay đổi tùy môi trường)
-const val BASE_IMAGE_URL = "http://10.0.2.2:8080"
+const val BASE_IMAGE_URL = "http://192.168.0.144:8080"
 
 fun getFullImageUrl(path: String?): String {
     if (path.isNullOrEmpty()) return ""
-    return if (path.startsWith("http")) path else "http://10.0.2.2:8080$path"
+    return if (path.startsWith("http")) path else "http://192.168.0.144:8080$path"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -604,8 +605,14 @@ fun ContentRenderer(type: String?, value: String?) {
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun LatexMathView(latex: String, modifier: Modifier = Modifier) {
-    val textColorHex = if (androidx.compose.foundation.isSystemInDarkTheme()) "#FAFAFA" else "#1E293B"
+fun LatexMathView(
+    latex: String,
+    modifier: Modifier = Modifier,
+    // Nhận isDark từ parent thông qua MaterialTheme — khớp đúng theme user chọn
+    isDark: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f
+) {
+    val textColorHex = if (isDark) "#F1F5F9" else "#1E293B"
+    val bgColorHex   = if (isDark) "#0F172A" else "#FFFFFF"
     val dollarSign = "${'$'}"
 
     val htmlContent = """
@@ -617,16 +624,19 @@ fun LatexMathView(latex: String, modifier: Modifier = Modifier) {
             <script src="file:///android_asset/katex/katex.min.js"></script>
             <script src="file:///android_asset/katex/auto-render.min.js"></script>
             <style>
+                * { box-sizing: border-box; }
+                html, body {
+                    margin: 0; padding: 4px 8px;
+                    background-color: $bgColorHex;
+                }
                 body { 
                     font-size: 16px; 
-                    color: ${'$'}textColorHex; 
-                    font-family: sans-serif; 
-                    margin: 0; 
-                    padding: 0;
-                    background-color: transparent;
+                    color: $textColorHex; 
+                    font-family: 'Roboto', sans-serif; 
                     overflow-wrap: break-word; 
                     line-height: 1.7;
                 }
+                h1, h2, h3, p, span, li { color: $textColorHex !important; }
                 .katex { font-size: 1.1em; }
                 .katex-display { overflow-x: auto; }
             </style>
@@ -663,8 +673,8 @@ fun LatexMathView(latex: String, modifier: Modifier = Modifier) {
                 settings.loadWithOverviewMode = true
                 settings.useWideViewPort = false
                 settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.TEXT_AUTOSIZING
-
-                setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                // Sửa lỗi: dùng màu nền khớp theme thay vì TRANSPARENT
+                setBackgroundColor(android.graphics.Color.parseColor(bgColorHex))
                 isVerticalScrollBarEnabled = false
                 isHorizontalScrollBarEnabled = false
 

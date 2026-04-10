@@ -2,6 +2,7 @@ package com.example.finalproject.ui.screens.theory
 
 import android.annotation.SuppressLint
 import android.net.Uri
+import android.webkit.JavascriptInterface
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -21,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -32,6 +34,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.SubcomposeAsyncImage
+import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.example.finalproject.R
 import com.example.finalproject.ui.theme.PrimaryBlue
@@ -52,9 +55,11 @@ fun TheoryDetailScreen(
 ) {
     val lesson by viewModel.lessonDetail.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-
     val isCompletedState by viewModel.isCompleted.collectAsState()
     val isSubmitting by viewModel.isSubmitting.collectAsState()
+
+    // Đọc isDark từ MaterialTheme — phản ánh đúng lựa chọn của user trong app
+    val isDarkTheme = !MaterialTheme.colorScheme.background.luminance().let { it > 0.5f }
 
     LaunchedEffect(lessonId) {
         viewModel.fetchLessonDetail(lessonId)
@@ -101,7 +106,8 @@ fun TheoryDetailScreen(
                 lesson?.let { data ->
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp)
+                        // Padding bottom lớn hơn một chút để tạo khoảng không thở ở cuối trang
+                        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 40.dp)
                     ) {
                         // 1. Tiêu đề
                         item {
@@ -149,7 +155,10 @@ fun TheoryDetailScreen(
                         items(data.contents) { content ->
                             when (content.contentType) {
                                 "TEXT" -> {
-                                    LatexMathView(latex = content.contentValue ?: "")
+                                    LatexMathView(
+                                        latex = content.contentValue ?: "",
+                                        isDark = isDarkTheme
+                                    )
                                 }
                                 "IMAGE" -> {
                                     LessonImage(imageUrl = content.contentValue ?: "")
@@ -158,6 +167,7 @@ fun TheoryDetailScreen(
                             Spacer(modifier = Modifier.height(16.dp))
                         }
 
+                        // NÚT ĐÁNH DẤU HOÀN THÀNH
                         item {
                             Spacer(modifier = Modifier.height(24.dp))
 
@@ -172,7 +182,7 @@ fun TheoryDetailScreen(
                                 ),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(50.dp),
+                                    .height(54.dp), // Tăng nhẹ chiều cao nút cho dễ bấm
                                 shape = RoundedCornerShape(12.dp)
                             ) {
                                 if (isSubmitting) {
@@ -189,7 +199,6 @@ fun TheoryDetailScreen(
                                     Text(stringResource(id = R.string.theory_detail_btn_mark_complete), fontSize = 16.sp, color = Color.White, fontWeight = FontWeight.Bold)
                                 }
                             }
-                            Spacer(modifier = Modifier.height(32.dp))
                         }
                     }
                 }
@@ -309,21 +318,34 @@ fun extractYoutubeVideoId(url: String): String {
 }
 
 // --- COMPONENT HIỂN THỊ ẢNH ---
-@Composable
-fun LessonImage(imageUrl: String) {
-    val fullUrl = when {
-        imageUrl.isBlank() -> ""
-        imageUrl.startsWith("http://") || imageUrl.startsWith("https://") -> imageUrl
+private fun normalizeImageUrl(imageUrl: String): String {
+    if (imageUrl.isBlank()) return ""
+    return when {
+        // URL đã đầy đủ
+        imageUrl.startsWith("https://") -> imageUrl
+        imageUrl.startsWith("http://") -> imageUrl
+        // Firebase Storage thiếu scheme
         imageUrl.startsWith("firebasestorage.googleapis.com") -> "https://$imageUrl"
-        imageUrl.startsWith("/") -> "http://10.0.2.2:8080$imageUrl"
+        imageUrl.startsWith("storage.googleapis.com") -> "https://$imageUrl"
+        // Relative path → backend local
+        imageUrl.startsWith("/") -> "http://192.168.110.218:8080$imageUrl"
         else -> imageUrl
     }
+}
+
+@Composable
+fun LessonImage(imageUrl: String) {
+    val fullUrl = remember(imageUrl) { normalizeImageUrl(imageUrl) }
+    val context = LocalContext.current
 
     if (fullUrl.isNotEmpty()) {
         SubcomposeAsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
+            model = ImageRequest.Builder(context)
                 .data(fullUrl)
                 .crossfade(true)
+                .diskCachePolicy(CachePolicy.ENABLED)
+                .memoryCachePolicy(CachePolicy.ENABLED)
+                .addHeader("Cache-Control", "no-cache")
                 .build(),
             contentDescription = "Lesson Image",
             modifier = Modifier
@@ -331,7 +353,6 @@ fun LessonImage(imageUrl: String) {
                 .wrapContentHeight()
                 .clip(RoundedCornerShape(12.dp)),
             contentScale = ContentScale.FillWidth,
-
             loading = {
                 Box(
                     modifier = Modifier
@@ -340,10 +361,9 @@ fun LessonImage(imageUrl: String) {
                         .background(Color(0xFFF1F5F9)),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = PrimaryBlue)
+                    CircularProgressIndicator(color = PrimaryBlue, strokeWidth = 2.dp)
                 }
             },
-
             error = {
                 Box(
                     modifier = Modifier
@@ -355,7 +375,11 @@ fun LessonImage(imageUrl: String) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(Icons.Default.Info, contentDescription = null, tint = Color.Gray)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(stringResource(id = R.string.theory_detail_image_error), color = Color.Gray, fontSize = 14.sp)
+                        Text(
+                            stringResource(id = R.string.theory_detail_image_error),
+                            color = Color.Gray,
+                            fontSize = 12.sp
+                        )
                     }
                 }
             }
@@ -373,11 +397,28 @@ fun LessonImage(imageUrl: String) {
     }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// JAVASCRIPT INTERFACE: Báo chiều cao nội dung sau khi KaTeX render xong
+// ─────────────────────────────────────────────────────────────────────────────
+class HeightReporter(private val onHeight: (Int) -> Unit) {
+    @JavascriptInterface
+    fun reportHeight(px: Int) {
+        onHeight(px)
+    }
+}
+
 // --- COMPOSABLE LATEX ---
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun LatexMathView(latex: String, modifier: Modifier = Modifier) {
-    val textColorHex = if (androidx.compose.foundation.isSystemInDarkTheme()) "#FAFAFA" else "#1E293B"
+fun LatexMathView(
+    latex: String,
+    modifier: Modifier = Modifier,
+    isDark: Boolean = false
+) {
+    val textColorHex = if (isDark) "#F1F5F9" else "#1E293B"
+    val bgColorHex   = if (isDark) "#0F172A" else "#FFFFFF"
+
+    var webHeightDp by remember { mutableStateOf(80.dp) }
     val dollarSign = "${'$'}"
 
     val htmlContent = """
@@ -389,16 +430,36 @@ fun LatexMathView(latex: String, modifier: Modifier = Modifier) {
             <script src="file:///android_asset/katex/katex.min.js"></script>
             <script src="file:///android_asset/katex/auto-render.min.js"></script>
             <style>
+                * { box-sizing: border-box; }
+                html {
+                    margin: 0; padding: 0;
+                    background-color: $bgColorHex;
+                }
                 body {
+                    margin: 0; padding: 8px 12px;
                     font-size: 16px;
                     color: $textColorHex;
-                    font-family: sans-serif;
-                    margin: 8px; padding: 0;
-                    background-color: transparent;
-                    line-height: 1.7;
+                    background-color: $bgColorHex;
+                    font-family: 'Roboto', 'Noto Sans', sans-serif;
+                    line-height: 1.75;
+                    word-break: break-word;
                 }
-                .katex { font-size: 1.1em; }
-                .katex-display { overflow-x: auto; }
+                h1, h2, h3, h4, h5, p, span, li { color: $textColorHex !important; }
+                img { max-width: 100%; height: auto; border-radius: 8px; }
+                strong, b { color: $textColorHex; font-weight: 700; }
+                .katex { font-size: 1.05em; }
+                .katex-display {
+                    overflow-x: auto;
+                    margin: 10px 0;
+                    padding: 4px 0;
+                }
+                pre, code {
+                    background: ${if (isDark) "#1E293B" else "#F1F5F9"};
+                    color: ${if (isDark) "#93C5FD" else "#1D4ED8"};
+                    border-radius: 6px;
+                    padding: 2px 6px;
+                    font-size: 14px;
+                }
             </style>
             <script>
                 document.addEventListener("DOMContentLoaded", function() {
@@ -406,26 +467,28 @@ fun LatexMathView(latex: String, modifier: Modifier = Modifier) {
                         renderMathInElement(document.body, {
                             delimiters: [
                                 {left: "$dollarSign$dollarSign", right: "$dollarSign$dollarSign", display: true},
-                                {left: "$dollarSign", right: "$dollarSign", display: false},
+                                {left: "$dollarSign",            right: "$dollarSign",            display: false},
                                 {left: "\\(", right: "\\)", display: false},
                                 {left: "\\[", right: "\\]", display: true}
                             ],
-                            throwOnError : false
+                            throwOnError: false
                         });
                     }
+                    setTimeout(function() {
+                        var h = document.body.scrollHeight;
+                        if (window.HeightBridge) window.HeightBridge.reportHeight(h);
+                    }, 150);
                 });
             </script>
         </head>
-        <body>
-            $latex
-        </body>
+        <body>$latex</body>
         </html>
     """.trimIndent()
 
     AndroidView(
         modifier = modifier
             .fillMaxWidth()
-            .defaultMinSize(minHeight = 10.dp),
+            .height(webHeightDp),
         factory = { context ->
             WebView(context).apply {
                 settings.javaScriptEnabled = true
@@ -434,13 +497,38 @@ fun LatexMathView(latex: String, modifier: Modifier = Modifier) {
                 settings.useWideViewPort = false
                 settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.TEXT_AUTOSIZING
                 settings.allowFileAccess = true
-                setBackgroundColor(android.graphics.Color.TRANSPARENT)
+
+                setBackgroundColor(android.graphics.Color.parseColor(bgColorHex))
                 isVerticalScrollBarEnabled = false
                 isHorizontalScrollBarEnabled = false
+
+                // ĐÃ SỬA: Lấy px và chuyển trực tiếp thành dp (không thông qua density).
+                addJavascriptInterface(
+                    HeightReporter { px ->
+                        post { webHeightDp = px.dp.coerceAtLeast(40.dp) }
+                    },
+                    "HeightBridge"
+                )
+
+                webViewClient = object : WebViewClient() {
+                    override fun onPageFinished(view: WebView?, url: String?) {
+                        view?.evaluateJavascript("document.body.scrollHeight") { result ->
+                            // Bỏ đi các dấu ngoặc kép bọc quanh chuỗi trả về từ JS
+                            val px = result?.replace("\"", "")?.trim()?.toIntOrNull() ?: return@evaluateJavascript
+                            post { webHeightDp = px.dp.coerceAtLeast(40.dp) }
+                        }
+                    }
+                }
             }
         },
         update = { webView ->
-            webView.loadDataWithBaseURL("file:///android_asset/", htmlContent, "text/html", "UTF-8", null)
+            webView.loadDataWithBaseURL(
+                "file:///android_asset/",
+                htmlContent,
+                "text/html",
+                "UTF-8",
+                null
+            )
         }
     )
 }

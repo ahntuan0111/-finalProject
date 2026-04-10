@@ -5,61 +5,51 @@ import java.text.DecimalFormat
 
 /**
  * DTO nhận từ BE DocumentResponse.
- * BE trả về camelCase: titleVi, titleEn, descriptionVi, filePath, v.v.
  *
- * Quy tắc subject_code chuẩn: "toan", "khtn" (lowercase, không dấu)
- * grade: 6, 7, 8, 9 (tương ứng grades.id trong DB)
+ * BE trả về MỘT ngôn ngữ đã được localized (dựa theo Accept-Language header):
+ *   - "title"       → tiêu đề đã dịch
+ *   - "description" → mô tả đã dịch
+ *   - "examType"    → loại đề đã dịch
+ *   - "filePath"    → đường dẫn file
+ *   - "fileSize"    → dung lượng (bytes)
+ *   - "subjectCode" → mã môn ("toan", "khtn", ...)
+ *   - "grade"       → khối lớp (6, 7, 8, 9)
+ *   - "createdAt"   → thời gian tạo (ISO format)
  */
 data class DocumentDto(
     val id: Long,
 
-    // BE trả về "titleVi" và "titleEn" — KHÔNG phải "title"
-    @SerializedName("titleVi")   val titleVi: String?,
-    @SerializedName("titleEn")   val titleEn: String?,
+    // BE đã localize sẵn → nhận 1 field "title" duy nhất
+    val title: String?,
 
-    // BE trả về "descriptionVi" và "descriptionEn"
-    @SerializedName("descriptionVi") val descriptionVi: String?,
-    @SerializedName("descriptionEn") val descriptionEn: String?,
+    val description: String?,
 
-    // Thông tin phân loại
-    @SerializedName("subjectCode") val subjectCode: String?,  // "toan", "khtn"
-    val grade: Int?,                                          // 6, 7, 8, 9
+    @SerializedName("subjectCode") val subjectCode: String?,
+    val grade: Int?,
 
-    // Loại đề: "Giữa kỳ", "Cuối kỳ", "Chuyên đề / Lý thuyết"
-    @SerializedName("examTypeVi") val examTypeVi: String?,
-    @SerializedName("examTypeEn") val examTypeEn: String?,
+    @SerializedName("examType") val examType: String?,
 
     @SerializedName("filePath")  val filePath: String?,
     @SerializedName("fileSize")  val fileSize: Long?,
-    @SerializedName("createdAt") val createdAt: String?
+    @SerializedName("createdAt") val createdAt: String?,
+    @SerializedName("updatedAt") val updatedAt: String?
 ) {
     /**
-     * Trả về tiêu đề dựa trên ngôn ngữ, fallback sang tiêu đề còn lại nếu null.
-     * @param lang "vi" (mặc định) hoặc "en"
+     * Lấy tiêu đề hiển thị. Vì BE đã localize, chỉ cần trả title trực tiếp.
      */
-    fun getTitle(lang: String = "vi"): String {
-        return when (lang) {
-            "en" -> titleEn ?: titleVi ?: "Untitled"
-            else -> titleVi ?: titleEn ?: "Không có tên"
-        }
-    }
+    fun getDisplayTitle(): String = title?.takeIf { it.isNotBlank() } ?: "Không có tên"
 
     /**
-     * Trả về mô tả dựa trên ngôn ngữ.
+     * Lấy mô tả hiển thị.
      */
-    fun getDescription(lang: String = "vi"): String? {
-        return when (lang) {
-            "en" -> descriptionEn ?: descriptionVi
-            else -> descriptionVi ?: descriptionEn
-        }
-    }
+    fun getDisplayDescription(): String? = description?.takeIf { it.isNotBlank() }
 
     /**
-     * Helper: Format dung lượng file (VD: 1.05 MB, 512 KB)
+     * Helper: Format dung lượng file (VD: 1,05 MB, 512 KB)
      */
     fun getFormattedSize(): String {
         if (fileSize == null || fileSize <= 0) return "Unknown"
-        val df = DecimalFormat("#.##")
+        val df = DecimalFormat("#,##")
         val kb = fileSize / 1024.0
         val mb = kb / 1024.0
         return when {
@@ -70,13 +60,12 @@ data class DocumentDto(
     }
 
     /**
-     * Helper: Format ngày tháng từ chuỗi ISO "2026-03-30T13:50:30"
+     * Helper: Format ngày tháng từ chuỗi ISO "2026-03-30T13:50:30" → "30/03/2026"
      */
     fun getFormattedDate(): String {
-        if (createdAt == null) return ""
+        val dateStr = createdAt ?: return ""
         return try {
-            // createdAt từ BE: "2026-03-30T13:50:30" → parse LocalDateTime
-            val parts = createdAt.substringBefore("T").split("-")
+            val parts = dateStr.substringBefore("T").split("-")
             if (parts.size == 3) "${parts[2]}/${parts[1]}/${parts[0]}" else ""
         } catch (e: Exception) {
             ""

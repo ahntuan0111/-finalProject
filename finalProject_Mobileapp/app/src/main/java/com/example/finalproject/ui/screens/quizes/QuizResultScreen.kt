@@ -125,7 +125,11 @@ fun QuizResultScreen(navController: NavController, viewModel: QuizViewModel) {
                 }
                 item {
                     Button(
-                        onClick = { navController.popBackStack("quiz_list", false) },
+                        onClick = { 
+                            navController.navigate("home") {
+                                popUpTo(0)
+                            }
+                        },
                         modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp).height(50.dp),
                         shape = RoundedCornerShape(12.dp)
                     ) {

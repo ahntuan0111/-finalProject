@@ -1,12 +1,12 @@
 package com.example.finalproject
 
 import android.Manifest
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-// XÓA: import androidx.activity.ComponentActivity
-import androidx.appcompat.app.AppCompatActivity // THÊM IMPORT NÀY
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
@@ -119,5 +119,18 @@ class MainActivity : AppCompatActivity() { // SỬA: Kế thừa từ AppCompatA
                 )
             }
         }
+    }
+
+    /**
+     * Được gọi thay vì Activity.recreate() khi locale thay đổi
+     * (nhờ android:configChanges="locale|layoutDirection" trong Manifest).
+     * Gọi super để AppCompat cập nhật Context + Resources với locale mới.
+     * Compose sẽ tự recompose lại toàn bộ stringResource() → UI strings
+     * đổi ngôn ngữ mà KHÔNG phá hủy NavController hay back stack.
+     */
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        // Không cần thêm gì — super.onConfigurationChanged() đã đủ
+        // để Compose Runtime tự động recompose với locale mới.
     }
 }

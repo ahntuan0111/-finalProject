@@ -10,6 +10,9 @@ import java.util.List;
 
 public interface LessonRepository extends JpaRepository<Lesson, Long> {
 
+    @Query("SELECT COUNT(l.id) FROM Lesson l WHERE l.chapter.subject.code = :subjectCode AND l.chapter.subject.grade.id = :gradeId")
+    int countBySubjectCodeAndGradeId(@Param("subjectCode") String subjectCode, @Param("gradeId") Integer gradeId);
+
     List<Lesson> findByChapterIdOrderByOrderNoAsc(Long chapterId);
 
     int countByChapter_Subject_Id(Integer subjectId);

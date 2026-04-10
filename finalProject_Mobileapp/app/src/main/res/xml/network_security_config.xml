@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Cho phép cleartext HTTP với máy chủ backend local (dev only) -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">192.168.0.144</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">localhost</domain>
+    </domain-config>
+
+    <!-- Firebase Storage và Google APIs: bắt buộc HTTPS, tin tưởng hệ thống -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">firebasestorage.googleapis.com</domain>
+        <domain includeSubdomains="true">storage.googleapis.com</domain>
+        <domain includeSubdomains="true">googleapis.com</domain>
+    </domain-config>
+
+    <!-- Mặc định toàn bộ traffic còn lại -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
