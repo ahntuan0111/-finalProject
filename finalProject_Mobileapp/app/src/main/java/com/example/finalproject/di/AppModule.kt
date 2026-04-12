@@ -53,7 +53,7 @@ object AppModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://192.168.0.144:8080/api/")
+            .baseUrl("http://192.168.0.159:8080/api/")
             .client(okHttpClient) // <--- QUAN TRỌNG
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -77,7 +77,6 @@ object AppModule {
         return retrofit.create(com.example.finalproject.data.remote.api.AiTutorApiService::class.java)
     }
 
-    // ... Các phần provide Repository giữ nguyên
     @Provides
     @Singleton
     fun provideAuthRepository(impl: AuthRepositoryImpl): AuthRepository = impl

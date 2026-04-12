@@ -52,11 +52,11 @@ import kotlinx.coroutines.launch
 import androidx.compose.material.icons.Icons
 
 // IP máy chủ (Thay đổi tùy môi trường)
-const val BASE_IMAGE_URL = "http://192.168.0.144:8080"
+const val BASE_IMAGE_URL = "http://192.168.0.159:8080"
 
 fun getFullImageUrl(path: String?): String {
     if (path.isNullOrEmpty()) return ""
-    return if (path.startsWith("http")) path else "http://192.168.0.144:8080$path"
+    return if (path.startsWith("http")) path else "http://192.168.0.159:8080$path"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -38,7 +38,7 @@ import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
-const val BASE_URL = "http://192.168.0.144:8080"
+const val BASE_URL = "http://192.168.0.159:8080"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

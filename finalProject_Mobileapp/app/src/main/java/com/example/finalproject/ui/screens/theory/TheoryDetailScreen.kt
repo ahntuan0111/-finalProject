@@ -328,7 +328,7 @@ private fun normalizeImageUrl(imageUrl: String): String {
         imageUrl.startsWith("firebasestorage.googleapis.com") -> "https://$imageUrl"
         imageUrl.startsWith("storage.googleapis.com") -> "https://$imageUrl"
         // Relative path → backend local
-        imageUrl.startsWith("/") -> "http://192.168.110.218:8080$imageUrl"
+        imageUrl.startsWith("/") -> "http://192.168.0.159:8080$imageUrl"
         else -> imageUrl
     }
 }
