@@ -1,432 +1,258 @@
 <div align="center">
 
-# 🎓 MaSci — Nền Tảng E-Learning Thông Minh
+# MaSci — AI-Powered K-12 E-Learning Platform
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Kotlin](https://img.shields.io/badge/Kotlin-Android-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![Gemini AI](https://img.shields.io/badge/Gemini%20AI-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 
-> **Hệ thống học tập trực tuyến toàn diện** dành cho học sinh THCS/THPT, tích hợp AI Tutor (Google Gemini), quản lý khóa học, quiz thông minh, và thông báo Push Real-time.
+**Full-stack E-Learning system for K-12 students with a Socratic AI Tutor, gamified quizzes, and real-time progress tracking.**
 
-**Full-stack project | 3 repositories | Production-ready**
+*3 integrated sub-projects · 22 REST API controllers · 31 database entities · Android + React + Spring Boot*
 
 </div>
 
 ---
 
-## 📋 Mục Lục
+## 📱 Demo — App Screenshots
 
-- [Tổng Quan Dự Án](#-tổng-quan-dự-án)
-- [Kiến Trúc Hệ Thống](#-kiến-trúc-hệ-thống)
-- [Màn Hình Ứng Dụng](#-màn-hình-ứng-dụng)
-- [Repositories](#-repositories)
-- [Tech Stack](#-tech-stack)
-- [Tính Năng Chính](#-tính-năng-chính)
-- [Cài Đặt & Chạy Dự Án](#-cài-đặt--chạy-dự-án)
-- [Cấu Trúc Dự Án](#-cấu-trúc-dự-án)
-- [API Endpoints](#-api-endpoints)
+### Authentication Flow
+> JWT-secured registration with Email OTP verification and password reset
 
----
+| Onboarding | Welcome | Register | Login |
+|:---:|:---:|:---:|:---:|
+| <img src="screenshots/mobile/01_onboarding.png" width="200"> | <img src="screenshots/mobile/02_welcome.png" width="200"> | <img src="screenshots/mobile/03_register.png" width="200"> | <img src="screenshots/mobile/04_login.png" width="200"> |
 
-## 🎯 Tổng Quan Dự Án
+### Learning Experience
+> Structured content delivery with LaTeX math rendering, Progress tracking, and Daily Streak gamification
 
-**MaSci** là một hệ thống E-Learning đầy đủ tính năng dành cho học sinh từ lớp 6 đến lớp 9, bao gồm:
+| Home Dashboard | Profile & Grade | Theory List | Theory Detail (LaTeX) |
+|:---:|:---:|:---:|:---:|
+| <img src="screenshots/mobile/05_home.png" width="200"> | <img src="screenshots/mobile/06_profile.png" width="200"> | <img src="screenshots/mobile/07_theory_list.png" width="200"> | <img src="screenshots/mobile/08_theory_detail.png" width="200"> |
 
-| Thành phần | Công nghệ | Mô tả |
-|---|---|---|
-| 📱 **Mobile App** | Android (Kotlin + Jetpack Compose) | Ứng dụng học tập cho học sinh |
-| 🖥️ **Web Admin** | React 19 + Vite + Ant Design | Trang quản trị cho admin/giáo viên |
-| ⚙️ **Backend API** | Spring Boot 3.2 + MySQL + Redis | RESTful API server |
+### AI Features
+> Socratic AI Tutor (Gemini) — guided hints only, never direct answers · Image-based Exercise Grading
 
-### Điểm Nổi Bật
+| AI Tutor Chat | Exercise Submission | Camera Capture | Notifications |
+|:---:|:---:|:---:|:---:|
+| <img src="screenshots/mobile/09_chat_ai.png" width="200"> | <img src="screenshots/mobile/11_submission.png" width="200"> | <img src="screenshots/mobile/12_camera.png" width="200"> | <img src="screenshots/mobile/15_notification.png" width="200"> |
 
-- 🤖 **AI Tutor tích hợp** — Google Gemini AI trả lời câu hỏi học thuật, render LaTeX công thức toán
-- 🔔 **Push Notification Real-time** — Firebase FCM + WebSocket cho thông báo tức thì
-- 📊 **Thống kê học tập** — Dashboard theo dõi tiến độ, điểm số, streak học tập
-- 📄 **PDF Viewer tích hợp** — Đọc tài liệu học tập trực tiếp trong app
-- ⏰ **Nhắc học thông minh** — WorkManager lên lịch nhắc nhở cá nhân hóa
-- 🔐 **JWT Authentication** — Bảo mật với Access Token + Redis session management
+### Quiz System
+> Timed MCQ quizzes with countdown timer, loss-aversion UX, and per-question result review
 
----
-
-## 🏗️ Kiến Trúc Hệ Thống
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        CLIENT LAYER                             │
-│                                                                 │
-│   📱 Android App                    🖥️ Web Admin                │
-│   Kotlin + Jetpack Compose          React 19 + Ant Design       │
-│   Retrofit + Hilt DI                Axios + React Router        │
-└─────────────┬───────────────────────────────┬───────────────────┘
-              │        REST API / JWT          │
-              ▼                               ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                     BACKEND (Spring Boot 3.2)                   │
-│                                                                 │
-│  ┌──────────────┐  ┌───────────────┐  ┌─────────────────────┐  │
-│  │  Controllers  │  │  Service Layer│  │  Security (JWT+     │  │
-│  │  (22 APIs)   │→ │  (21 Services)│→ │  Spring Security)   │  │
-│  └──────────────┘  └───────────────┘  └─────────────────────┘  │
-│              │                │                                  │
-│              ▼                ▼                                  │
-│  ┌──────────────┐  ┌───────────────┐                           │
-│  │  JPA/Repo    │  │  Redis Cache  │                           │
-│  │  (MySQL)     │  │  (Sessions)   │                           │
-│  └──────────────┘  └───────────────┘                           │
-└───────────────────────┬─────────────────────────────────────────┘
-                        │ External Services
-          ┌─────────────┼──────────────────┐
-          ▼             ▼                  ▼
-   🔥 Firebase      🤖 Gemini AI      📧 Gmail SMTP
-   Storage + FCM    (AI Tutor)        (Email OTP)
-```
-
----
-
-## 📸 Màn Hình Ứng Dụng
-
-### 📱 Mobile App (Android)
-
-#### Welcome & Home Screen
-> Màn hình chào mừng với thiết kế gradient hiện đại và trang chủ hiển thị các môn học theo lớp
-
-#### Lý Thuyết & AI Tutor
-> Xem bài học với LaTeX rendering và chat với AI Tutor hỗ trợ giải toán
-
-#### Quiz & Dashboard
-> Làm bài kiểm tra trắc nghiệm và theo dõi tiến độ học tập bằng biểu đồ
+| Quiz Execution | Quiz Result |
+|:---:|:---:|
+| <img src="screenshots/mobile/13_quiz.png" width="200"> | <img src="screenshots/mobile/14_quiz_result.png" width="200"> |
 
 ---
 
 ### 🖥️ Web Admin Panel
+> React 19 + Ant Design 6 — Full course & user management with CKEditor 5 + MathLive LaTeX input
 
-#### Dashboard Tổng Quan
-> Thống kê tổng quan: Users, Courses, Exercises với biểu đồ real-time
+| Analytics Dashboard | Course Content Editor |
+|:---:|:---:|
+| <img src="screenshots/webadmin/01_dashboard.png" width="480"> | <img src="screenshots/webadmin/04_course_editor.png" width="480"> |
 
-#### Quản Lý Khóa Học & Quiz
-> CRUD đầy đủ cho môn học, chương, bài học và ngân hàng câu hỏi
+| Lesson CRUD | User Management |
+|:---:|:---:|
+| <img src="screenshots/webadmin/05_lesson_crud.png" width="480"> | <img src="screenshots/webadmin/03_user_list.png" width="480"> |
+
+| Submission Review | Quiz Management |
+|:---:|:---:|
+| <img src="screenshots/webadmin/07_submission_review.png" width="480"> | <img src="screenshots/webadmin/08_quiz_mgmt.png" width="480"> |
 
 ---
 
-## 📁 Repositories
+## What Is This Project?
+
+**MaSci** is a production-grade E-Learning platform for Vietnamese secondary school students (grades 6–12). It was built as a full-stack Final Year Project, covering all layers of modern software engineering:
+
+- **Android mobile app** for students — learn theory, submit exercises with AI grading, take quizzes, and chat with an AI Tutor
+- **React web dashboard** for administrators — manage courses, users, quizzes, and monitor submissions
+- **Spring Boot REST API** — the backend powering all features, secured with JWT, backed by MySQL and Redis
+
+> **What makes it interesting technically:**
+> Students photograph their handwritten answers. The image is uploaded directly to Firebase Storage via a **server-generated pre-signed URL** (offloading backend memory), then the Gemini API analyzes the image and returns AI-generated feedback — all within ~1.2 seconds end-to-end.
+
+---
+
+## Key Technical Highlights
+
+| What | How |
+|---|---|
+| **AI Image Grading** | Handwritten exercise photos → Firebase Signed URL upload (bypass server) → Gemini Vision AI validates the answer |
+| **Socratic AI Tutor** | Multi-turn chat with Gemini, constrained via system prompt to only give guided hints — never direct answers |
+| **LaTeX Math Rendering** | Lesson content stored as LaTeX strings, rendered natively on Android via Markwon + ext-latex (Canvas-level) |
+| **JWT + Redis Blacklist** | Stateless JWT with Redis-backed token blacklist for secure logout and instant session invalidation |
+| **Real-time Notifications** | Firebase Cloud Messaging (FCM) push + WebSocket (STOMP) for in-app real-time alerts |
+| **Daily Streak Gamification** | Cron scheduler tracks daily activity; streak reset if student misses a day; loss-aversion UX in Quiz timer |
+| **Dynamic Progress Tracking** | Per-subject progress calculated server-side from `lesson_completions`, exposed via REST, animated in Vico charts |
+| **MVVM + Clean Architecture** | Hilt DI, Jetpack Navigation Compose, StateFlow-driven reactive UI — no business logic leaks into Composables |
+
+---
+
+## System Architecture
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                      CLIENT LAYER                        │
+│                                                          │
+│  📱 Android App (Kotlin)         🖥️ Web Admin (React 19)  │
+│  Jetpack Compose + Material 3    Ant Design 6 + Vite     │
+│  Retrofit + Hilt + DataStore     Axios + React Router    │
+└────────────┬─────────────────────────────┬───────────────┘
+             │        REST API / JWT        │
+             ▼                             ▼
+┌──────────────────────────────────────────────────────────┐
+│              BACKEND (Spring Boot 3.2 · Java 17)         │
+│                                                          │
+│  22 Controllers → 21 Services → JPA Repositories        │
+│  Spring Security + JWT Filter + CORS Config              │
+│  MySQL 8.0 (31 Entities) + Redis (Session Cache)         │
+│  WebSocket (STOMP) · Scheduled Tasks (Cron)              │
+└───────────────────────┬──────────────────────────────────┘
+                        │  External Services
+          ┌─────────────┼──────────────────┐
+          ▼             ▼                  ▼
+   🔥 Firebase      🤖 Gemini AI      📧 Gmail SMTP
+   Storage + FCM    (AI Tutor +        (OTP Email
+   (Images, PDFs)    Image Grading)     Verification)
+```
+
+---
+
+## Project Structure
 
 ```
 Final_Project/
-├── finalProject_BE/          # ⚙️ Spring Boot Backend
-├── finalProject_Mobileapp/   # 📱 Android Mobile App
-└── finalProject_Webadmin/    # 🖥️ React Web Admin
+├── finalProject_BE/        # Spring Boot REST API (Java 17)
+├── finalProject_Mobileapp/ # Android App (Kotlin + Jetpack Compose)
+├── finalProject_Webadmin/  # Web Admin Panel (React 19 + Ant Design)
+└── screenshots/            # App screenshots organized by feature
+    ├── mobile/
+    └── webadmin/
 ```
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-### ⚙️ Backend (`finalProject_BE`)
+### Backend — `finalProject_BE`
 
-| Category | Technology |
+| Layer | Technology |
 |---|---|
-| Framework | Spring Boot 3.2.5 |
-| Language | Java 17 |
-| Database | MySQL 8.0 |
-| Cache | Redis |
-| ORM | Spring Data JPA / Hibernate |
-| Security | Spring Security + JWT (JJWT 0.11.5) |
-| Real-time | WebSocket (STOMP) |
-| File Storage | Firebase Storage |
-| Push Notification | Firebase Admin SDK 9.7.0 |
-| AI Integration | Google Gemini API |
-| Email | Spring Mail (Gmail SMTP) |
-| Validation | Spring Validation + Bean Validation |
-| Build Tool | Maven |
+| Framework | Spring Boot 3.2.5 (Java 17) |
+| Database | MySQL 8.0 · Spring Data JPA / Hibernate |
+| Cache | Redis (JWT token blacklist) |
+| Security | Spring Security · JJWT 0.11.5 |
+| Real-time | WebSocket (STOMP protocol) |
+| File Storage | Firebase Admin SDK · Pre-signed URL pattern |
+| AI | Google Gemini API (text generation + vision) |
+| Push Notification | Firebase Cloud Messaging (FCM) |
+| Email | Spring Mail · Gmail SMTP (OTP verification) |
+| Scheduler | Spring `@Scheduled` · daily streak Cron job |
+| Build | Maven |
 
-### 📱 Mobile App (`finalProject_Mobileapp`)
+### Android App — `finalProject_Mobileapp`
 
-| Category | Technology |
+| Layer | Technology |
 |---|---|
 | Language | Kotlin |
-| UI Framework | Jetpack Compose + Material Design 3 |
-| Architecture | MVVM + Clean Architecture |
-| DI | Hilt (Dagger) |
-| Navigation | Jetpack Navigation Compose |
-| Networking | Retrofit 2 + OkHttp |
-| Local Storage | DataStore Preferences |
-| Image Loading | Coil |
-| Push Notification | Firebase Cloud Messaging |
-| Background Task | WorkManager |
-| Camera | CameraX |
-| Video | YouTube Android Player |
-| Charts | Vico Charts |
-| Math Rendering | Markwon + LaTeX extension |
+| UI | Jetpack Compose · Material Design 3 |
+| Architecture | MVVM · Clean Architecture · StateFlow |
+| DI | Hilt (Dagger 2) |
+| Navigation | Jetpack Navigation Compose (animated transitions) |
+| Networking | Retrofit 2 · OkHttp · Auth + Language Interceptors |
+| Local Storage | DataStore Preferences (encrypted JWT persistence) |
+| Camera | CameraX (exercise image capture) |
+| Math Rendering | Markwon + ext-latex (LaTeX → Android Canvas) |
+| Charts | Vico Charts (animated progress visualization) |
+| Background | WorkManager (study reminders) |
+| Push | Firebase Cloud Messaging |
+| Media | YouTube Android Player · Coil (image loading) |
 | Min SDK | API 24 (Android 7.0) |
 
-### 🖥️ Web Admin (`finalProject_Webadmin`)
+### Web Admin — `finalProject_Webadmin`
 
-| Category | Technology |
+| Layer | Technology |
 |---|---|
-| Framework | React 19 |
-| Build Tool | Vite (Rolldown) |
-| UI Library | Ant Design 6 |
-| Charts | @ant-design/plots |
+| Framework | React 19 + Vite (Rolldown bundler) |
+| UI | Ant Design 6 · @ant-design/plots (charts) |
 | Routing | React Router DOM v7 |
-| HTTP Client | Axios |
-| Auth | JWT Decode |
+| HTTP | Axios (interceptors for JWT) |
 | Rich Text | CKEditor 5 |
-| Math | KaTeX + MathLive |
+| Math Input | MathLive (WYSIWYG LaTeX editor) · KaTeX (rendering) |
+| Auth State | React Context + JWT Decode |
 
 ---
 
-## ✨ Tính Năng Chính
+## Feature Overview
 
-### 👨‍🎓 Dành Cho Học Sinh (Mobile App)
+### Student Mobile App
 
-| Tính năng | Mô tả |
+| Feature | Details |
 |---|---|
-| **Đăng ký / Đăng nhập** | OTP email verification, Forgot password flow |
-| **Chọn lớp học** | Hỗ trợ lớp 6-12, tùy chỉnh môn học theo lớp |
-| **Học lý thuyết** | Xem bài học có text, video YouTube, PDF tài liệu |
-| **Làm bài tập** | Exercise với AI validation (Gemini check đáp án) |
-| **Làm Quiz** | Trắc nghiệm có timer, lịch sử, xem đáp án |
-| **AI Tutor** | Chat với Gemini AI, hỗ trợ nhập ký hiệu toán |
-| **Dashboard** | Biểu đồ tiến độ, streak, điểm trung bình |
-| **Tìm kiếm** | Full-text search môn học, bài học |
-| **Nhắc nhở** | WorkManager lên lịch học cá nhân hóa |
-| **Thông báo** | Push notification real-time (FCM) |
-| **Hồ sơ** | Xem và cập nhật thông tin cá nhân |
+| **Registration & Login** | Email OTP verification · Forgot/Reset password flow |
+| **Grade & Subject Selection** | Content scoped to grades 6–12, filtered by subject |
+| **Theory Learning** | Lessons with embedded YouTube videos, PDF viewer, LaTeX-rendered math |
+| **Exercise Submission** | Photograph handwritten solutions → Gemini Vision AI grades the answer |
+| **AI Tutor Chat** | Socratic multi-turn conversation — guided hints only; math symbol keyboard for formula input |
+| **Quiz System** | Timed MCQ quizzes with countdown timer, result history, per-question review |
+| **Dashboard** | Animated progress charts per subject, daily streak, average score |
+| **Search** | Full-text search across lessons and subjects, filtered by grade |
+| **Reminders** | Personalized study schedule via WorkManager push notifications |
+| **Real-time Push** | FCM push + in-app WebSocket alerts |
 
-### 👨‍💼 Dành Cho Admin (Web Panel)
+### Admin Web Panel
 
-| Tính năng | Mô tả |
+| Feature | Details |
 |---|---|
-| **Dashboard** | Thống kê tổng quan với biểu đồ @ant-design/plots |
-| **Quản lý Users** | Danh sách, tìm kiếm, kích hoạt/vô hiệu hóa tài khoản |
-| **Quản lý Khóa Học** | CRUD Môn học → Chương → Bài học → Nội dung |
-| **Quản lý Bài Tập** | Tạo exercise với rich text (CKEditor 5) + LaTeX |
-| **Xem Submissions** | Duyệt bài nộp của học sinh, chấm điểm |
-| **Quản lý Documents** | Upload/quản lý tài liệu PDF lên Firebase Storage |
-| **Quản lý Quiz** | Ngân hàng câu hỏi, tạo bộ đề theo môn/lớp/độ khó |
+| **Dashboard** | Live stats: total users, lessons, exercises; engagement charts |
+| **Course Management** | Full CRUD: Subjects → Chapters → Lessons → Content (text, video, PDF) |
+| **Exercise Management** | CKEditor 5 rich text + MathLive LaTeX input |
+| **Submission Review** | Browse student submissions with AI grading results |
+| **Quiz Management** | Question banks, create quizzes per subject/grade/difficulty |
+| **User Management** | View accounts, activate/suspend users, reset streaks |
+| **Document Management** | Upload and manage PDF materials on Firebase Storage |
 
-### ⚙️ Backend API (22 Controllers)
+### Backend API (22 Controllers)
 
-| Controller | Mô tả |
+| Controller | Responsibility |
 |---|---|
-| `AuthController` | Login, Register, OTP, Forgot/Reset Password |
-| `UserController` | CRUD user, profile management |
-| `AdminController` | Admin-only operations |
-| `AdminDashboardController` | Dashboard statistics |
-| `AdminQuizController` | Quiz & Question management |
-| `AdminExerciseController` | Exercise management |
-| `AdminSubmissionController` | Submission review |
-| `DocumentController` | PDF upload & management |
-| `ExerciseController` | Student exercise operations |
-| `QuizUserController` | Student quiz taking |
+| `AuthController` | Register, Login, OTP verify, Forgot/Reset password |
+| `UserController` | User profile CRUD |
+| `AdminController` | Admin-scoped user operations |
+| `AdminDashboardController` | Aggregated analytics endpoints |
+| `AdminQuizController` | Quiz and question bank management |
+| `AdminExerciseController` | Exercise CRUD |
+| `AdminSubmissionController` | View & manage student submissions |
+| `AdminChapterController` / `AdminLessonController` | Content hierarchy management |
+| `ExerciseController` | Student exercise fetch and submit |
+| `QuizUserController` | Student quiz taking and result history |
 | `TheoryUserController` | Theory content delivery |
-| `LessonProgressController` | Progress tracking |
-| `AiTutorController` | Gemini AI integration |
+| `LessonProgressController` | Mark complete, fetch subject overview with chapter/lesson counts |
+| `AiTutorController` | Gemini chat session management |
 | `NotificationController` | Push notification dispatch |
-| `SearchController` | Full-text search |
-| `StatisticsController` | Learning statistics |
-| `UserActivityController` | Activity logging |
-| `UserReminderSettingController` | Reminder management |
-| `UploadController` | Firebase Storage upload |
-| `WebSocket` | Real-time notifications |
+| `DocumentController` | PDF upload and listing |
+| `UploadController` | Firebase pre-signed URL generation |
+| `SearchController` | Full-text search across content |
+| `StatisticsController` | Student learning statistics |
+| `UserActivityController` | Daily activity logging |
+| `UserReminderSettingController` | Study reminder preferences |
 
 ---
 
-## 🚀 Cài Đặt & Chạy Dự Án
+## Database Schema (31 Entities)
 
-### Yêu Cầu Hệ Thống
-
-- Java 17+
-- Node.js 18+
-- MySQL 8.0
-- Redis
-- Android Studio (Hedgehog+)
-- Firebase project (Storage + FCM)
-
----
-
-### ⚙️ 1. Backend Setup
-
-```bash
-# Clone repository
-cd finalProject_BE/finalProject
-
-# Cấu hình database trong application.properties
-spring.datasource.url=jdbc:mysql://localhost:3306/e_learningdb
-spring.datasource.username=your_username
-spring.datasource.password=your_password
-
-# Chạy MySQL, tạo database
-mysql -u root -p
-CREATE DATABASE e_learningdb;
-
-# Chạy Redis
-redis-server
-
-# Build & Run
-./mvnw spring-boot:run
-# Server chạy tại: http://localhost:8080
-```
-
-**Biến môi trường cần cấu hình:**
-
-```properties
-# JWT
-app.jwt.secret=your_jwt_secret_key
-app.jwt.expiration=2592000
-
-# Gemini AI
-gemini.api.key=your_gemini_api_key
-
-# Gmail SMTP
-spring.mail.username=your_email@gmail.com
-spring.mail.password=your_app_password
-
-# Firebase: đặt file firebase-service-account.json vào src/main/resources/
-```
-
----
-
-### 🖥️ 2. Web Admin Setup
-
-```bash
-cd finalProject_Webadmin/web-admin
-
-# Cài dependencies
-npm install
-
-# Cấu hình API URL trong .env
-VITE_API_BASE_URL=http://localhost:8080
-
-# Chạy development server
-npm run dev
-# Mở: http://localhost:5173
-
-# Build production
-npm run build
-```
-
----
-
-### 📱 3. Android App Setup
-
-```bash
-# Mở Android Studio → Open Project → chọn finalProject_Mobileapp/
-
-# Cấu hình API URL trong NetworkModule
-# Tìm file: data/remote/NetworkModule.kt
-BASE_URL = "http://your-server-ip:8080/"
-
-# Thêm google-services.json từ Firebase Console
-# vào: app/google-services.json
-
-# Build & Run trên emulator/thiết bị thật
-./gradlew assembleDebug
-```
-
----
-
-## 📂 Cấu Trúc Dự Án
-
-### Backend (`finalProject_BE`)
-```
-src/main/java/vn/anhtuan/finalProject/
-├── controller/          # 22 REST Controllers
-├── service/             # 21 Business Logic Services
-│   └── impl/            # Service implementations
-├── entity/              # 31 JPA Entities
-├── dto/                 # Data Transfer Objects
-├── repository/          # Spring Data JPA Repositories
-├── security/            # JWT Filter + Security Config
-├── config/              # WebSocket, CORS, Firebase Config
-├── scheduler/           # Scheduled tasks (reminders)
-├── exception/           # Global Exception Handler
-└── utils/               # Utility classes
-```
-
-**Domain Entities:**
-`User`, `Subject`, `Chapter`, `Lesson`, `LessonContent`, `Exercise`, `ExerciseSolution`, `ExerciseSubmission`, `Quiz`, `Question`, `Choice`, `QuizResult`, `Document`, `Progress`, `LessonCompletion`, `Notification`, `AiChatSession`, `AiChatMessage`, `UserReminderSetting`, `UserActivity`, `StudentProfile`, `Grade`
-
-### Mobile App (`finalProject_Mobileapp`)
-```
-app/src/main/java/com/example/finalproject/
-├── ui/
-│   ├── screens/
-│   │   ├── auth/           # Welcome, Login, Register, OTP, ForgotPassword
-│   │   ├── home/           # HomeScreen (subject grid)
-│   │   ├── class_selection/# ClassSelectionScreen
-│   │   ├── subject_detail/ # SubjectDetailScreen
-│   │   ├── theory/         # TheoryScreen, TheoryDetailScreen
-│   │   ├── exercise/       # ExerciseListScreen, ExerciseDetailScreen
-│   │   ├── quizes/         # QuizListScreen, QuizTakingScreen, QuizResultScreen
-│   │   ├── document/       # DocumentListScreen, PdfViewerScreen
-│   │   ├── ai/             # ChatBoxAIScreen, MathSymbolBar
-│   │   ├── dashboard/      # DashboardScreen
-│   │   ├── profile/        # UserScreen
-│   │   ├── search/         # SearchScreen
-│   │   └── reminder/       # ReminderScreen
-│   ├── viewmodel/          # ViewModels (MVVM)
-│   ├── navigation/         # AppNavHost, AppRoutes
-│   ├── components/         # Shared UI components
-│   └── theme/              # Material3 theme
-├── data/
-│   ├── remote/             # Retrofit API services + DTOs
-│   ├── local/              # DataStore Preferences
-│   └── repository/         # Repository implementations
-├── domain/                 # Use Cases
-├── di/                     # Hilt DI modules
-└── utils/                  # DataStoreManager, etc.
-```
-
-### Web Admin (`finalProject_Webadmin`)
-```
-src/
-├── pages/
-│   ├── Auth/               # LoginPage
-│   ├── Dashboard/          # DashboardPage (charts)
-│   ├── User/               # UserList
-│   ├── Course/             # CoursePage (subjects/chapters/lessons)
-│   ├── Exercise/           # ExercisePage
-│   ├── Submission/         # SubmissionPage
-│   ├── Document/           # DocumentManagement
-│   └── QuizManagement/     # QuizManagement
-├── components/
-│   ├── layout/             # MainLayout (sidebar + header)
-│   ├── common/             # Shared components
-│   └── editor/             # CKEditor wrapper
-├── api/                    # Axios API calls
-├── context/                # React Context (auth state)
-├── router/                 # AppRouter, PrivateRoute
-└── utils/                  # Helper functions
-```
-
----
-
-## 🔐 Luồng Xác Thực
-
-```
-Register → OTP Email Verification → Login → JWT Token
-         ↓
-    Token stored in DataStore (Mobile) / LocalStorage (Web)
-         ↓
-    Mọi API request gửi kèm: Authorization: Bearer <token>
-         ↓
-    JWT Filter validate → Redis check → Cho phép/Từ chối
-```
-
----
-
-## 📊 Database Schema (Tóm tắt)
-
-| Entity Group | Tables |
+| Group | Tables |
 |---|---|
-| **Users** | `users`, `student_profiles`, `roles` |
-| **Content** | `subjects`, `chapters`, `lessons`, `lesson_contents` |
+| **Auth & Users** | `users`, `student_profiles`, `registration_otps`, `password_reset_tokens` |
+| **Course Content** | `subjects`, `chapters`, `lessons`, `lesson_contents` |
 | **Assessment** | `exercises`, `exercise_solutions`, `exercise_submissions` |
-| **Quiz** | `quizzes`, `questions`, `choices`, `quiz_results` |
+| **Quiz** | `quizzes`, `questions`, `question_contents`, `choices`, `quiz_results` |
 | **Documents** | `documents` |
 | **Progress** | `progresses`, `lesson_completions` |
 | **AI** | `ai_chat_sessions`, `ai_chat_messages` |
@@ -435,18 +261,149 @@ Register → OTP Email Verification → Login → JWT Token
 
 ---
 
-## 👨‍💻 Tác Giả
+## Authentication Flow
+
+```
+POST /auth/register  →  Email OTP sent via Gmail SMTP
+POST /auth/verify-otp  →  Account activated
+POST /auth/login  →  JWT Access Token returned
+  ↓
+Token stored:
+  Android → DataStore Preferences (encrypted)
+  Web     → LocalStorage
+  ↓
+Every API request:  Authorization: Bearer <token>
+  ↓
+Spring Security JWT Filter  →  Redis blacklist check  →  Grant / Deny
+  ↓
+POST /auth/logout  →  Token added to Redis blacklist (invalidated immediately)
+```
+
+---
+
+## Local Setup
+
+### Requirements
+
+- Java 17+ · Maven
+- Node.js 18+
+- MySQL 8.0 · Redis
+- Android Studio Hedgehog or later
+- Firebase project (Storage + FCM enabled)
+- Google Gemini API key
+
+### 1. Backend
+
+```bash
+cd finalProject_BE/finalProject
+
+# Create MySQL database
+mysql -u root -p -e "CREATE DATABASE e_learningdb;"
+
+# Configure src/main/resources/application.properties:
+spring.datasource.url=jdbc:mysql://localhost:3306/e_learningdb
+spring.datasource.username=root
+spring.datasource.password=YOUR_PASSWORD
+app.jwt.secret=YOUR_JWT_SECRET
+gemini.api.key=YOUR_GEMINI_API_KEY
+spring.mail.username=YOUR_GMAIL
+spring.mail.password=YOUR_APP_PASSWORD
+
+# Place firebase-service-account.json in src/main/resources/
+
+# Start Redis, then:
+./mvnw spring-boot:run
+# → http://localhost:8080
+```
+
+### 2. Web Admin
+
+```bash
+cd finalProject_Webadmin/web-admin
+npm install
+
+# Create .env:
+VITE_API_BASE_URL=http://localhost:8080
+
+npm run dev
+# → http://localhost:5173
+```
+
+### 3. Android App
+
+```bash
+# Open finalProject_Mobileapp/ in Android Studio
+# Sync Gradle dependencies
+
+# In NetworkModule.kt set:
+BASE_URL = "http://10.0.2.2:8080/"   # emulator
+# or your LAN IP for a physical device
+
+# Add google-services.json (from Firebase Console) to app/
+
+# Run (Shift+F10)
+```
+
+---
+
+## Source Code Layout
+
+### Backend
+```
+src/main/java/vn/anhtuan/finalProject/
+├── controller/     # 22 REST controllers
+├── service/        # 21 services + impl/
+├── entity/         # 31 JPA entities
+├── dto/            # Request & Response DTOs
+├── repository/     # Spring Data JPA repositories
+├── security/       # JWT filter + Spring Security config
+├── config/         # WebSocket, CORS, Firebase
+├── scheduler/      # Cron jobs (daily streak reset)
+├── exception/      # Global exception handler
+└── utils/
+```
+
+### Android
+```
+app/src/main/java/com/example/finalproject/
+├── ui/
+│   ├── screens/        # auth, home, theory, exercise, quiz, ai, dashboard, profile...
+│   ├── viewmodel/      # MVVM ViewModels (StateFlow)
+│   ├── navigation/     # AppNavHost + AppRoutes
+│   ├── components/     # Reusable Compose components
+│   └── theme/          # Material 3 theme
+├── data/
+│   ├── remote/         # Retrofit service + response models
+│   ├── local/          # DataStore
+│   └── repository/
+├── domain/             # Use Cases
+├── di/                 # Hilt modules
+└── utils/              # DataStoreManager, helpers
+```
+
+### Web Admin
+```
+src/
+├── pages/         # Auth, Dashboard, User, Course, Exercise, Submission, Quiz, Document
+├── components/    # Layout (sidebar), shared UI, CKEditor wrapper
+├── api/           # Axios API calls per feature
+├── context/       # Auth state (React Context)
+├── router/        # AppRouter + PrivateRoute guard
+└── utils/
+```
+
+---
+
+## Author
 
 **Lê Anh Tuấn**
-- 📧 hikatu137@gmail.com
-- 🎓 Final Year Project — E-Learning Platform
+📧 hikatu137@gmail.com
+🎓 Final Year Project — Open University Malaysia (OUM)
 
 ---
 
 <div align="center">
 
-**⭐ Nếu dự án hữu ích, hãy cho một ngôi sao nhé!**
-
-*MaSci E-Learning — Học thông minh, sống tốt hơn* 🚀
+*MaSci — Intelligent learning for the next generation* 🚀
 
 </div>
