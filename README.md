@@ -3,7 +3,9 @@
 # MaSci — AI-Powered K-12 E-Learning Platform
 
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![Kotlin](https://img.shields.io/badge/Kotlin-Android-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org/)
+[![Kotlin / Java](https://img.shields.io/badge/Kotlin%20%2F%20Java-Android-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org/)
+[![Dagger 2 / Hilt](https://img.shields.io/badge/Dagger%202-Hilt%20DI-E65100?style=for-the-badge)](https://dagger.dev/)
+[![RxJava & Coroutines](https://img.shields.io/badge/RxJava%203-Coroutines-8E24AA?style=for-the-badge)](https://reactivex.io/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
@@ -86,11 +88,14 @@
 | **AI Image Grading** | Handwritten exercise photos → Firebase Signed URL upload (bypass server) → Gemini Vision AI validates the answer |
 | **Socratic AI Tutor** | Multi-turn chat with Gemini, constrained via system prompt to only give guided hints — never direct answers |
 | **LaTeX Math Rendering** | Lesson content stored as LaTeX strings, rendered natively on Android via Markwon + ext-latex (Canvas-level) |
+| **Dependency Injection** | **Dagger 2 / Hilt** modular DI across Clean Architecture layers with scoped components (`@Singleton`, `@ViewModelScoped`) |
+| **Async & Reactive Flow** | Asynchronous operations and non-blocking I/O using **Kotlin Coroutines** (structured concurrency) & **RxJava / Flow** pipelines |
+| **Background Processing** | Guaranteed, battery-efficient background task scheduling and study reminders using Android **WorkManager** |
 | **JWT + Redis Blacklist** | Stateless JWT with Redis-backed token blacklist for secure logout and instant session invalidation |
 | **Real-time Notifications** | Firebase Cloud Messaging (FCM) push + WebSocket (STOMP) for in-app real-time alerts |
 | **Daily Streak Gamification** | Cron scheduler tracks daily activity; streak reset if student misses a day; loss-aversion UX in Quiz timer |
 | **Dynamic Progress Tracking** | Per-subject progress calculated server-side from `lesson_completions`, exposed via REST, animated in Vico charts |
-| **MVVM + Clean Architecture** | Hilt DI, Jetpack Navigation Compose, StateFlow-driven reactive UI — no business logic leaks into Composables |
+| **MVVM + Clean Architecture** | Robust separation of concerns via MVVM + Repository pattern, Material Design 3, and reactive UI state |
 
 ---
 
@@ -100,9 +105,10 @@
 ┌──────────────────────────────────────────────────────────┐
 │                      CLIENT LAYER                        │
 │                                                          │
-│  📱 Android App (Kotlin)         🖥️ Web Admin (React 19)  │
+│  📱 Android App (Kotlin / Java)  🖥️ Web Admin (React 19)  │
 │  Jetpack Compose + Material 3    Ant Design 6 + Vite     │
-│  Retrofit + Hilt + DataStore     Axios + React Router    │
+│  Retrofit + Dagger/Hilt + RxJava Axios + React Router    │
+│  Coroutines + WorkManager                                │
 └────────────┬─────────────────────────────┬───────────────┘
              │        REST API / JWT        │
              ▼                             ▼
@@ -160,20 +166,40 @@ Final_Project/
 
 | Layer | Technology |
 |---|---|
-| Language | Kotlin |
-| UI | Jetpack Compose · Material Design 3 |
-| Architecture | MVVM · Clean Architecture · StateFlow |
-| DI | Hilt (Dagger 2) |
-| Navigation | Jetpack Navigation Compose (animated transitions) |
-| Networking | Retrofit 2 · OkHttp · Auth + Language Interceptors |
-| Local Storage | DataStore Preferences (encrypted JWT persistence) |
-| Camera | CameraX (exercise image capture) |
-| Math Rendering | Markwon + ext-latex (LaTeX → Android Canvas) |
-| Charts | Vico Charts (animated progress visualization) |
-| Background | WorkManager (study reminders) |
-| Push | Firebase Cloud Messaging |
-| Media | YouTube Android Player · Coil (image loading) |
-| Min SDK | API 24 (Android 7.0) |
+| **Language** | **Kotlin** · **Java** |
+| **UI & UX** | **Jetpack Compose** · **Material Design 3** (Material You) |
+| **Architecture** | **MVVM** · **Clean Architecture** · **Repository Pattern** |
+| **Dependency Injection** | **Dagger 2** · **Hilt** (Modular DI, `@Module`, `@Provides`, `@InstallIn`, scoped components) |
+| **Concurrency & Async** | **Kotlin Coroutines** (`Dispatchers.IO` / `Main`, structured concurrency, `viewModelScope`) |
+| **Reactive Streams** | **RxJava 3** · **Kotlin Flow** / **StateFlow** (reactive data streams, observable state pipelines) |
+| **Background Processing** | **WorkManager** (Periodic task scheduling, guaranteed background execution, study reminders) |
+| **Networking** | **Retrofit 2** · **OkHttp** (REST client, Interceptors, reactive adapters) |
+| **Local Storage** | **DataStore Preferences** (encrypted JWT persistence, user settings) |
+| **Camera** | **CameraX** (exercise image capture) |
+| **Math Rendering** | **Markwon** + **ext-latex** (LaTeX → Android Canvas) |
+| **Charts** | **Vico Charts** (animated progress visualization) |
+| **Push Notifications** | **Firebase Cloud Messaging (FCM)** |
+| **Media** | **YouTube Android Player** · **Coil** (image loading) |
+| **Dev Tools & VCS** | **Android Studio** · **Git** |
+| **Min SDK** | API 24 (Android 7.0) |
+
+#### 📱 Android Architecture & Core Technologies Breakdown
+
+- **Dagger 2 / Hilt (Dependency Injection):**
+  - Fully decoupled, modular architecture adhering to Clean Architecture principles.
+  - Dependency injection graph structured via `@InstallIn(SingletonComponent::class)` for application-wide singletons (Retrofit network services, repositories, DataStore) and `@ViewModelScoped` for ViewModel-specific dependencies.
+- **Kotlin Coroutines (Asynchronous Programming):**
+  - Lightweight concurrency with structured concurrency management via `viewModelScope`.
+  - Seamless background thread dispatching (`Dispatchers.IO`) for network requests and image processing, safely updating UI state on `Dispatchers.Main`.
+- **RxJava 3 & Kotlin Flow (Reactive Data Streams):**
+  - Reactive event pipelines and observable data streams for real-time synchronization between the data layer and UI state.
+  - Event debouncing and stream transformation for responsive search and state updates.
+- **Android WorkManager (Guaranteed Background Tasks):**
+  - Battery-conscious, persistent background task scheduling using `PeriodicWorkRequestBuilder` with constraints (network connectivity, device idle state).
+  - Handles automated study schedule reminders, daily streak notifications, and background data synchronization that persist across device reboots and app restarts.
+- **Retrofit 2 & Material Design 3:**
+  - Type-safe HTTP client with custom OkHttp interceptors for automatic JWT authentication token injection and language switching.
+  - Modern, accessible, and responsive user interface built using Google's **Material Design 3** design system.
 
 ### Web Admin — `finalProject_Webadmin`
 
@@ -202,8 +228,9 @@ Final_Project/
 | **AI Tutor Chat** | Socratic multi-turn conversation — guided hints only; math symbol keyboard for formula input |
 | **Quiz System** | Timed MCQ quizzes with countdown timer, result history, per-question review |
 | **Dashboard** | Animated progress charts per subject, daily streak, average score |
-| **Search** | Full-text search across lessons and subjects, filtered by grade |
-| **Reminders** | Personalized study schedule via WorkManager push notifications |
+| **Search** | Full-text search across lessons and subjects, filtered by grade (debounced with RxJava / Flow) |
+| **Study Reminders & Background Sync** | Personalized study schedule and periodic reminders reliably orchestrated via **WorkManager** |
+| **Async Operations & Reactive UI** | Non-blocking API requests, background computations, and responsive UI state powered by **Kotlin Coroutines** & **RxJava** |
 | **Real-time Push** | FCM push + in-app WebSocket alerts |
 
 ### Admin Web Panel
@@ -288,7 +315,7 @@ POST /auth/logout  →  Token added to Redis blacklist (invalidated immediately)
 - Java 17+ · Maven
 - Node.js 18+
 - MySQL 8.0 · Redis
-- Android Studio Hedgehog or later
+- Android Studio Hedgehog or later · Git
 - Firebase project (Storage + FCM enabled)
 - Google Gemini API key
 
@@ -368,16 +395,17 @@ src/main/java/vn/anhtuan/finalProject/
 app/src/main/java/com/example/finalproject/
 ├── ui/
 │   ├── screens/        # auth, home, theory, exercise, quiz, ai, dashboard, profile...
-│   ├── viewmodel/      # MVVM ViewModels (StateFlow)
+│   ├── viewmodel/      # MVVM ViewModels (Coroutines viewModelScope, StateFlow, RxJava)
 │   ├── navigation/     # AppNavHost + AppRoutes
-│   ├── components/     # Reusable Compose components
+│   ├── components/     # Reusable Compose components (Material Design 3)
 │   └── theme/          # Material 3 theme
 ├── data/
-│   ├── remote/         # Retrofit service + response models
-│   ├── local/          # DataStore
-│   └── repository/
-├── domain/             # Use Cases
-├── di/                 # Hilt modules
+│   ├── remote/         # Retrofit 2 service + response models
+│   ├── local/          # DataStore Preferences
+│   └── repository/     # Data repositories & data sources
+├── domain/             # Use Cases & business logic
+├── di/                 # Dagger 2 / Hilt modules (@Module, @Provides, @InstallIn)
+├── worker/             # WorkManager workers (StudyReminderWorker, background sync)
 └── utils/              # DataStoreManager, helpers
 ```
 
